@@ -524,3 +524,68 @@ def api_perfil(request, uid):
         }})
 
     return JsonResponse({"ok": False, "error": "Método no permitido"}, status=405)
+
+# ── MÚSICA ────────────────────────────────────────────
+@csrf_exempt
+def api_musica(request, uid):
+    if request.method == "GET":
+        conn = get_db()
+        rows = conn.execute(
+            "SELECT id, nombre, duracion, orden FROM musica WHERE uid=? ORDER BY orden, id",
+            (uid,)
+        ).fetchall()
+        conn.close()
+        # No devolver datos (base64) en el listado para no sobrecargar
+        tracks = [{"id": r["id"], "nombre": r["nombre"], "duracion": r["duracion"], "orden": r["orden"]} for r in rows]
+        return JsonResponse({"ok": True, "tracks": tracks})
+
+    elif request.method == "POST":
+        data   = json.loads(request.body or '{}')
+        nombre = (data.get("nombre") or "").strip()
+        datos  = data.get("datos") or ""
+        duracion = (data.get("duracion") or "--").strip()
+        if not nombre or not datos:
+            return JsonResponse({"ok": False, "error": "Nombre y datos requeridos"})
+        conn = get_db()
+        orden = (conn.execute("SELECT COUNT(*) as c FROM musica WHERE uid=?", (uid,)).fetchone()["c"])
+        cur = conn.execute(
+            "INSERT INTO musica(uid, nombre, datos, duracion, orden) VALUES(?,?,?,?,?)",
+            (uid, nombre, datos, duracion, orden)
+        )
+        mid = cur.lastrowid
+        conn.commit()
+        conn.close()
+        return JsonResponse({"ok": True, "id": mid})
+
+    return JsonResponse({"ok": False, "error": "Método no permitido"}, status=405)
+
+
+@csrf_exempt
+def api_musica_track(request, uid, mid):
+    if request.method == "GET":
+        conn = get_db()
+        row = conn.execute(
+            "SELECT id, nombre, datos, duracion FROM musica WHERE id=? AND uid=?", (mid, uid)
+        ).fetchone()
+        conn.close()
+        if not row:
+            return JsonResponse({"ok": False, "error": "No encontrado"}, status=404)
+        return JsonResponse({"ok": True, "track": {"id": row["id"], "nombre": row["nombre"], "datos": row["datos"], "duracion": row["duracion"]}})
+
+    elif request.method == "DELETE":
+        conn = get_db()
+        conn.execute("DELETE FROM musica WHERE id=? AND uid=?", (mid, uid))
+        conn.commit()
+        conn.close()
+        return JsonResponse({"ok": True})
+
+    elif request.method == "PUT":
+        data  = json.loads(request.body or '{}')
+        orden = int(data.get("orden") or 0)
+        conn  = get_db()
+        conn.execute("UPDATE musica SET orden=? WHERE id=? AND uid=?", (orden, mid, uid))
+        conn.commit()
+        conn.close()
+        return JsonResponse({"ok": True})
+
+    return JsonResponse({"ok": False, "error": "Método no permitido"}, status=405)
