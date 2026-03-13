@@ -540,10 +540,11 @@ function abrirCuentaCliente(){
     '<div style="width:52px;height:52px;border-radius:50%;background:var(--am);color:var(--na3);display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:900;flex-shrink:0;overflow:hidden">'+userAva+'</div>'+
     '<div><div style="font-weight:800;font-size:1.1rem">'+usuario.n+' '+usuario.a+'</div><div style="opacity:.85;font-size:.85rem">'+usuario.email+'</div>'+
     '<span style="background:var(--am);color:var(--na3);padding:2px 10px;border-radius:50px;font-size:.72rem;font-weight:900;margin-top:4px;display:inline-block">👤 Cliente</span></div></div>'+
-    '<div style="display:flex;gap:8px;margin-bottom:18px">'+
+    '<div style="display:flex;gap:8px;margin-bottom:12px">'+
       '<button class="bp" style="flex:1;font-size:.85rem;padding:10px" onclick="cerrarModal(\'mPanel\');abrirPerfil()">✏️ Editar Perfil</button>'+
       '<button class="bs" style="flex:1;font-size:.85rem;padding:10px;margin-top:0" onclick="cerrarSesion();cerrarModal(\'mPanel\')">🚪 Salir</button>'+
     '</div>'+
+    '<button onclick="mpPanelToggle()" id="mpPanelBtn" style="width:100%;margin-bottom:18px;padding:10px 14px;border-radius:10px;border:2px solid #e0d0c0;background:#fff8f0;font-weight:800;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;color:var(--na3)">'+mpPanelBtnLabel()+'</button>'+
     '<div class="tabs"><button class="tab on" onclick="cTabN(this,1)">🚨 Reportes</button><button class="tab" onclick="cTabN(this,2)">📦 Pedidos</button><button class="tab" onclick="cTabN(this,3)">⭐ Reseñas</button></div>'+
     '<div id="cTabBody"></div>';
   cTabN(pb.querySelector(".tab"),1);
@@ -850,6 +851,30 @@ function mpRenderLocked(){
 }
 
 // ── Ocultar completamente el reproductor ──
+// ── Etiqueta del botón de música en el panel de perfil ──
+function mpPanelBtnLabel(){
+  var wrap = document.getElementById("musicPlayer");
+  var hidden = wrap && wrap.classList.contains("mp-hidden");
+  if(hidden){
+    return '<span>🎵 Reproductor de música</span><span style="font-size:.75rem;background:#e8f5e9;color:#2e7d32;padding:2px 8px;border-radius:50px">Mostrar</span>';
+  }
+  return '<span>🎵 Reproductor de música</span><span style="font-size:.75rem;background:#fff0e0;color:var(--na3);padding:2px 8px;border-radius:50px">Ocultar</span>';
+}
+
+// ── Alternar visibilidad del reproductor desde el perfil ──
+function mpPanelToggle(){
+  var wrap = document.getElementById("musicPlayer");
+  if(!wrap) return;
+  if(wrap.classList.contains("mp-hidden")){
+    mpShow();
+  } else {
+    mpHide();
+  }
+  // Actualizar el botón en tiempo real
+  var btn = document.getElementById("mpPanelBtn");
+  if(btn) btn.innerHTML = mpPanelBtnLabel();
+}
+
 function mpHide(){
   var wrap = document.getElementById("musicPlayer");
   if(!wrap) return;
