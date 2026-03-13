@@ -1720,3 +1720,12 @@ footer{
   border:none; cursor:pointer;
   box-shadow:0 4px 14px rgba(255,109,0,.3);
 }
+
+/* ── FIX iOS: font-size mínimo 16px en inputs para evitar zoom automático ──
+   iOS Safari hace zoom si font-size < 16px, desplazando el modal           */
+@media(max-width:767px){
+  input.fc, textarea.fc, select.fc {
+    font-size:16px !important;
+  }
+}
+
