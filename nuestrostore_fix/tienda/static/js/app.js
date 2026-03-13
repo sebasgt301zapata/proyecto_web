@@ -1026,6 +1026,10 @@ function mpCargarDesdeDB(){
   if(!usuario) return;
   api("/musica/"+usuario.id).then(function(r){
     if(!r.ok || !r.tracks || !r.tracks.length) return;
+    // Limpiar playlist antes de cargar para evitar duplicados
+    mp.playlist.forEach(function(item){ if(item.objUrl) URL.revokeObjectURL(item.objUrl); });
+    mp.playlist = [];
+    mp.current = -1;
     var tracks = r.tracks;
     var loaded = 0;
     tracks.forEach(function(t){
