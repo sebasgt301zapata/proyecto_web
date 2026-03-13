@@ -49,7 +49,7 @@ function toast(msg,tipo){tipo=tipo||"i";var c=document.getElementById("tcs"),el=
 
 // ── MODALES ────────────────────────────────
 function abrirModal(id){var el=document.getElementById(id);if(el){el.classList.add("show");document.body.style.overflow="hidden";}}
-function cerrarModal(id){var el=document.getElementById(id);if(el){el.classList.remove("show");document.body.style.overflow="";}}
+function cerrarModal(id){var el=document.getElementById(id);if(el){el.classList.remove("show");document.body.style.overflow="";el.style.top="";el.style.height="";var mdl=el.querySelector(".mdl");if(mdl)mdl.style.maxHeight="";}}
 function switchM(a,b){cerrarModal(a);abrirModal(b);}
 function bTab(tab,btn){if(tab==="cuenta"){if(usuario)abrirPanel();else abrirModal("mLogin");return;}irPagina(tab);}
 
@@ -667,6 +667,32 @@ document.addEventListener("DOMContentLoaded",function(){
   var lPass=document.getElementById("lPass"),lEmail=document.getElementById("lEmail");
   if(lPass)lPass.addEventListener("keydown",function(e){if(e.key==="Enter")doLogin();});
   if(lEmail)lEmail.addEventListener("keydown",function(e){if(e.key==="Enter")lPass&&lPass.focus();});
+  // FIX MÓVIL: scroll el botón "Entrar" a la vista cuando el teclado aparece
+  function scrollLoginBtn(inputEl){
+    if(!inputEl)return;
+    inputEl.addEventListener("focus",function(){
+      setTimeout(function(){
+        var btn=document.getElementById("btnLogin");
+        if(btn)btn.scrollIntoView({behavior:"smooth",block:"nearest"});
+      },350);
+    });
+  }
+  scrollLoginBtn(lEmail);
+  scrollLoginBtn(lPass);
+  // FIX iOS Safari: reajustar overlay cuando el teclado cambia el viewport
+  if(window.visualViewport){
+    window.visualViewport.addEventListener("resize",function(){
+      document.querySelectorAll(".ov.show .mdl").forEach(function(mdl){
+        mdl.style.maxHeight=(window.visualViewport.height*0.92)+"px";
+      });
+    });
+    window.visualViewport.addEventListener("scroll",function(){
+      document.querySelectorAll(".ov.show").forEach(function(ov){
+        ov.style.top=window.visualViewport.offsetTop+"px";
+        ov.style.height=window.visualViewport.height+"px";
+      });
+    });
+  }
   // Header scroll effect
   var hdr=document.getElementById("hdr");
   if(hdr){window.addEventListener("scroll",function(){hdr.classList.toggle("scrolled",window.scrollY>10);},{passive:true});}
@@ -1074,3 +1100,4 @@ function mpFmtTime(secs){
   var s = Math.floor(secs % 60);
   return m + ":" + (s < 10 ? "0" : "") + s;
 }
+
