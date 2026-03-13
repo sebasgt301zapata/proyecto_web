@@ -395,7 +395,7 @@ function doLogin(){
   api("/login","POST",{email:email,password:pass}).then(function(r){
     btnEl.disabled=false;btnEl.textContent="Entrar →";
     if(!r.ok){errEl.textContent="❌ "+(r.error||"Credenciales incorrectas.");errEl.style.display="block";passEl.value="";passEl.focus();return;}
-    usuario=r.usuario;cerrarModal("mLogin");emailEl.value="";passEl.value="";errEl.style.display="none";
+    usuario=r.usuario;localStorage.setItem("ns_usuario",JSON.stringify(usuario));cerrarModal("mLogin");emailEl.value="";passEl.value="";errEl.style.display="none";
     toast("¡Bienvenido, "+usuario.n+"! ("+({cliente:"Cliente",administrador:"Admin",superadmin:"Super Admin"}[usuario.rol]||usuario.rol)+")","s");
     actualizarUI();cargarDatos();
   });
@@ -409,10 +409,10 @@ function doRegistro(){
   api("/registro","POST",{nom:nom,ape:ape,email:email,password:pass,tel:tel}).then(function(r){
     if(!r.ok){errEl.textContent="⚠️ "+(r.error||"Error.");errEl.style.display="block";return;}
     usuario=r.usuario;["rNom","rApe","rEmail","rPass"].forEach(function(id){document.getElementById(id).value="";});
-    cerrarModal("mReg");actualizarUI();cargarDatos();toast("¡Bienvenido, "+nom+"! 🎉","s");
+    cerrarModal("mReg");localStorage.setItem("ns_usuario",JSON.stringify(usuario));actualizarUI();cargarDatos();toast("¡Bienvenido, "+nom+"! 🎉","s");
   });
 }
-function cerrarSesion(){usuario=null;carrito=[];actualizarUI();actualizarCarrito();toast("Sesión cerrada","i");}
+function cerrarSesion(){usuario=null;carrito=[];localStorage.removeItem("ns_usuario");localStorage.removeItem("ns_carrito");actualizarUI();actualizarCarrito();toast("Sesión cerrada","i");}
 
 // ── UI ───────────────────────────────────────
 function actualizarUI(){
@@ -468,6 +468,7 @@ function cambiarQty(id,delta){var ex=carrito.find(function(x){return x.id===id;}
 function quitarCart(id){carrito=carrito.filter(function(x){return x.id!==id;});actualizarCarrito();}
 function actualizarCarrito(){
   var total=carrito.reduce(function(s,x){return s+x.p*x.qty;},0),count=carrito.reduce(function(s,x){return s+x.qty;},0);
+  localStorage.setItem("ns_carrito", JSON.stringify(carrito));
   var totEl=document.getElementById("cTot");if(totEl)totEl.textContent=bs(total);
   actualizarBadge(count);
   var c=document.getElementById("cits");if(!c)return;
@@ -691,7 +692,40 @@ document.addEventListener("DOMContentLoaded",function(){
   initSearch();
   mpInit();
   irPagina("inicio");
-  cargarDatos();
+
+  // Restaurar carrito desde localStorage
+  try{
+    var carritoGuardado = localStorage.getItem("ns_carrito");
+    if(carritoGuardado) carrito = JSON.parse(carritoGuardado);
+  }catch(e){ carrito = []; }
+
+  // Restaurar sesión desde localStorage al recargar
+  var guardado = localStorage.getItem("ns_usuario");
+  if(guardado){
+    try{
+      var u = JSON.parse(guardado);
+      // Verificar con el servidor que el usuario sigue siendo válido y activo
+      api("/perfil/"+u.id,"GET").then(function(r){
+        if(r.ok && r.perfil){
+          usuario = {id:r.perfil.id, n:r.perfil.nombre, a:r.perfil.apellido, email:r.perfil.email, rol:r.perfil.rol, avatar:r.perfil.avatar||""};
+          localStorage.setItem("ns_usuario", JSON.stringify(usuario));
+          actualizarUI();
+          cargarDatos();
+        } else {
+          // Usuario ya no existe o fue desactivado
+          localStorage.removeItem("ns_usuario");
+          localStorage.removeItem("ns_carrito");
+          carrito = [];
+          cargarDatos();
+        }
+      }).catch(function(){ cargarDatos(); });
+    }catch(e){
+      localStorage.removeItem("ns_usuario");
+      cargarDatos();
+    }
+  } else {
+    cargarDatos();
+  }
 });
 
 // ══════════════════════════════════════════════════════
