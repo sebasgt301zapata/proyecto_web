@@ -1,6 +1,3 @@
-"""
-NuestroStore — Configuración Django
-"""
 import os
 import dj_database_url
 from pathlib import Path
@@ -44,7 +41,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'nuestrostore.wsgi.application'
 
-# Base de datos — PostgreSQL en producción, SQLite en local
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
 if DATABASE_URL:
@@ -69,13 +65,10 @@ USE_I18N = True
 USE_TZ = False
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [
-    BASE_DIR / 'tienda' / 'static',
-]
+STATICFILES_DIRS = [BASE_DIR / 'tienda' / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Tamaño máximo de datos (para imágenes y audio en base64)
-DATA_UPLOAD_MAX_MEMORY_SIZE = 20 * 1024 * 1024  # 20MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 20 * 1024 * 1024
