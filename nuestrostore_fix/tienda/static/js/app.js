@@ -384,7 +384,15 @@ function guardarPerfil(){
     if(!r.ok){errEl.textContent="❌ "+(r.error||"Error");errEl.style.display="block";return;}
     usuario.n=nom;usuario.a=ape;usuario.avatar=avatarAEnviar;
     perfilAvatarSel=avatarAEnviar;
-    cerrarModal("mPerfil");toast("✅ Perfil actualizado","s");
+    // Actualizar localStorage con los nuevos datos
+    localStorage.setItem("ns_usuario", JSON.stringify(usuario));
+    // Si cambió la contraseña, avisar al usuario que debe volver a iniciar sesión
+    if(newPw){
+      toast("✅ Perfil y contraseña actualizados","s");
+    } else {
+      toast("✅ Perfil actualizado","s");
+    }
+    cerrarModal("mPerfil");
     actualizarUI();
   });
 }
@@ -401,7 +409,7 @@ function doLogin(){
     if(!r.ok){errEl.textContent="❌ "+(r.error||"Credenciales incorrectas.");errEl.style.display="block";passEl.value="";passEl.focus();return;}
     usuario=r.usuario;localStorage.setItem("ns_usuario",JSON.stringify(usuario));cerrarModal("mLogin");emailEl.value="";passEl.value="";errEl.style.display="none";
     toast("¡Bienvenido, "+usuario.n+"! ("+({cliente:"Cliente",administrador:"Admin",superadmin:"Super Admin"}[usuario.rol]||usuario.rol)+")","s");
-    actualizarUI();cargarDatos();
+    actualizarUI();cargarDatos();mpCargarDesdeDB();
   });
 }
 function doRegistro(){
@@ -715,6 +723,7 @@ document.addEventListener("DOMContentLoaded",function(){
           localStorage.setItem("ns_usuario", JSON.stringify(usuario));
           actualizarUI();
           cargarDatos();
+          mpCargarDesdeDB();
         } else {
           // Usuario ya no existe o fue desactivado
           localStorage.removeItem("ns_usuario");
@@ -961,28 +970,86 @@ function mpLoadFiles(e){
   var files = Array.from(e.target.files || []);
   if(!files.length) return;
 
-  var added = 0;
+  var pending = 0, added = 0;
   files.forEach(function(f){
     if(!f.type.startsWith("audio/") && !/\.(mp3|wav|ogg|flac|aac|m4a|opus|weba)$/i.test(f.name)) return;
-    var objUrl = URL.createObjectURL(f);
-    var name = f.name.replace(/\.[^.]+$/, ""); // quitar extensión
-    mp.playlist.push({ name: name, dur: "—", url: objUrl, objUrl: objUrl });
-    added++;
+    pending++;
+    var name = f.name.replace(/\.[^.]+$/, "");
+    var reader = new FileReader();
+    reader.onload = function(ev){
+      var b64 = ev.target.result; // data:audio/...;base64,...
+      // Guardar en BD si hay usuario
+      if(usuario){
+        api("/musica/"+usuario.id, "POST", {nombre:name, datos:b64, duracion:"--"}).then(function(r){
+          if(r.ok){
+            var objUrl = URL.createObjectURL(f);
+            mp.playlist.push({id:r.id, name:name, dur:"—", url:objUrl, objUrl:objUrl, b64:b64});
+          } else {
+            // Sin BD, usar solo en memoria
+            var objUrl = URL.createObjectURL(f);
+            mp.playlist.push({name:name, dur:"—", url:objUrl, objUrl:objUrl});
+          }
+          added++;
+          pending--;
+          if(pending === 0) mpLoadFilesDone(added);
+        }).catch(function(){
+          var objUrl = URL.createObjectURL(f);
+          mp.playlist.push({name:name, dur:"—", url:objUrl, objUrl:objUrl});
+          added++; pending--;
+          if(pending === 0) mpLoadFilesDone(added);
+        });
+      } else {
+        var objUrl = URL.createObjectURL(f);
+        mp.playlist.push({name:name, dur:"—", url:objUrl, objUrl:objUrl});
+        added++; pending--;
+        if(pending === 0) mpLoadFilesDone(added);
+      }
+    };
+    reader.readAsDataURL(f);
   });
 
-  // Reset file input para poder re-agregar mismo archivo
   e.target.value = "";
+  if(pending === 0) toast("No se encontraron archivos de audio válidos","e");
+}
 
+function mpLoadFilesDone(added){
   if(!added){ toast("No se encontraron archivos de audio válidos","e"); return; }
   toast("+" + added + " canción" + (added>1?"es":"") + " agregada" + (added>1?"s":"") + " 🎵","s");
-
   mpShowPlayer();
   mpRenderPlaylist();
+  if(mp.current < 0) mpPlay(0);
+}
 
-  // Autoplay si no había nada reproduciéndose
-  if(mp.current < 0){
-    mpPlay(0);
-  }
+// ── Cargar playlist desde BD al iniciar sesión ──
+function mpCargarDesdeDB(){
+  if(!usuario) return;
+  api("/musica/"+usuario.id).then(function(r){
+    if(!r.ok || !r.tracks || !r.tracks.length) return;
+    var tracks = r.tracks;
+    var loaded = 0;
+    tracks.forEach(function(t){
+      // Cargar datos del track
+      api("/musica/"+usuario.id+"/"+t.id).then(function(tr){
+        if(!tr.ok) return;
+        var b64 = tr.track.datos;
+        // Convertir base64 a blob URL
+        try{
+          var arr = b64.split(","), mime = arr[0].match(/:(.*?);/)[1];
+          var bstr = atob(arr[1]), n = bstr.length, u8 = new Uint8Array(n);
+          while(n--){ u8[n] = bstr.charCodeAt(n); }
+          var blob = new Blob([u8], {type:mime});
+          var objUrl = URL.createObjectURL(blob);
+          mp.playlist.push({id:t.id, name:t.nombre, dur:t.duracion||"—", url:objUrl, objUrl:objUrl});
+        }catch(ex){ return; }
+        loaded++;
+        if(loaded === tracks.length){
+          mpShowPlayer();
+          mpRenderPlaylist();
+          toast("🎵 Playlist cargada ("+loaded+" canciones)","i");
+        }
+      });
+    });
+  });
 }
 
 // ── Mostrar UI del reproductor ──
@@ -1230,7 +1297,12 @@ function mpRenderPlaylist(){
 
 // ── Quitar canción de playlist ──
 function mpRemove(idx){
-  if(mp.playlist[idx] && mp.playlist[idx].objUrl) URL.revokeObjectURL(mp.playlist[idx].objUrl);
+  var item = mp.playlist[idx];
+  if(item && item.objUrl) URL.revokeObjectURL(item.objUrl);
+  // Eliminar de BD si tiene id
+  if(item && item.id && usuario){
+    api("/musica/"+usuario.id+"/"+item.id, "DELETE").catch(function(){});
+  }
   mp.playlist.splice(idx, 1);
 
   if(!mp.playlist.length){
@@ -1265,7 +1337,12 @@ function mpRemove(idx){
 function mpClearAll(){
   if(!mp.playlist.length) return;
   if(!confirm("¿Borrar toda la lista de reproducción?")) return;
-  mp.playlist.forEach(function(item){ if(item.objUrl) URL.revokeObjectURL(item.objUrl); });
+  mp.playlist.forEach(function(item){
+    if(item.objUrl) URL.revokeObjectURL(item.objUrl);
+    if(item.id && usuario){
+      api("/musica/"+usuario.id+"/"+item.id, "DELETE").catch(function(){});
+    }
+  });
   mp.playlist = [];
   mp.current = -1;
   mp.playing = false;
