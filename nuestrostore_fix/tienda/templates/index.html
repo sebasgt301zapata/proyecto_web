@@ -1,0 +1,445 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover"/>
+<meta name="theme-color" content="#FF9100"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<title>NuestroStore — Tu Tienda de Confianza</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+
+<header id="hdr">
+  <div class="nav-row">
+    <span class="logo" onclick="irPagina('inicio')"><b>Nuestro</b><span class="logo-store">Store</span><span class="logo-dot"></span></span>
+    <div class="search-wrap">
+      <div class="sw" id="swBox">
+        <span class="sw-ico">🔍</span>
+        <input id="sBusq" type="search" placeholder="Buscar productos…" autocomplete="off" enterkeyhint="search"/>
+        <button class="sw-clear" id="swClear" onclick="limpiarBusqueda()" style="display:none" aria-label="Limpiar">✕</button>
+        <button class="sw-btn" onclick="buscar()" aria-label="Buscar"><span class="sw-btn-ico">🔍</span><span class="sw-btn-txt">Buscar</span></button>
+      </div>
+      <div class="sw-suggestions" id="swSugg" style="display:none"></div>
+    </div>
+    <nav class="desk-nav">
+      <button class="dnav-btn active" id="dnav0" onclick="irPagina('inicio')">🏠 Inicio</button>
+      <button class="dnav-btn" id="dnav1" onclick="irPagina('tienda')">🛍️ Tienda</button>
+    </nav>
+    <div class="nav-icons" id="navIcons">
+      <button class="nic" onclick="abrirModal('mLogin')" aria-label="Cuenta">👤</button>
+      <button class="nic cart-btn" onclick="abrirCarrito()" aria-label="Carrito">
+        🛒<span class="bdot" id="cartBadgeMobile" style="display:none">0</span>
+      </button>
+    </div>
+    <div class="desk-acts" id="deskActs">
+      <button class="bdn bdn-o" onclick="abrirModal('mLogin')">Iniciar Sesión</button>
+      <button class="bdn bdn-f" onclick="abrirModal('mReg')">Registrarse</button>
+    </div>
+  </div>
+</header>
+
+<!-- ══ INICIO ══ -->
+<div id="pInicio" class="pagina active">
+  <section class="hero">
+    <div class="hero-particles" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+    <div class="hero-in">
+      <!-- CTA Principal -->
+      <div class="hero-cta">
+        <div class="hero-badge">✨ Bienvenidos a NuestroStore</div>
+        <h1>Los Mejores<br/><span>Productos</span><br/>Al Mejor Precio</h1>
+        <p class="hero-desc">Descubre miles de productos de calidad con envío rápido a toda Venezuela. Atención personalizada, garantía real y los mejores precios del mercado.</p>
+        <div class="hero-btns">
+          <button class="btn-hero" onclick="irPagina('tienda')">🛍️ Ver Tienda</button>
+          <button class="btn-hero-2" onclick="document.getElementById('sec-valorados').scrollIntoView({behavior:'smooth'})">⭐ Mejor Valorados</button>
+        </div>
+        <div class="hero-stats">
+          <div class="hstat"><strong id="hsProd">–</strong><span>Productos</span></div>
+          <div class="hstat-div"></div>
+          <div class="hstat"><strong>24/7</strong><span>Soporte</span></div>
+          <div class="hstat-div"></div>
+          <div class="hstat"><strong>30 días</strong><span>Garantía</span></div>
+        </div>
+      </div>
+      <!-- Visual decorativa desktop -->
+      <div class="hero-visual">
+        <div class="hero-visual-card">
+          <div class="hvc-item"><div class="hvc-ico">🚀</div><div class="hvc-lbl">Envío Express</div><div class="hvc-sub">24-48 horas</div></div>
+          <div class="hvc-item"><div class="hvc-ico">🔒</div><div class="hvc-lbl">Pago Seguro</div><div class="hvc-sub">100% protegido</div></div>
+          <div class="hvc-item"><div class="hvc-ico">↩️</div><div class="hvc-lbl">Devoluciones</div><div class="hvc-sub">30 días libres</div></div>
+          <div class="hvc-item"><div class="hvc-ico">💬</div><div class="hvc-lbl">Soporte 24/7</div><div class="hvc-sub">Siempre listos</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="features-strip">
+    <div class="feat"><span class="feat-ico">🚚</span><div><strong>Envío Rápido</strong><small>24-48 horas</small></div></div>
+    <div class="feat"><span class="feat-ico">🔒</span><div><strong>Pago Seguro</strong><small>100% protegido</small></div></div>
+    <div class="feat"><span class="feat-ico">↩️</span><div><strong>Devoluciones</strong><small>30 días libres</small></div></div>
+    <div class="feat"><span class="feat-ico">💬</span><div><strong>Soporte 24/7</strong><small>Siempre disponibles</small></div></div>
+  </div>
+
+  <!-- OFERTAS CARRUSEL -->
+  <div class="sec sec-ofertas-flash">
+    <div class="sec-header">
+      <div>
+        <div class="sec-t" style="color:#fff">🔥 Ofertas del Día</div>
+        <p class="sec-sub" style="color:rgba(255,255,255,.75)">Descuentos exclusivos · Tiempo limitado</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <button class="carousel-btn" onclick="carouselPrev('ofertas')" aria-label="Anterior">‹</button>
+        <button class="carousel-btn" onclick="carouselNext('ofertas')" aria-label="Siguiente">›</button>
+        <button class="ver-mas-btn ver-mas-light" onclick="irPagina('tienda')">Ver todas →</button>
+      </div>
+    </div>
+    <div class="div" style="background:linear-gradient(90deg,var(--am),transparent)"></div>
+    <div class="carousel-outer" id="outerOfertas">
+      <div class="carousel-track" id="trackOfertas"></div>
+    </div>
+    <div class="carousel-dots" id="dotsOfertas"></div>
+  </div>
+
+  <!-- MEJOR VALORADOS CARRUSEL -->
+  <div class="sec" id="sec-valorados">
+    <div class="sec-header">
+      <div>
+        <div class="sec-t">⭐ Mejor Valorados</div>
+        <p class="sec-sub">Los favoritos de nuestros clientes</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <button class="carousel-btn carousel-btn-dark" onclick="carouselPrev('valorados')" aria-label="Anterior">‹</button>
+        <button class="carousel-btn carousel-btn-dark" onclick="carouselNext('valorados')" aria-label="Siguiente">›</button>
+        <button class="ver-mas-btn" onclick="irPagina('tienda')">Ver todos →</button>
+      </div>
+    </div>
+    <div class="div"></div>
+    <div class="carousel-outer" id="outerValorados">
+      <div class="carousel-track" id="trackValorados"></div>
+    </div>
+    <div class="carousel-dots" id="dotsValorados"></div>
+  </div>
+
+  <!-- ABOUT -->
+  <section class="about-sec">
+    <div class="about-in">
+      <div class="about-text">
+        <div class="about-tag">🧡 Nuestra Historia</div>
+        <h2>¿Por qué elegir <span>NuestroStore</span>?</h2>
+        <p>Somos una tienda venezolana comprometida con ofrecerte los mejores productos del mercado a precios justos. Cada artículo pasa por un riguroso control de calidad para garantizar tu satisfacción.</p>
+        <p>Desde 2020 llevamos alegría a miles de hogares en todo el país con envíos confiables, atención humana y una plataforma segura para tus compras.</p>
+        <div class="about-feats">
+          <div class="afeat"><span>✅</span><div><strong>Productos Verificados</strong><small>Calidad garantizada en cada artículo</small></div></div>
+          <div class="afeat"><span>🤝</span><div><strong>Comercio Justo</strong><small>Apoyamos a productores locales</small></div></div>
+          <div class="afeat"><span>🔐</span><div><strong>Compra Protegida</strong><small>Tus datos siempre seguros</small></div></div>
+        </div>
+        <button class="btn-hero" style="margin-top:20px;display:inline-flex;width:auto;padding:14px 28px" onclick="irPagina('tienda')">Explorar Tienda →</button>
+      </div>
+      <div class="about-visual">
+        <div class="about-card">
+          <div style="font-size:3.5rem;margin-bottom:12px">🏪</div>
+          <div style="font-family:'Bebas Neue',cursive;font-size:2.5rem;color:var(--na3);line-height:1">NuestroStore</div>
+          <div style="color:var(--gr);font-size:.88rem;margin-top:8px">Tu tienda de confianza</div>
+          <div style="margin-top:20px;display:flex;flex-direction:column;gap:10px">
+            <div class="about-stat-row"><span>📦 Productos disponibles</span><strong id="aboutProd" style="color:var(--na3)">–</strong></div>
+            <div class="about-stat-row"><span>⭐ Reseñas positivas</span><strong style="color:var(--na3)">98%</strong></div>
+            <div class="about-stat-row"><span>🚚 Envíos realizados</span><strong style="color:var(--na3)">+5,000</strong></div>
+            <div class="about-stat-row"><span>🔒 Compras seguras</span><strong style="color:var(--na3)">100%</strong></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BANNER DE CONFIANZA -->
+  <section class="trust-sec">
+    <div class="trust-in">
+      <div class="trust-badge">
+        <div class="trust-ico">⭐</div>
+        <div><strong>+5,000</strong><span>Clientes felices</span></div>
+      </div>
+      <div class="trust-div"></div>
+      <div class="trust-badge">
+        <div class="trust-ico">🚀</div>
+        <div><strong>24–48h</strong><span>Envío express</span></div>
+      </div>
+      <div class="trust-div"></div>
+      <div class="trust-badge">
+        <div class="trust-ico">🛡️</div>
+        <div><strong>100%</strong><span>Compra segura</span></div>
+      </div>
+      <div class="trust-div"></div>
+      <div class="trust-badge">
+        <div class="trust-ico">↩️</div>
+        <div><strong>30 días</strong><span>Devolución gratis</span></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-grid">
+      <div>
+        <div class="flogo"><span>Nuestro</span>Store</div>
+        <p class="footer-desc">Tu tienda de confianza con los mejores productos al mejor precio. Hecho con 🧡 en Venezuela.</p>
+        <div class="footer-social">
+          <a class="fsoc" aria-label="Instagram">📸</a>
+          <a class="fsoc" aria-label="Twitter">🐦</a>
+          <a class="fsoc" aria-label="Facebook">📘</a>
+          <a class="fsoc" aria-label="WhatsApp">💬</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-title">Navegación</div>
+        <div class="footer-links">
+          <a onclick="irPagina('inicio')">🏠 Inicio</a>
+          <a onclick="irPagina('tienda')">🛍️ Tienda</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-title">Mi Cuenta</div>
+        <div class="footer-links">
+          <a onclick="abrirModal('mLogin')">🔐 Iniciar Sesión</a>
+          <a onclick="abrirModal('mReg')">✨ Registrarse</a>
+          <a onclick="abrirCarrito()">🛒 Mi Carrito</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-title">Contacto</div>
+        <div class="footer-links">
+          <a>📧 info@nuestrostore.com</a>
+          <a>📞 +58 212 000 0000</a>
+          <a>📍 Caracas, Venezuela</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-pols">
+      <div class="footer-pols-title">📋 Nuestras Políticas</div>
+      <div class="footer-pols-grid">
+        <div class="fpol"><span class="fpol-ico">🛡️</span><div><strong>Privacidad</strong><p>Tus datos están protegidos.</p></div></div>
+        <div class="fpol"><span class="fpol-ico">↩️</span><div><strong>Devoluciones</strong><p>30 días sin preguntas.</p></div></div>
+        <div class="fpol"><span class="fpol-ico">🚚</span><div><strong>Envíos</strong><p>Express 24-48h disponible.</p></div></div>
+        <div class="fpol"><span class="fpol-ico">💳</span><div><strong>Pagos</strong><p>Móvil, transferencia y divisas.</p></div></div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© <span class="anioActual"></span> NuestroStore · Todos los derechos reservados</p>
+      <p>RIF: J-123456789 · info@nuestrostore.com · Hecho con 🧡 en Venezuela</p>
+    </div>
+  </footer>
+</div>
+
+<!-- ══ TIENDA ══ -->
+<div id="pTienda" class="pagina">
+  <div class="tienda-hero">
+    <div class="tienda-hero-in">
+      <h2>🛍️ Catálogo Completo</h2>
+      <p>Encuentra lo que necesitas entre todos nuestros productos disponibles</p>
+      <div class="tienda-hero-stats">
+        <span class="thstat">📦 <strong id="thProd">–</strong> productos</span>
+        <span class="thstat">🏷️ <strong id="thCats">–</strong> categorías</span>
+        <span class="thstat">🔥 <strong id="thOfs">–</strong> en oferta</span>
+      </div>
+    </div>
+  </div>
+  <div class="tienda-toolbar">
+    <div class="cats" id="cats"></div>
+    <div class="tienda-sort">
+      <select class="sort-sel" id="sortSel" onchange="sortProds(this.value)">
+        <option value="def">Por defecto</option>
+        <option value="precioAsc">Precio ↑</option>
+        <option value="precioDesc">Precio ↓</option>
+        <option value="nombre">A-Z</option>
+        <option value="valorados">Mejor valorados</option>
+      </select>
+    </div>
+  </div>
+  <div class="tienda-body">
+    <div class="pg" id="pg"></div>
+  </div>
+  <footer>
+    <div class="footer-grid">
+      <div>
+        <div class="flogo"><span>Nuestro</span>Store</div>
+        <p class="footer-desc">Tu tienda de confianza con los mejores productos al mejor precio. Hecho con 🧡 en Venezuela.</p>
+        <div class="footer-social">
+          <a class="fsoc" aria-label="Instagram">📸</a>
+          <a class="fsoc" aria-label="Twitter">🐦</a>
+          <a class="fsoc" aria-label="Facebook">📘</a>
+          <a class="fsoc" aria-label="WhatsApp">💬</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-title">Navegación</div>
+        <div class="footer-links">
+          <a onclick="irPagina('inicio')">🏠 Inicio</a>
+          <a onclick="irPagina('tienda')">🛍️ Tienda</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-title">Mi Cuenta</div>
+        <div class="footer-links">
+          <a onclick="abrirModal('mLogin')">🔐 Iniciar Sesión</a>
+          <a onclick="abrirModal('mReg')">✨ Registrarse</a>
+          <a onclick="abrirCarrito()">🛒 Mi Carrito</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-title">Contacto</div>
+        <div class="footer-links">
+          <a>📧 info@nuestrostore.com</a>
+          <a>📞 +58 212 000 0000</a>
+          <a>📍 Caracas, Venezuela</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-pols">
+      <div class="footer-pols-title">📋 Nuestras Políticas</div>
+      <div class="footer-pols-grid">
+        <div class="fpol"><span class="fpol-ico">🛡️</span><div><strong>Privacidad</strong><p>Tus datos están protegidos.</p></div></div>
+        <div class="fpol"><span class="fpol-ico">↩️</span><div><strong>Devoluciones</strong><p>30 días sin preguntas.</p></div></div>
+        <div class="fpol"><span class="fpol-ico">🚚</span><div><strong>Envíos</strong><p>Express 24-48h disponible.</p></div></div>
+        <div class="fpol"><span class="fpol-ico">💳</span><div><strong>Pagos</strong><p>Móvil, transferencia y divisas.</p></div></div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© <span class="anioActual"></span> NuestroStore · Todos los derechos reservados</p>
+      <p>RIF: J-123456789 · info@nuestrostore.com · Hecho con 🧡 en Venezuela</p>
+    </div>
+  </footer>
+</div>
+
+<!-- ══ BOTTOM NAV ══ -->
+<nav class="botnav">
+  <button class="btab on" id="bt0" onclick="bTab('inicio',this)">
+    <div class="btab-ico-wrap">🏠</div><span>Inicio</span><div class="iline"></div>
+  </button>
+  <button class="btab" id="bt1" onclick="bTab('tienda',this)">
+    <div class="btab-ico-wrap">🛍️</div><span>Tienda</span><div class="iline" style="display:none"></div>
+  </button>
+  <button class="btab cart-btn" id="bt2" onclick="abrirCarrito()" style="position:relative">
+    <div class="btab-ico-wrap">🛒<span id="cartBadgeNav" style="position:absolute;top:-4px;right:-4px;background:linear-gradient(135deg,var(--na3),var(--na));color:#fff;border-radius:50%;width:17px;height:17px;font-size:.58rem;display:none;align-items:center;justify-content:center;font-weight:900;border:2px solid #fff"></span></div>
+    <span>Carrito</span>
+  </button>
+  <button class="btab" id="bt3" onclick="bTab('cuenta',this)">
+    <div class="btab-ico-wrap"><span id="bt3ico">👤</span></div><span>Cuenta</span><div class="iline" style="display:none"></div>
+  </button>
+</nav>
+
+<!-- ══ CARRITO ══ -->
+<div class="cov" id="cov" onclick="cerrarCarrito()"></div>
+<div class="csh" id="csh">
+  <div class="chd"><h3>🛒 Mi Carrito</h3><button class="bx" onclick="cerrarCarrito()">✕</button></div>
+  <div class="cits" id="cits"><div class="empty"><div class="eico">🛒</div><h3>Carrito vacío</h3><p>Agrega productos</p></div></div>
+  <div class="cft">
+    <div class="ctot"><span>Total:</span><span id="cTot">Bs. 0,00</span></div>
+    <div class="cft-btns">
+      <button class="bp btn-fact" onclick="generarFactura()">📄 Factura</button>
+      <button class="bp btn-pagar" onclick="pedido()">Pagar →</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODALES -->
+<div class="ov" id="mLogin"><div class="mdl"><div class="mh"><h2>🔐 Iniciar Sesión</h2><button class="bx" onclick="cerrarModal('mLogin')">✕</button></div><div class="mb"><div class="fg"><label>Correo</label><input class="fc" type="email" id="lEmail" placeholder="correo@ejemplo.com" autocomplete="email" inputmode="email"/></div><div class="fg"><label>Contraseña</label><input class="fc" type="password" id="lPass" placeholder="Tu contraseña" autocomplete="current-password"/></div><div id="loginErr" class="form-err" style="display:none"></div><button class="bp" id="btnLogin" onclick="doLogin()">Entrar →</button><div class="lsw">¿No tienes cuenta? <a onclick="switchM('mLogin','mReg')">Regístrate gratis</a></div></div></div></div>
+
+<div class="ov" id="mReg"><div class="mdl"><div class="mh"><h2>✨ Crear Cuenta</h2><button class="bx" onclick="cerrarModal('mReg')">✕</button></div><div class="mb"><div class="f2"><div class="fg"><label>Nombre</label><input class="fc" id="rNom" placeholder="Tu nombre" autocomplete="given-name"/></div><div class="fg"><label>Apellido</label><input class="fc" id="rApe" placeholder="Apellido" autocomplete="family-name"/></div></div><div class="fg"><label>Correo</label><input class="fc" type="email" id="rEmail" placeholder="correo@ejemplo.com" inputmode="email" autocomplete="email"/></div><div class="fg"><label>Contraseña (mín. 8)</label><input class="fc" type="password" id="rPass" placeholder="Crea una contraseña segura" autocomplete="new-password"/></div><div class="fg"><label>Teléfono (opcional)</label><input class="fc" type="tel" id="rTel" placeholder="+58 412 000 0000" inputmode="tel" autocomplete="tel"/></div><div id="regErr" class="form-err" style="display:none"></div><button class="bp" onclick="doRegistro()">Crear Cuenta →</button><div class="lsw">¿Ya tienes cuenta? <a onclick="switchM('mReg','mLogin')">Inicia sesión</a></div></div></div></div>
+
+<div class="ov" id="mProd"><div class="mdl"><div class="mh"><h2 id="mProdT">Producto</h2><button class="bx" onclick="cerrarModal('mProd')">✕</button></div><div class="mb" id="mProdB"></div></div></div>
+
+<div class="ov" id="mRep"><div class="mdl"><div class="mh"><h2>🚨 Reportar Problema</h2><button class="bx" onclick="cerrarModal('mRep')">✕</button></div><div class="mb"><input type="hidden" id="rPid"/><div class="fg"><label>Producto (opcional)</label><select class="fc" id="rProdSel"><option value="0">-- General --</option></select></div><div class="fg"><label>Tipo</label><select class="fc" id="rTipo"><option value="stock">Stock incorrecto</option><option value="precio">Precio incorrecto</option><option value="descripcion">Descripción incorrecta</option><option value="calidad">Problema de calidad</option><option value="entrega">Problema de entrega</option><option value="otro">Otro</option></select></div><div class="fg"><label>Descripción *</label><textarea class="fc" id="rDesc" rows="4" style="resize:vertical" placeholder="Describe el problema…"></textarea></div><button class="bp" onclick="enviarRep()">📨 Enviar Reporte →</button></div></div></div>
+
+<div class="ov" id="mResenia"><div class="mdl"><div class="mh"><h2>⭐ Dejar Reseña</h2><button class="bx" onclick="cerrarModal('mResenia')">✕</button></div><div class="mb"><input type="hidden" id="resPid"/><div id="resProdNom" style="font-weight:800;color:var(--na3);margin-bottom:14px;font-size:1rem"></div><div class="fg"><label>Calificación</label><div class="star-selector" id="starSelector"><span class="star sel" data-v="1" onclick="selStar(1)">★</span><span class="star sel" data-v="2" onclick="selStar(2)">★</span><span class="star sel" data-v="3" onclick="selStar(3)">★</span><span class="star sel" data-v="4" onclick="selStar(4)">★</span><span class="star sel" data-v="5" onclick="selStar(5)">★</span></div><input type="hidden" id="resEstrellas" value="5"/></div><div class="fg"><label>Tu reseña *</label><textarea class="fc" id="resComentario" rows="4" style="resize:vertical" placeholder="¿Qué te pareció este producto?"></textarea></div><button class="bp" onclick="enviarResenia()">⭐ Publicar Reseña →</button></div></div></div>
+
+<div class="ov" id="mRespRep"><div class="mdl"><div class="mh"><h2>💬 Responder Reporte</h2><button class="bx" onclick="cerrarModal('mRespRep')">✕</button></div><div class="mb" id="mRespRepB"></div></div></div>
+
+<div class="ov" id="mPerfil"><div class="mdl"><div class="mh"><h2>✏️ Editar Perfil</h2><button class="bx" onclick="cerrarModal('mPerfil')">✕</button></div><div class="mb" id="mPerfilB"></div></div></div>
+
+<div class="ov" id="mPanel"><div class="mdl wide"><div class="mh"><h2 id="panT">⚙️ Panel</h2><button class="bx" onclick="cerrarModal('mPanel')">✕</button></div><div class="mb" id="panB"></div></div></div>
+
+<div class="factura-overlay" id="factOverlay"><div class="factura-box"><div class="fact-head"><h3>📄 Factura de Compra</h3><button class="bx" onclick="cerrarFactura()">✕</button></div><div class="fact-body" id="factBody"></div><div class="fact-btns"><button class="bp" style="flex:1;background:#f5f5f5;color:#333;border:2px solid #e0e0e0;box-shadow:none;" onclick="cerrarFactura()">Cerrar</button><button class="bp" style="flex:1" onclick="imprimirFactura()">🖨️ Imprimir / PDF</button></div></div></div>
+
+<!-- ══ REPRODUCTOR DE MÚSICA ══ -->
+<div id="musicPlayer" class="mp-wrap mp-collapsed">
+  <!-- Botón flotante para abrir/colapsar -->
+  <button class="mp-fab" onclick="mpToggle()" aria-label="Música" id="mpFab">
+    <span class="mp-fab-ico" id="mpFabIco">🎵</span>
+    <span class="mp-fab-waves" id="mpWaves" style="display:none">
+      <span></span><span></span><span></span>
+    </span>
+  </button>
+
+  <!-- Panel del reproductor -->
+  <div class="mp-panel" id="mpPanel">
+    <!-- Header del panel -->
+    <div class="mp-header">
+      <div class="mp-header-left">
+        <span class="mp-title-icon">🎶</span>
+        <span class="mp-title">Mi Música</span>
+      </div>
+      <div class="mp-header-right">
+        <button class="mp-hbtn" onclick="mpAddFiles()" title="Agregar canciones">➕</button>
+        <button class="mp-hbtn" onclick="mpToggle()" title="Minimizar">—</button>
+      </div>
+    </div>
+
+    <!-- Input oculto para archivos -->
+    <input type="file" id="mpFileInput" accept="audio/*" multiple style="display:none" onchange="mpLoadFiles(event)"/>
+
+    <!-- Área de drop / sin canciones -->
+    <div class="mp-empty" id="mpEmpty" onclick="mpAddFiles()">
+      <div class="mp-empty-ico">🎵</div>
+      <div class="mp-empty-txt">Toca para agregar música</div>
+      <div class="mp-empty-sub">MP3, WAV, OGG, FLAC y más</div>
+    </div>
+
+    <!-- Info canción actual -->
+    <div class="mp-now" id="mpNow" style="display:none">
+      <div class="mp-album-art" id="mpArt">🎵</div>
+      <div class="mp-track-info">
+        <div class="mp-track-name" id="mpTrackName">—</div>
+        <div class="mp-track-dur"><span id="mpCurTime">0:00</span> / <span id="mpTotalTime">0:00</span></div>
+      </div>
+    </div>
+
+    <!-- Barra de progreso -->
+    <div class="mp-progress-wrap" id="mpProgressWrap" style="display:none">
+      <div class="mp-progress-bg" id="mpProgressBg" onclick="mpSeek(event)">
+        <div class="mp-progress-fill" id="mpProgressFill"></div>
+        <div class="mp-progress-thumb" id="mpThumb"></div>
+      </div>
+    </div>
+
+    <!-- Controles principales -->
+    <div class="mp-controls" id="mpControls" style="display:none">
+      <button class="mp-ctrl-btn mp-ctrl-sm" id="mpShuffleBtn" onclick="mpToggleShuffle()" title="Aleatório">⇄</button>
+      <button class="mp-ctrl-btn" onclick="mpPrev()" title="Anterior">⏮</button>
+      <button class="mp-ctrl-btn mp-play-btn" id="mpPlayBtn" onclick="mpTogglePlay()" title="Play/Pausa">▶</button>
+      <button class="mp-ctrl-btn" onclick="mpNext()" title="Siguiente">⏭</button>
+      <button class="mp-ctrl-btn mp-ctrl-sm" id="mpRepeatBtn" onclick="mpToggleRepeat()" title="Repetir">↻</button>
+    </div>
+
+    <!-- Volumen -->
+    <div class="mp-volume" id="mpVolume" style="display:none">
+      <span class="mp-vol-ico" id="mpVolIco" onclick="mpToggleMute()">🔊</span>
+      <input type="range" class="mp-vol-slider" id="mpVolSlider" min="0" max="100" value="80" oninput="mpSetVolume(this.value)"/>
+    </div>
+
+    <!-- Playlist -->
+    <div class="mp-playlist" id="mpPlaylist" style="display:none">
+      <div class="mp-pl-header">
+        <span>Lista de reproducción</span>
+        <button class="mp-pl-clear" onclick="mpClearAll()">Borrar todo</button>
+      </div>
+      <div class="mp-pl-list" id="mpPlList"></div>
+    </div>
+  </div>
+</div>
+
+<div class="tcs" id="tcs"></div>
+<script src="{% static 'js/app.js' %}"></script>
+</body>
+</html>
