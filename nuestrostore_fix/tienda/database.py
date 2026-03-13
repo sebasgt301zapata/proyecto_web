@@ -150,6 +150,19 @@ def init_db():
         )
     """)
 
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS musica (
+            id       INTEGER PRIMARY KEY AUTOINCREMENT,
+            uid      INTEGER NOT NULL,
+            nombre   TEXT NOT NULL,
+            datos    TEXT NOT NULL,
+            duracion TEXT DEFAULT '--',
+            orden    INTEGER NOT NULL DEFAULT 0,
+            creado   TEXT DEFAULT (datetime('now','localtime')),
+            FOREIGN KEY (uid) REFERENCES usuarios(id)
+        )
+    """)
+
     conn.commit()
 
     # Datos iniciales si las tablas están vacías
