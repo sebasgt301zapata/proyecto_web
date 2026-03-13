@@ -48,8 +48,24 @@ function irPagina(pg){
 function toast(msg,tipo){tipo=tipo||"i";var c=document.getElementById("tcs"),el=document.createElement("div");el.className="tst "+tipo;el.innerHTML="<span>"+({s:"✅",e:"❌",i:"🔔"}[tipo]||"🔔")+"</span> "+msg;c.appendChild(el);setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},3200);}
 
 // ── MODALES ────────────────────────────────
-function abrirModal(id){var el=document.getElementById(id);if(el){el.classList.add("show");document.body.style.overflow="hidden";}}
-function cerrarModal(id){var el=document.getElementById(id);if(el){el.classList.remove("show");document.body.style.overflow="";el.style.top="";el.style.height="";var mdl=el.querySelector(".mdl");if(mdl)mdl.style.maxHeight="";}}
+function abrirModal(id){
+  var el=document.getElementById(id);
+  if(!el) return;
+  el.classList.add("show");
+  document.body.style.overflow="hidden";
+  // Ajustar posición inmediatamente por si el teclado ya estaba abierto
+  setTimeout(function(){ if(window.visualViewport) _fixOvsForKeyboard(); }, 50);
+}
+function cerrarModal(id){
+  var el=document.getElementById(id);
+  if(!el) return;
+  el.classList.remove("show");
+  document.body.style.overflow="";
+  // Limpiar estilos inline que puso el visualViewport fix
+  el.style.top=""; el.style.height=""; el.style.position="";
+  var mdl=el.querySelector(".mdl");
+  if(mdl) mdl.style.maxHeight="";
+}
 function switchM(a,b){cerrarModal(a);abrirModal(b);}
 function bTab(tab,btn){if(tab==="cuenta"){if(usuario)abrirPanel();else abrirModal("mLogin");return;}irPagina(tab);}
 
@@ -663,7 +679,19 @@ function crearAdmin(){var n=document.getElementById("aNom").value.trim(),a=docum
 // ── INIT ─────────────────────────────────────
 document.addEventListener("DOMContentLoaded",function(){
   document.querySelectorAll(".anioActual").forEach(function(el){el.textContent=new Date().getFullYear();});
-  document.querySelectorAll(".ov").forEach(function(ov){ov.addEventListener("click",function(e){if(e.target===ov)cerrarModal(ov.id);});});
+  var _lastInputBlur = 0;
+  document.querySelectorAll("input,textarea,select").forEach(function(inp){
+    inp.addEventListener("blur", function(){ _lastInputBlur = Date.now(); });
+  });
+  document.querySelectorAll(".ov").forEach(function(ov){
+    ov.addEventListener("click", function(e){
+      if(e.target !== ov) return;
+      // En móvil, ignorar el tap del overlay si fue justo después de perder foco en un input
+      // (el usuario tocó fuera del teclado para cerrarlo, no para cerrar el modal)
+      if(Date.now() - _lastInputBlur < 400) return;
+      cerrarModal(ov.id);
+    });
+  });
   var lPass=document.getElementById("lPass"),lEmail=document.getElementById("lEmail");
   if(lPass)lPass.addEventListener("keydown",function(e){if(e.key==="Enter")doLogin();});
   if(lEmail)lEmail.addEventListener("keydown",function(e){if(e.key==="Enter")lPass&&lPass.focus();});
@@ -679,19 +707,26 @@ document.addEventListener("DOMContentLoaded",function(){
   }
   scrollLoginBtn(lEmail);
   scrollLoginBtn(lPass);
-  // FIX iOS Safari: reajustar overlay cuando el teclado cambia el viewport
+  // FIX iOS/Android: reajustar overlay y modal cuando el teclado virtual cambia el viewport
+  function _fixOvsForKeyboard(){
+    if(!window.visualViewport) return;
+    var vv = window.visualViewport;
+    var top = vv.offsetTop;
+    var h   = vv.height;
+    document.querySelectorAll(".ov.show").forEach(function(ov){
+      ov.style.position = "fixed";
+      ov.style.top    = top + "px";
+      ov.style.height = h + "px";
+      ov.style.left   = "0";
+      ov.style.right  = "0";
+    });
+    document.querySelectorAll(".ov.show .mdl").forEach(function(mdl){
+      mdl.style.maxHeight = (h * 0.94) + "px";
+    });
+  }
   if(window.visualViewport){
-    window.visualViewport.addEventListener("resize",function(){
-      document.querySelectorAll(".ov.show .mdl").forEach(function(mdl){
-        mdl.style.maxHeight=(window.visualViewport.height*0.92)+"px";
-      });
-    });
-    window.visualViewport.addEventListener("scroll",function(){
-      document.querySelectorAll(".ov.show").forEach(function(ov){
-        ov.style.top=window.visualViewport.offsetTop+"px";
-        ov.style.height=window.visualViewport.height+"px";
-      });
-    });
+    window.visualViewport.addEventListener("resize", _fixOvsForKeyboard);
+    window.visualViewport.addEventListener("scroll", _fixOvsForKeyboard);
   }
   // Header scroll effect
   var hdr=document.getElementById("hdr");
@@ -759,6 +794,26 @@ function mpToggle(){
   var wrap = document.getElementById("musicPlayer");
   if(!wrap) return;
   wrap.classList.toggle("mp-collapsed");
+}
+
+// ── Ocultar completamente el reproductor ──
+function mpHide(){
+  var wrap = document.getElementById("musicPlayer");
+  if(!wrap) return;
+  wrap.classList.add("mp-hidden");
+  wrap.classList.add("mp-collapsed");
+  // Mostrar botón de recuperar
+  var btn = document.getElementById("mpShowBtn");
+  if(btn) btn.style.display = "flex";
+}
+
+// ── Mostrar de nuevo el reproductor ──
+function mpShow(){
+  var wrap = document.getElementById("musicPlayer");
+  if(!wrap) return;
+  wrap.classList.remove("mp-hidden");
+  var btn = document.getElementById("mpShowBtn");
+  if(btn) btn.style.display = "none";
 }
 
 // ── Abrir selector de archivos ──
@@ -1100,4 +1155,5 @@ function mpFmtTime(secs){
   var s = Math.floor(secs % 60);
   return m + ":" + (s < 10 ? "0" : "") + s;
 }
+
 
