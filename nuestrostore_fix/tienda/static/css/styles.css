@@ -1715,70 +1715,85 @@ footer{
   @media(min-width:768px){.mp-wrap{bottom:20px;}}
 }
 
-/* ── FIX LOGIN MÓVIL: teclado virtual ─────────────────
-   Cuando el teclado virtual aparece en iOS/Android,
-   el modal se reajusta para que el botón "Entrar →"
-   siempre sea visible y se pueda hacer scroll.
-   ──────────────────────────────────────────────────── */
 
-/* 1. Padding inferior en el modal para el safe-area de iOS (notch) */
+/* ══════════════════════════════════════════
+   FIX MÓVIL — Login + Reproductor de música
+   ══════════════════════════════════════════ */
+
+/* ── Modal: safe-area iOS y altura adaptable al teclado ── */
 @media(max-width:599px){
   .mdl{
-    padding-bottom:env(safe-area-inset-bottom, 0px);
+    padding-bottom:env(safe-area-inset-bottom, 12px);
   }
 }
-
-/* 2. Viewport pequeño (teclado activo): reducir max-height
-   para que el modal nunca quede tapado por el teclado */
 @supports(height:100svh){
   @media(max-width:599px){
-    .mdl{
-      /* svh = small viewport height = excluye el teclado virtual */
-      max-height:min(94dvh, 94svh);
-    }
+    .mdl{ max-height:min(94dvh,94svh); }
   }
 }
 
-/* ── OCULTAR reproductor completamente ── */
-.mp-wrap.mp-hidden{
-  display:none;
-}
-/* Botón ✕ del header — rojo suave para distinguirlo del "—" */
-.mp-hbtn.mp-hbtn-hide{
-  background:rgba(255,255,255,.12);
-  color:rgba(255,255,255,.7);
-  transition:background .15s, color .15s;
-}
-.mp-hbtn.mp-hbtn-hide:hover{
-  background:rgba(220,50,50,.4);
-  color:#fff;
-}
-/* Botón flotante "recuperar" — responsive al safe-area */
+/* ── Overlay: sin transition al reposicionarse por teclado ── */
+.ov.show{ transition:none; }
+
+/* ── Reproductor: oculto completamente ── */
+.mp-wrap.mp-hidden{ display:none !important; }
+
+/* ── Botón hide (✕) en header del reproductor ── */
+.mp-hbtn.mp-hbtn-hide{ background:rgba(255,255,255,.1); color:rgba(255,255,255,.65); }
+.mp-hbtn.mp-hbtn-hide:hover{ background:rgba(200,40,40,.45); color:#fff; }
+
+/* ── Botón flotante "mostrar reproductor" ── */
 #mpShowBtn{
-  bottom:calc(var(--bot-h) + 14px) !important;
+  position:fixed;
+  bottom:calc(var(--bot-h) + 14px);
+  right:16px;
+  z-index:1100;
+  width:38px; height:38px;
+  border-radius:50%;
+  background:rgba(30,30,30,.55);
+  border:1.5px solid rgba(255,255,255,.25);
+  color:#fff; font-size:.95rem;
+  cursor:pointer;
+  display:none;
+  align-items:center; justify-content:center;
+  backdrop-filter:blur(8px);
+  transition:background .18s, transform .15s;
+  box-shadow:0 3px 14px rgba(0,0,0,.3);
 }
-@media(min-width:768px){
-  #mpShowBtn{bottom:20px !important;}
-}
+#mpShowBtn:hover{ background:rgba(255,109,0,.7); transform:scale(1.08); }
+@media(min-width:768px){ #mpShowBtn{ bottom:20px; } }
 @supports(padding:env(safe-area-inset-bottom)){
-  #mpShowBtn{
-    bottom:calc(var(--bot-h) + env(safe-area-inset-bottom) + 14px) !important;
-  }
-  @media(min-width:768px){#mpShowBtn{bottom:20px !important;}}
+  #mpShowBtn{ bottom:calc(var(--bot-h) + env(safe-area-inset-bottom) + 14px); }
+  @media(min-width:768px){ #mpShowBtn{ bottom:20px; } }
 }
 
-/* ── FIX CRÍTICO: overlay no interfiere con el área del teclado ── */
-/* El JS ajusta top/height vía visualViewport, pero necesitamos
-   que el overlay no bloquee el área debajo del modal en móvil */
-@media(max-width:599px){
-  .ov.show{
-    /* Permitir que el JS sobreescriba top y height */
-    transition:none;
-  }
-  /* El modal siempre va al fondo del overlay visible */
-  .ov.show .mdl{
-    position:relative;
-    /* El margin-top:auto empuja el modal al fondo del flex container */
-    margin-top:auto;
-  }
+/* ── Reproductor solo para usuarios logueados: estado bloqueado ── */
+.mp-locked{
+  padding:24px 20px; text-align:center;
+}
+.mp-locked-ico{ font-size:2.4rem; margin-bottom:10px; opacity:.55; }
+.mp-locked-txt{ font-weight:800; font-size:.95rem; color:var(--bk); margin-bottom:4px; }
+.mp-locked-sub{ font-size:.8rem; color:var(--gr); margin-bottom:14px; line-height:1.5; }
+.mp-locked-btn{
+  display:inline-block;
+  padding:10px 24px; border-radius:10px;
+  background:linear-gradient(135deg,var(--na3),var(--na));
+  color:#fff; font-weight:800; font-size:.88rem;
+  border:none; cursor:pointer;
+  box-shadow:0 4px 14px rgba(255,109,0,.3);
+  transition:opacity .15s;
+}
+.mp-locked-btn:active{ opacity:.85; }
+
+/* El overlay bloquea el scroll del fondo sin tocar body.overflow
+   (body.overflow:hidden rompe los inputs en iOS Safari) */
+.ov.show{
+  overscroll-behavior:contain;
+  touch-action:none;
+}
+/* El modal sí puede hacer scroll interno */
+.ov.show .mdl{
+  touch-action:auto;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
 }
