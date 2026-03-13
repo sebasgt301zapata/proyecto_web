@@ -409,7 +409,7 @@ function doLogin(){
     if(!r.ok){errEl.textContent="❌ "+(r.error||"Credenciales incorrectas.");errEl.style.display="block";passEl.value="";passEl.focus();return;}
     usuario=r.usuario;localStorage.setItem("ns_usuario",JSON.stringify(usuario));cerrarModal("mLogin");emailEl.value="";passEl.value="";errEl.style.display="none";
     toast("¡Bienvenido, "+usuario.n+"! ("+({cliente:"Cliente",administrador:"Admin",superadmin:"Super Admin"}[usuario.rol]||usuario.rol)+")","s");
-    actualizarUI();cargarDatos();mpCargarDesdeDB();
+    actualizarUI();cargarDatos();mpCargarDesdeDB();_mpYaCargo=true;
   });
 }
 function doRegistro(){
@@ -424,7 +424,7 @@ function doRegistro(){
     cerrarModal("mReg");localStorage.setItem("ns_usuario",JSON.stringify(usuario));actualizarUI();cargarDatos();toast("¡Bienvenido, "+nom+"! 🎉","s");
   });
 }
-function cerrarSesion(){usuario=null;carrito=[];_mpCargando=false;localStorage.removeItem("ns_usuario");localStorage.removeItem("ns_carrito");actualizarUI();actualizarCarrito();toast("Sesión cerrada","i");}
+function cerrarSesion(){usuario=null;carrito=[];_mpCargando=false;_mpYaCargo=false;localStorage.removeItem("ns_usuario");localStorage.removeItem("ns_carrito");actualizarUI();actualizarCarrito();toast("Sesión cerrada","i");}
 
 // ── UI ───────────────────────────────────────
 function actualizarUI(){
@@ -723,7 +723,7 @@ document.addEventListener("DOMContentLoaded",function(){
           localStorage.setItem("ns_usuario", JSON.stringify(usuario));
           actualizarUI();
           cargarDatos();
-          mpCargarDesdeDB();
+          if(!_mpYaCargo){ mpCargarDesdeDB(); _mpYaCargo=true; }
         } else {
           // Usuario ya no existe o fue desactivado
           localStorage.removeItem("ns_usuario");
@@ -1030,6 +1030,7 @@ function mpLoadFilesDone(added){
 
 // ── Cargar playlist desde BD al iniciar sesión ──
 var _mpCargando = false;
+var _mpYaCargo = false;
 function mpCargarDesdeDB(){
   if(!usuario) return;
   if(_mpCargando) return; // evitar llamadas simultáneas
