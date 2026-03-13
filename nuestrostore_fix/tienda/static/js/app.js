@@ -424,7 +424,7 @@ function doRegistro(){
     cerrarModal("mReg");localStorage.setItem("ns_usuario",JSON.stringify(usuario));actualizarUI();cargarDatos();toast("¡Bienvenido, "+nom+"! 🎉","s");
   });
 }
-function cerrarSesion(){usuario=null;carrito=[];localStorage.removeItem("ns_usuario");localStorage.removeItem("ns_carrito");actualizarUI();actualizarCarrito();toast("Sesión cerrada","i");}
+function cerrarSesion(){usuario=null;carrito=[];_mpCargando=false;localStorage.removeItem("ns_usuario");localStorage.removeItem("ns_carrito");actualizarUI();actualizarCarrito();toast("Sesión cerrada","i");}
 
 // ── UI ───────────────────────────────────────
 function actualizarUI(){
@@ -1029,9 +1029,13 @@ function mpLoadFilesDone(added){
 }
 
 // ── Cargar playlist desde BD al iniciar sesión ──
+var _mpCargando = false;
 function mpCargarDesdeDB(){
   if(!usuario) return;
+  if(_mpCargando) return; // evitar llamadas simultáneas
+  _mpCargando = true;
   api("/musica/"+usuario.id).then(function(r){
+    _mpCargando = false;
     if(!r.ok || !r.tracks || !r.tracks.length) return;
     // Limpiar playlist antes de cargar para evitar duplicados
     mp.playlist.forEach(function(item){ if(item.objUrl) URL.revokeObjectURL(item.objUrl); });
@@ -1065,7 +1069,7 @@ function mpCargarDesdeDB(){
         }
       });
     });
-  });
+  }).catch(function(){ _mpCargando = false; });
 }
 
 // ── Mostrar UI del reproductor ──
