@@ -844,7 +844,7 @@ function mpRenderLocked(){
     '  <div class="mp-locked-ico">🔒</div>',
     '  <div class="mp-locked-txt">Solo para usuarios registrados</div>',
     '  <div class="mp-locked-sub">Inicia sesión para agregar y reproducir tu música favorita</div>',
-    '  <button class="mp-locked-btn" onclick="mpHide();abrirModal('mLogin')">🔐 Iniciar Sesión</button>',
+    '  <button class="mp-locked-btn" onclick="mpHide();abrirModal(\'mLogin\')">🔐 Iniciar Sesión</button>',
     '</div>'
   ].join("");
 }
@@ -1208,4 +1208,3 @@ function mpFmtTime(secs){
   var s = Math.floor(secs % 60);
   return m + ":" + (s < 10 ? "0" : "") + s;
 }
-
