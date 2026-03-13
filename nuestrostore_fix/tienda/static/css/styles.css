@@ -1714,3 +1714,25 @@ footer{
   }
   @media(min-width:768px){.mp-wrap{bottom:20px;}}
 }
+
+/* ── FIX LOGIN MÓVIL: teclado virtual ─────────────────
+   Cuando el teclado virtual aparece en iOS/Android,
+   el modal se reajusta para que el botón "Entrar →"
+   siempre sea visible y se pueda hacer scroll.
+   ──────────────────────────────────────────────────── */
+
+/* 1. Padding inferior en el modal para el safe-area de iOS (notch) */
+@media(max-width:599px){
+  .mdl{
+    padding-bottom:env(safe-area-inset-bottom, 0px);
+  }
+}
+
+/* 2. Viewport pequeño (teclado activo): reducir max-height
+   para que el modal nunca quede tapado por el teclado */
+@supports(height:100svh){
+  @media(max-width:599px){
+    .mdl{
+      /* svh = small viewport height = excluye el teclado virtual */
+      max-height:min(94dvh, 94svh);
+    }
