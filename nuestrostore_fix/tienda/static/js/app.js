@@ -939,8 +939,7 @@ function mpHide(){
   if(!wrap) return;
   wrap.classList.add("mp-hidden");
   wrap.classList.add("mp-collapsed");
-  var btn = document.getElementById("mpShowBtn");
-  if(btn) btn.style.display = "flex";
+  // Sin botón flotante — se controla desde el perfil
 }
 
 // ── Mostrar de nuevo el reproductor ──
@@ -948,8 +947,6 @@ function mpShow(){
   var wrap = document.getElementById("musicPlayer");
   if(!wrap) return;
   wrap.classList.remove("mp-hidden");
-  var btn = document.getElementById("mpShowBtn");
-  if(btn) btn.style.display = "none";
 }
 
 // ── Abrir selector de archivos (solo si hay sesión) ──
