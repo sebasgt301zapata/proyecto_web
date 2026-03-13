@@ -800,8 +800,9 @@ function mpRefreshAuth(){
   if(!panel || !wrap) return;
 
   if(usuario){
-    // Mostrar el FAB al iniciar sesión
+    // Mostrar el FAB colapsado al iniciar sesión (nunca abrir solo)
     wrap.classList.remove("mp-hidden");
+    wrap.classList.add("mp-collapsed");
     // Usuario logueado: restaurar panel normal si estaba en modo locked
     if(panel.querySelector(".mp-locked")){
       panel.innerHTML = [
@@ -874,7 +875,13 @@ function mpToggle(){
     }
     return;
   }
+  var wasCollapsed = wrap.classList.contains("mp-collapsed");
   wrap.classList.toggle("mp-collapsed");
+  // Al abrir el panel, mostrar canciones si ya están cargadas
+  if(wasCollapsed && mp.playlist.length > 0){
+    mpShowPlayer();
+    mpRenderPlaylist();
+  }
 }
 
 // ── Mostrar mensaje de "inicia sesión" en el panel ──
@@ -1048,9 +1055,13 @@ function mpCargarDesdeDB(){
         }catch(ex){ return; }
         loaded++;
         if(loaded === tracks.length){
-          mpShowPlayer();
-          mpRenderPlaylist();
-          toast("🎵 Playlist cargada ("+loaded+" canciones)","i");
+          // Solo mostrar UI si el panel está abierto
+          var w = document.getElementById("musicPlayer");
+          if(w && !w.classList.contains("mp-collapsed")){
+            mpShowPlayer();
+            mpRenderPlaylist();
+          }
+          toast("🎵 Playlist cargada ("+loaded+" canción"+(loaded>1?"es":"")+")", "i");
         }
       });
     });
