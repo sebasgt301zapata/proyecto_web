@@ -800,6 +800,8 @@ function mpRefreshAuth(){
   if(!panel || !wrap) return;
 
   if(usuario){
+    // Mostrar el FAB al iniciar sesión
+    wrap.classList.remove("mp-hidden");
     // Usuario logueado: restaurar panel normal si estaba en modo locked
     if(panel.querySelector(".mp-locked")){
       panel.innerHTML = [
@@ -851,10 +853,9 @@ function mpRefreshAuth(){
       mpUpdateVolGradient();
     }
   } else {
-    // Sin sesión: si el panel estaba abierto, mostrar locked
-    if(!wrap.classList.contains("mp-collapsed")){
-      mpRenderLocked();
-    }
+    // Sin sesión: ocultar completamente el FAB
+    wrap.classList.add("mp-hidden");
+    wrap.classList.add("mp-collapsed");
     // Pausar música si estaba reproduciendo
     if(mp.audio && !mp.audio.paused){ mp.audio.pause(); }
   }
