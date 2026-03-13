@@ -1736,3 +1736,49 @@ footer{
       /* svh = small viewport height = excluye el teclado virtual */
       max-height:min(94dvh, 94svh);
     }
+  }
+}
+
+/* ── OCULTAR reproductor completamente ── */
+.mp-wrap.mp-hidden{
+  display:none;
+}
+/* Botón ✕ del header — rojo suave para distinguirlo del "—" */
+.mp-hbtn.mp-hbtn-hide{
+  background:rgba(255,255,255,.12);
+  color:rgba(255,255,255,.7);
+  transition:background .15s, color .15s;
+}
+.mp-hbtn.mp-hbtn-hide:hover{
+  background:rgba(220,50,50,.4);
+  color:#fff;
+}
+/* Botón flotante "recuperar" — responsive al safe-area */
+#mpShowBtn{
+  bottom:calc(var(--bot-h) + 14px) !important;
+}
+@media(min-width:768px){
+  #mpShowBtn{bottom:20px !important;}
+}
+@supports(padding:env(safe-area-inset-bottom)){
+  #mpShowBtn{
+    bottom:calc(var(--bot-h) + env(safe-area-inset-bottom) + 14px) !important;
+  }
+  @media(min-width:768px){#mpShowBtn{bottom:20px !important;}}
+}
+
+/* ── FIX CRÍTICO: overlay no interfiere con el área del teclado ── */
+/* El JS ajusta top/height vía visualViewport, pero necesitamos
+   que el overlay no bloquee el área debajo del modal en móvil */
+@media(max-width:599px){
+  .ov.show{
+    /* Permitir que el JS sobreescriba top y height */
+    transition:none;
+  }
+  /* El modal siempre va al fondo del overlay visible */
+  .ov.show .mdl{
+    position:relative;
+    /* El margin-top:auto empuja el modal al fondo del flex container */
+    margin-top:auto;
+  }
+}
