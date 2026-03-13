@@ -354,7 +354,11 @@ function abrirPerfil(){
     '<div class="fg"><label>Nueva contraseña</label><input class="fc" type="password" id="pfNewPw" placeholder="Mínimo 8 caracteres"/></div>'+
     '</div></details>'+
     '<div id="pfErr" class="form-err" style="display:none"></div>'+
-    '<button class="bp" onclick="guardarPerfil()">💾 Guardar Cambios</button>';
+    '<button class="bp" onclick="guardarPerfil()">💾 Guardar Cambios</button>'+
+    '<div style="margin-top:14px;padding-top:14px;border-top:2px solid #f0e4d0">'+
+    '<div style="font-weight:800;font-size:.82rem;color:var(--gr2);margin-bottom:8px">🎵 Reproductor de música</div>'+
+    '<button id="mpPerfilBtn" onclick="mpPerfilToggle()" style="width:100%;padding:11px 14px;border-radius:10px;border:2px solid #e0d0c0;background:#fff8f0;font-weight:700;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;color:var(--na3)">'+mpPerfilBtnLabel()+'</button>'+
+    '</div>';
     document.getElementById("mPerfilB").innerHTML=html;
     abrirModal("mPerfil");
   });
@@ -886,6 +890,27 @@ function mpRenderLocked(){
 
 // ── Ocultar completamente el reproductor ──
 // ── Etiqueta del botón de música en el panel de perfil ──
+function mpPerfilBtnLabel(){
+  var wrap = document.getElementById("musicPlayer");
+  var hidden = wrap && wrap.classList.contains("mp-hidden");
+  if(hidden){
+    return '<span>Reproductor oculto</span><span style="font-size:.75rem;background:#e8f5e9;color:#2e7d32;padding:2px 8px;border-radius:50px">Mostrar</span>';
+  }
+  return '<span>Reproductor visible</span><span style="font-size:.75rem;background:#fff0e0;color:var(--na3);padding:2px 8px;border-radius:50px">Ocultar</span>';
+}
+
+function mpPerfilToggle(){
+  var wrap = document.getElementById("musicPlayer");
+  if(!wrap) return;
+  if(wrap.classList.contains("mp-hidden")){
+    mpShow();
+  } else {
+    mpHide();
+  }
+  var btn = document.getElementById("mpPerfilBtn");
+  if(btn) btn.innerHTML = mpPerfilBtnLabel();
+}
+
 function mpPanelBtnLabel(){
   var wrap = document.getElementById("musicPlayer");
   var hidden = wrap && wrap.classList.contains("mp-hidden");
