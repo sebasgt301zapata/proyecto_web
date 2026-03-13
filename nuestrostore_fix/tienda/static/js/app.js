@@ -52,19 +52,11 @@ function abrirModal(id){
   var el=document.getElementById(id);
   if(!el) return;
   el.classList.add("show");
-  document.body.style.overflow="hidden";
-  // Ajustar posición inmediatamente por si el teclado ya estaba abierto
-  setTimeout(function(){ if(window.visualViewport) _fixOvsForKeyboard(); }, 50);
 }
 function cerrarModal(id){
   var el=document.getElementById(id);
   if(!el) return;
   el.classList.remove("show");
-  document.body.style.overflow="";
-  // Limpiar estilos inline que puso el visualViewport fix
-  el.style.top=""; el.style.height=""; el.style.position="";
-  var mdl=el.querySelector(".mdl");
-  if(mdl) mdl.style.maxHeight="";
 }
 function switchM(a,b){cerrarModal(a);abrirModal(b);}
 function bTab(tab,btn){if(tab==="cuenta"){if(usuario)abrirPanel();else abrirModal("mLogin");return;}irPagina(tab);}
@@ -467,6 +459,7 @@ function actualizarUI(){
     if(bt3ico)bt3ico.textContent="👤";
   }
   actualizarBadge();
+  mpRefreshAuth();
 }
 
 // ── CARRITO ──────────────────────────────────
@@ -679,58 +672,21 @@ function crearAdmin(){var n=document.getElementById("aNom").value.trim(),a=docum
 // ── INIT ─────────────────────────────────────
 document.addEventListener("DOMContentLoaded",function(){
   document.querySelectorAll(".anioActual").forEach(function(el){el.textContent=new Date().getFullYear();});
-  var _lastInputBlur = 0;
-  document.querySelectorAll("input,textarea,select").forEach(function(inp){
-    inp.addEventListener("blur", function(){ _lastInputBlur = Date.now(); });
-  });
+
+  // Overlay: cerrar al tocar fuera del modal
   document.querySelectorAll(".ov").forEach(function(ov){
-    ov.addEventListener("click", function(e){
-      if(e.target !== ov) return;
-      // En móvil, ignorar el tap del overlay si fue justo después de perder foco en un input
-      // (el usuario tocó fuera del teclado para cerrarlo, no para cerrar el modal)
-      if(Date.now() - _lastInputBlur < 400) return;
-      cerrarModal(ov.id);
-    });
+    ov.addEventListener("click",function(e){if(e.target===ov)cerrarModal(ov.id);});
   });
+
+  // Login: Enter key navigation
   var lPass=document.getElementById("lPass"),lEmail=document.getElementById("lEmail");
   if(lPass)lPass.addEventListener("keydown",function(e){if(e.key==="Enter")doLogin();});
   if(lEmail)lEmail.addEventListener("keydown",function(e){if(e.key==="Enter")lPass&&lPass.focus();});
-  // FIX MÓVIL: scroll el botón "Entrar" a la vista cuando el teclado aparece
-  function scrollLoginBtn(inputEl){
-    if(!inputEl)return;
-    inputEl.addEventListener("focus",function(){
-      setTimeout(function(){
-        var btn=document.getElementById("btnLogin");
-        if(btn)btn.scrollIntoView({behavior:"smooth",block:"nearest"});
-      },350);
-    });
-  }
-  scrollLoginBtn(lEmail);
-  scrollLoginBtn(lPass);
-  // FIX iOS/Android: reajustar overlay y modal cuando el teclado virtual cambia el viewport
-  function _fixOvsForKeyboard(){
-    if(!window.visualViewport) return;
-    var vv = window.visualViewport;
-    var top = vv.offsetTop;
-    var h   = vv.height;
-    document.querySelectorAll(".ov.show").forEach(function(ov){
-      ov.style.position = "fixed";
-      ov.style.top    = top + "px";
-      ov.style.height = h + "px";
-      ov.style.left   = "0";
-      ov.style.right  = "0";
-    });
-    document.querySelectorAll(".ov.show .mdl").forEach(function(mdl){
-      mdl.style.maxHeight = (h * 0.94) + "px";
-    });
-  }
-  if(window.visualViewport){
-    window.visualViewport.addEventListener("resize", _fixOvsForKeyboard);
-    window.visualViewport.addEventListener("scroll", _fixOvsForKeyboard);
-  }
+
   // Header scroll effect
   var hdr=document.getElementById("hdr");
   if(hdr){window.addEventListener("scroll",function(){hdr.classList.toggle("scrolled",window.scrollY>10);},{passive:true});}
+
   initSearch();
   mpInit();
   irPagina("inicio");
@@ -789,11 +745,108 @@ function mpInit(){
   mpUpdateVolGradient();
 }
 
-// ── Abrir / colapsar panel ──
+// ── Actualizar reproductor según sesión ──
+function mpRefreshAuth(){
+  var panel = document.getElementById("mpPanel");
+  var wrap  = document.getElementById("musicPlayer");
+  if(!panel || !wrap) return;
+
+  if(usuario){
+    // Usuario logueado: restaurar panel normal si estaba en modo locked
+    if(panel.querySelector(".mp-locked")){
+      panel.innerHTML = [
+        '<div class="mp-header">',
+        '  <div class="mp-header-left"><span class="mp-title-icon">🎶</span><span class="mp-title">Mi Música</span></div>',
+        '  <div class="mp-header-right">',
+        '    <button class="mp-hbtn" onclick="mpAddFiles()" title="Agregar canciones">➕</button>',
+        '    <button class="mp-hbtn" onclick="mpToggle()" title="Minimizar">—</button>',
+        '    <button class="mp-hbtn mp-hbtn-hide" onclick="mpHide()" title="Ocultar">✕</button>',
+        '  </div>',
+        '</div>',
+        '<input type="file" id="mpFileInput" accept="audio/*" multiple style="display:none" onchange="mpLoadFiles(event)"/>',
+        '<div class="mp-empty" id="mpEmpty" onclick="mpAddFiles()">',
+        '  <div class="mp-empty-ico">🎵</div>',
+        '  <div class="mp-empty-txt">Toca para agregar música</div>',
+        '  <div class="mp-empty-sub">MP3, WAV, OGG, FLAC y más</div>',
+        '</div>',
+        '<div id="mpNow" class="mp-now" style="display:none"></div>',
+        '<div id="mpProgressWrap" class="mp-progress-wrap" style="display:none">',
+        '  <div class="mp-progress-bg" id="mpProgressBg">',
+        '    <div class="mp-progress-fill" id="mpProgressFill"></div>',
+        '    <div class="mp-progress-thumb" id="mpProgressThumb"></div>',
+        '  </div>',
+        '</div>',
+        '<div id="mpControls" class="mp-controls" style="display:none">',
+        '  <button class="mp-ctrl-btn mp-ctrl-sm" id="mpShuffleBtn" onclick="mpToggleShuffle()" title="Aleatorio">⇄</button>',
+        '  <button class="mp-ctrl-btn" onclick="mpPrev()" title="Anterior">⏮</button>',
+        '  <button class="mp-ctrl-btn mp-play-btn" id="mpPlayBtn" onclick="mpTogglePlay()" title="Play/Pausa">▶</button>',
+        '  <button class="mp-ctrl-btn" onclick="mpNext()" title="Siguiente">⏭</button>',
+        '  <button class="mp-ctrl-btn mp-ctrl-sm" id="mpRepeatBtn" onclick="mpToggleRepeat()" title="Repetir">↻</button>',
+        '</div>',
+        '<div id="mpVolume" class="mp-volume" style="display:none">',
+        '  <span class="mp-vol-ico" id="mpVolIco" onclick="mpToggleMute()">🔊</span>',
+        '  <input type="range" class="mp-vol-slider" id="mpVolSlider" min="0" max="100" value="80" oninput="mpSetVolume(this.value)"/>',
+        '</div>',
+        '<div id="mpPlaylist" class="mp-playlist" style="display:none">',
+        '  <div class="mp-pl-header"><span>Lista de reproducción</span><button class="mp-pl-clear" onclick="mpClear()">Limpiar</button></div>',
+        '  <div class="mp-pl-list" id="mpPlList"></div>',
+        '</div>'
+      ].join("");
+      // Re-bind progress bar events
+      var pb = document.getElementById("mpProgressBg");
+      if(pb){
+        pb.addEventListener("mousedown", function(e){ mp.dragging=true; mpSeek(e); });
+        pb.addEventListener("touchstart", function(e){ mp.dragging=true; mpSeekTouch(e); }, {passive:true});
+      }
+      var vs = document.getElementById("mpVolSlider");
+      if(vs){ vs.value = mp.volume; vs.addEventListener("input", function(){ mpUpdateVolGradient(); }); }
+      mpUpdateVolGradient();
+    }
+  } else {
+    // Sin sesión: si el panel estaba abierto, mostrar locked
+    if(!wrap.classList.contains("mp-collapsed")){
+      mpRenderLocked();
+    }
+    // Pausar música si estaba reproduciendo
+    if(mp.audio && !mp.audio.paused){ mp.audio.pause(); }
+  }
+}
+
+// ── Abrir/colapsar panel ──
 function mpToggle(){
   var wrap = document.getElementById("musicPlayer");
   if(!wrap) return;
+  // Si no hay usuario, mostrar estado bloqueado en lugar del panel
+  if(!usuario){
+    var panel = document.getElementById("mpPanel");
+    if(panel){
+      wrap.classList.toggle("mp-collapsed");
+      mpRenderLocked();
+    }
+    return;
+  }
   wrap.classList.toggle("mp-collapsed");
+}
+
+// ── Mostrar mensaje de "inicia sesión" en el panel ──
+function mpRenderLocked(){
+  var panel = document.getElementById("mpPanel");
+  if(!panel || usuario) return;
+  if(document.getElementById("musicPlayer").classList.contains("mp-collapsed")) return;
+  panel.innerHTML = [
+    '<div class="mp-header">',
+    '  <div class="mp-header-left"><span class="mp-title-icon">🎶</span><span class="mp-title">Mi Música</span></div>',
+    '  <div class="mp-header-right">',
+    '    <button class="mp-hbtn mp-hbtn-hide" onclick="mpHide()" title="Ocultar">✕</button>',
+    '  </div>',
+    '</div>',
+    '<div class="mp-locked">',
+    '  <div class="mp-locked-ico">🔒</div>',
+    '  <div class="mp-locked-txt">Solo para usuarios registrados</div>',
+    '  <div class="mp-locked-sub">Inicia sesión para agregar y reproducir tu música favorita</div>',
+    '  <button class="mp-locked-btn" onclick="mpHide();abrirModal('mLogin')">🔐 Iniciar Sesión</button>',
+    '</div>'
+  ].join("");
 }
 
 // ── Ocultar completamente el reproductor ──
@@ -802,7 +855,6 @@ function mpHide(){
   if(!wrap) return;
   wrap.classList.add("mp-hidden");
   wrap.classList.add("mp-collapsed");
-  // Mostrar botón de recuperar
   var btn = document.getElementById("mpShowBtn");
   if(btn) btn.style.display = "flex";
 }
@@ -816,8 +868,9 @@ function mpShow(){
   if(btn) btn.style.display = "none";
 }
 
-// ── Abrir selector de archivos ──
+// ── Abrir selector de archivos (solo si hay sesión) ──
 function mpAddFiles(){
+  if(!usuario){ toast("Inicia sesión para agregar música","e"); abrirModal("mLogin"); return; }
   var fi = document.getElementById("mpFileInput");
   if(fi) fi.click();
 }
@@ -1155,5 +1208,4 @@ function mpFmtTime(secs){
   var s = Math.floor(secs % 60);
   return m + ":" + (s < 10 ? "0" : "") + s;
 }
-
 
