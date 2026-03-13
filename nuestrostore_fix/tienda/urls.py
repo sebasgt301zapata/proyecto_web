@@ -41,6 +41,7 @@ urlpatterns = [
 
     # Perfil
     path('api/perfil/<int:uid>', views.api_perfil, name='api_perfil'),
+    # Música
+    path('api/musica/<int:uid>',           views.api_musica,       name='api_musica'),
+    path('api/musica/<int:uid>/<int:mid>', views.api_musica_track, name='api_musica_track'),
 ]
-
-# (appended)
