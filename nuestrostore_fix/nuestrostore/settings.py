@@ -8,7 +8,10 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-nuestrostore-change-t
 
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = ['*']
+# En producción define ALLOWED_HOSTS como variable de entorno separada por comas
+# Ej: ALLOWED_HOSTS=tudominio.com,www.tudominio.com
+_allowed = os.environ.get('ALLOWED_HOSTS', '')
+ALLOWED_HOSTS = [h.strip() for h in _allowed.split(',') if h.strip()] if _allowed else ['*']
 
 INSTALLED_APPS = [
     'django.contrib.contenttypes',
