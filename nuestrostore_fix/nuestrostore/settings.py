@@ -5,7 +5,6 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-nuestrostore-change-this-in-production-xyz123')
-
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 _allowed = os.environ.get('ALLOWED_HOSTS', '')
@@ -60,24 +59,19 @@ TIME_ZONE = 'America/Caracas'
 USE_I18N = True
 USE_TZ = False
 
-# ─── ARCHIVOS ESTÁTICOS ───────────────────────────────────────────────────────
-# STATIC_ROOT es donde collectstatic copia los archivos.
-# STATICFILES_DIRS es donde están los archivos fuente.
-# En Render, collectstatic corre en build.sh y llena STATIC_ROOT.
-# WhiteNoise sirve desde STATIC_ROOT en producción.
+# ── Archivos estáticos ──────────────────────────────────────────────────────
+# STATIC_URL: prefijo de URL que usa {% static %}
+# STATICFILES_DIRS: donde viven los archivos fuente (tienda/static/)
+# STATIC_ROOT: donde collectstatic los copia (staticfiles/)
+# WhiteNoise los sirve desde STATIC_ROOT en producción
 
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'tienda' / 'static']
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# Sin manifest hash — evita "Missing staticfiles manifest entry"
+# CompressedStaticFilesStorage: comprime archivos pero NO usa manifest de hashes.
+# Evita el error "Missing staticfiles manifest entry" si collectstatic no corrió.
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
-
-# CRÍTICO: permite que WhiteNoise sirva archivos directamente desde
-# STATICFILES_DIRS aunque collectstatic no haya corrido todavía.
-# Esto hace que funcione tanto en desarrollo como si collectstatic falla.
-WHITENOISE_USE_FINDERS = True
-WHITENOISE_AUTOREFRESH = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 DATA_UPLOAD_MAX_MEMORY_SIZE = 20 * 1024 * 1024
