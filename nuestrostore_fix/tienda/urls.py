@@ -44,4 +44,9 @@ urlpatterns = [
     # Música
     path('api/musica/<int:uid>',           views.api_musica,       name='api_musica'),
     path('api/musica/<int:uid>/<int:mid>', views.api_musica_track, name='api_musica_track'),
+
+    # Contactos
+    path('api/contactos',              views.api_contactos,         name='api_contactos'),
+    path('api/contactos/<int:cid>/leer',   views.api_contacto_leer,    name='api_contacto_leer'),
+    path('api/contactos/<int:cid>/eliminar', views.api_contacto_eliminar, name='api_contacto_eliminar'),
 ]
