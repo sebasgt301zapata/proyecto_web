@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
 <meta name="mobile-web-app-capable" content="yes"/>
-<title>🏬NuestroStore — Tu Tienda de Confianza</title>
+<title>NuestroStore — Tu Tienda de Confianza</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
@@ -29,6 +29,7 @@
     <nav class="desk-nav">
       <button class="dnav-btn active" id="dnav0" onclick="irPagina('inicio')">🏠 Inicio</button>
       <button class="dnav-btn" id="dnav1" onclick="irPagina('tienda')">🛍️ Tienda</button>
+      <button class="dnav-btn" id="dnav2" onclick="irPagina('contacto')">📬 Contacto</button>
     </nav>
     <div class="nav-icons" id="navIcons">
       <button class="nic" onclick="abrirModal('mLogin')" aria-label="Cuenta">👤</button>
@@ -197,42 +198,7 @@
         <div class="footer-links">
           <a onclick="irPagina('inicio')">🏠 Inicio</a>
           <a onclick="irPagina('tienda')">🛍️ Tienda</a>
-        </div>
-      </div>
-      <div>
-        <div class="footer-title">Mi Cuenta</div>
-        <div class="footer-links">
-          <a onclick="abrirModal('mLogin')">🔐 Iniciar Sesión</a>
-          <a onclick="abrirModal('mReg')">✨ Registrarse</a>
-          <a onclick="abrirCarrito()">🛒 Mi Carrito</a>
-        </div>
-      </div>
-      <div>
-        <div class="footer-title">Contacto</div>
-        <div class="footer-links">
-          <a>📧 info@nuestrostore.com</a>
-          <a>📞 +58 212 000 0000</a>
-          <a>📍 Caracas, Venezuela</a>
-        </div>
-      </div>
-    </div>
-    <div class="footer-pols">
-      <div class="footer-pols-title">📋 Nuestras Políticas</div>
-      <div class="footer-pols-grid">
-        <div class="fpol"><span class="fpol-ico">🛡️</span><div><strong>Privacidad</strong><p>Tus datos están protegidos.</p></div></div>
-        <div class="fpol"><span class="fpol-ico">↩️</span><div><strong>Devoluciones</strong><p>30 días sin preguntas.</p></div></div>
-        <div class="fpol"><span class="fpol-ico">🚚</span><div><strong>Envíos</strong><p>Express 24-48h disponible.</p></div></div>
-        <div class="fpol"><span class="fpol-ico">💳</span><div><strong>Pagos</strong><p>Móvil, transferencia y divisas.</p></div></div>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <p>© <span class="anioActual"></span> NuestroStore · Todos los derechos reservados</p>
-      <p>RIF: J-123456789 · info@nuestrostore.com · Hecho con 🧡 en Venezuela</p>
-    </div>
-  </footer>
-</div>
-
-<!-- ══ TIENDA ══ -->
+          <a onclick="irPagina('contacto')">📬 Contacto</a>
 <div id="pTienda" class="pagina">
   <div class="tienda-hero">
     <div class="tienda-hero-in">
@@ -312,6 +278,169 @@
   </footer>
 </div>
 
+<!-- ══ CONTACTO ══ -->
+<div id="pContacto" class="pagina">
+  <div class="contact-hero">
+    <div class="contact-hero-particles" aria-hidden="true">
+      <span></span><span></span><span></span><span></span><span></span><span></span>
+    </div>
+    <div class="contact-hero-in">
+      <div class="contact-hero-badge">📬 Estamos aquí para ti</div>
+      <h2>¿Cómo podemos<br/><span>Ayudarte?</span></h2>
+      <p>Contáctanos por el canal que prefieras. Respondemos en menos de 24 horas.</p>
+    </div>
+  </div>
+
+  <div class="contact-channels">
+    <a class="contact-channel" href="https://wa.me/582120000000" target="_blank" rel="noopener">
+      <div class="cc-ico cc-ico-wa">💬</div>
+      <div class="cc-info"><strong>WhatsApp</strong><span>Respuesta inmediata</span></div>
+      <div class="cc-arrow">→</div>
+    </a>
+    <a class="contact-channel" href="mailto:info@nuestrostore.com">
+      <div class="cc-ico cc-ico-mail">📧</div>
+      <div class="cc-info"><strong>Correo</strong><span>info@nuestrostore.com</span></div>
+      <div class="cc-arrow">→</div>
+    </a>
+    <a class="contact-channel" href="tel:+582120000000">
+      <div class="cc-ico cc-ico-tel">📞</div>
+      <div class="cc-info"><strong>Teléfono</strong><span>+58 212 000 0000</span></div>
+      <div class="cc-arrow">→</div>
+    </a>
+    <div class="contact-channel contact-channel-loc">
+      <div class="cc-ico cc-ico-loc">📍</div>
+      <div class="cc-info"><strong>Ubicación</strong><span>Caracas, Venezuela</span></div>
+      <div class="cc-arrow">→</div>
+    </div>
+  </div>
+
+  <div class="contact-body">
+    <div class="contact-form-wrap">
+      <div class="cf-header">
+        <div class="cf-icon">✉️</div>
+        <div><h3>Envíanos un Mensaje</h3><p>Te respondemos en menos de 24 horas</p></div>
+      </div>
+      <div class="cf-row">
+        <div class="fg"><label>Nombre *</label><input class="fc" type="text" id="cfNombre" placeholder="Tu nombre completo" autocomplete="name"/></div>
+        <div class="fg"><label>Correo *</label><input class="fc" type="email" id="cfEmail" placeholder="correo@ejemplo.com" inputmode="email" autocomplete="email"/></div>
+      </div>
+      <div class="fg"><label>Teléfono (opcional)</label><input class="fc" type="tel" id="cfTel" placeholder="+58 412 000 0000" inputmode="tel"/></div>
+      <div class="fg">
+        <label>Asunto *</label>
+        <select class="fc" id="cfAsunto">
+          <option value="">-- Selecciona un asunto --</option>
+          <option value="pedido">📦 Consulta sobre un pedido</option>
+          <option value="producto">🛍️ Información de producto</option>
+          <option value="devolucion">↩️ Devolución o garantía</option>
+          <option value="pago">💳 Problema con el pago</option>
+          <option value="envio">🚚 Seguimiento de envío</option>
+          <option value="otro">💬 Otro</option>
+        </select>
+      </div>
+      <div class="fg"><label>Mensaje *</label><textarea class="fc" id="cfMensaje" rows="5" placeholder="Cuéntanos en qué podemos ayudarte…" style="resize:vertical"></textarea></div>
+      <div id="cfErr" class="form-err" style="display:none"></div>
+      <div id="cfOk" class="form-ok" style="display:none">✅ ¡Mensaje enviado! Te responderemos pronto.</div>
+      <button class="bp contact-send-btn" onclick="enviarContacto()">📨 Enviar Mensaje →</button>
+    </div>
+
+    <div class="contact-info-wrap">
+      <div class="contact-info-card">
+        <div class="cic-title">🕐 Horario de Atención</div>
+        <div class="cic-schedule">
+          <div class="cis-row"><span>Lunes – Viernes</span><strong>8:00am – 6:00pm</strong></div>
+          <div class="cis-row"><span>Sábado</span><strong>9:00am – 2:00pm</strong></div>
+          <div class="cis-row cis-closed"><span>Domingo</span><strong>Cerrado</strong></div>
+        </div>
+        <div class="cic-note">⚡ WhatsApp disponible 24/7 para urgencias</div>
+      </div>
+
+      <div class="contact-info-card">
+        <div class="cic-title">❓ Preguntas Frecuentes</div>
+        <div class="contact-faq">
+          <div class="cfaq-item" onclick="toggleFaq(this)">
+            <div class="cfaq-q">¿Cuánto tarda el envío? <span class="cfaq-arr">▼</span></div>
+            <div class="cfaq-a">Realizamos envíos express en 24-48 horas a toda Venezuela. Zonas remotas pueden tardar hasta 5 días hábiles.</div>
+          </div>
+          <div class="cfaq-item" onclick="toggleFaq(this)">
+            <div class="cfaq-q">¿Cómo hago una devolución? <span class="cfaq-arr">▼</span></div>
+            <div class="cfaq-a">Tienes 30 días desde la recepción del producto. Contáctanos por WhatsApp o correo y gestionamos el proceso sin costo.</div>
+          </div>
+          <div class="cfaq-item" onclick="toggleFaq(this)">
+            <div class="cfaq-q">¿Qué métodos de pago aceptan? <span class="cfaq-arr">▼</span></div>
+            <div class="cfaq-a">Aceptamos pago móvil, transferencia bancaria, divisas (USD/EUR) y efectivo contra entrega en Caracas.</div>
+          </div>
+          <div class="cfaq-item" onclick="toggleFaq(this)">
+            <div class="cfaq-q">¿Tienen garantía los productos? <span class="cfaq-arr">▼</span></div>
+            <div class="cfaq-a">Sí, todos nuestros productos tienen garantía mínima de 30 días. Algunos artículos tienen garantía extendida del fabricante.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="contact-info-card contact-social-card">
+        <div class="cic-title">🌐 Síguenos</div>
+        <div class="contact-social-grid">
+          <a class="csoc-btn csoc-ig" href="#" aria-label="Instagram"><span>📸</span><strong>Instagram</strong></a>
+          <a class="csoc-btn csoc-fb" href="#" aria-label="Facebook"><span>📘</span><strong>Facebook</strong></a>
+          <a class="csoc-btn csoc-tw" href="#" aria-label="Twitter"><span>🐦</span><strong>Twitter</strong></a>
+          <a class="csoc-btn csoc-wa" href="https://wa.me/582120000000" target="_blank" rel="noopener"><span>💬</span><strong>WhatsApp</strong></a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-grid">
+      <div>
+        <div class="flogo"><span>Nuestro</span>Store</div>
+        <p class="footer-desc">Tu tienda de confianza con los mejores productos al mejor precio. Hecho con 🧡 en Venezuela.</p>
+        <div class="footer-social">
+          <a class="fsoc" aria-label="Instagram">📸</a>
+          <a class="fsoc" aria-label="Twitter">🐦</a>
+          <a class="fsoc" aria-label="Facebook">📘</a>
+          <a class="fsoc" aria-label="WhatsApp">💬</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-title">Navegación</div>
+        <div class="footer-links">
+          <a onclick="irPagina('inicio')">🏠 Inicio</a>
+          <a onclick="irPagina('tienda')">🛍️ Tienda</a>
+          <a onclick="irPagina('contacto')">📬 Contacto</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-title">Mi Cuenta</div>
+        <div class="footer-links">
+          <a onclick="abrirModal('mLogin')">🔐 Iniciar Sesión</a>
+          <a onclick="abrirModal('mReg')">✨ Registrarse</a>
+          <a onclick="abrirCarrito()">🛒 Mi Carrito</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-title">Contacto</div>
+        <div class="footer-links">
+          <a>📧 info@nuestrostore.com</a>
+          <a>📞 +58 212 000 0000</a>
+          <a>📍 Caracas, Venezuela</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-pols">
+      <div class="footer-pols-title">📋 Nuestras Políticas</div>
+      <div class="footer-pols-grid">
+        <div class="fpol"><span class="fpol-ico">🛡️</span><div><strong>Privacidad</strong><p>Tus datos están protegidos.</p></div></div>
+        <div class="fpol"><span class="fpol-ico">↩️</span><div><strong>Devoluciones</strong><p>30 días sin preguntas.</p></div></div>
+        <div class="fpol"><span class="fpol-ico">🚚</span><div><strong>Envíos</strong><p>Express 24-48h disponible.</p></div></div>
+        <div class="fpol"><span class="fpol-ico">💳</span><div><strong>Pagos</strong><p>Móvil, transferencia y divisas.</p></div></div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© <span class="anioActual"></span> NuestroStore · Todos los derechos reservados</p>
+      <p>RIF: J-123456789 · info@nuestrostore.com · Hecho con 🧡 en Venezuela</p>
+    </div>
+  </footer>
+</div>
+
 <!-- ══ BOTTOM NAV ══ -->
 <nav class="botnav">
   <button class="btab on" id="bt0" onclick="bTab('inicio',this)">
@@ -326,6 +455,9 @@
   </button>
   <button class="btab" id="bt3" onclick="bTab('cuenta',this)">
     <div class="btab-ico-wrap"><span id="bt3ico">👤</span></div><span>Cuenta</span><div class="iline" style="display:none"></div>
+  </button>
+  <button class="btab" id="bt4" onclick="bTab('contacto',this)">
+    <div class="btab-ico-wrap">📬</div><span>Contacto</span><div class="iline" style="display:none"></div>
   </button>
 </nav>
 
