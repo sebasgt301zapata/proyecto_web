@@ -76,19 +76,14 @@ def check_pass(password: str, stored_hash: str) -> bool:
 
 def log_action(usuario, accion, detalle=""):
     try:
-        _exec(
-            "INSERT INTO logs(usuario,accion,detalle) VALUES(?,?,?)",
-            (usuario, accion, detalle)
-        )
-        django_conn.commit_unless_managed()
-    except Exception:
-        try:
-            from django.db import transaction
-            with transaction.atomic():
-                _exec("INSERT INTO logs(usuario,accion,detalle) VALUES(?,?,?)",
-                      (usuario, accion, detalle))
-        except Exception as e:
-            print(f"  ⚠  Error al guardar log: {e}")
+        from django.db import transaction
+        with transaction.atomic():
+            _exec(
+                "INSERT INTO logs(usuario,accion,detalle) VALUES(?,?,?)",
+                (usuario, accion, detalle)
+            )
+    except Exception as e:
+        print(f"  ⚠  Error al guardar log: {e}")
 
 
 def init_db():
@@ -195,6 +190,18 @@ def init_db():
             creado   {t("TEXT DEFAULT (datetime('now','localtime'))", 'TIMESTAMP DEFAULT NOW()')}
         )
         """,
+        f"""
+        CREATE TABLE IF NOT EXISTS contactos (
+            id       {t('INTEGER PRIMARY KEY AUTOINCREMENT', 'SERIAL PRIMARY KEY')},
+            nombre   TEXT NOT NULL,
+            email    TEXT NOT NULL,
+            tel      TEXT DEFAULT '',
+            asunto   TEXT NOT NULL,
+            mensaje  TEXT NOT NULL,
+            leido    {t('INTEGER', 'SMALLINT')} NOT NULL DEFAULT 0,
+            fecha    {t("TEXT DEFAULT (datetime('now','localtime'))", 'TIMESTAMP DEFAULT NOW()')}
+        )
+        """,
     ]
 
     from django.db import transaction
@@ -211,7 +218,7 @@ def init_db():
             ("Deportes", "⚽"), ("Alimentos", "🍎"), ("Belleza", "💄"),
         ]
         for cat_n, cat_e in cats:
-            _exec("INSERT INTO categorias(nombre,emoji) VALUES(?,?) ON CONFLICT DO NOTHING", (cat_n, cat_e))
+            _exec("INSERT INTO categorias(nombre,emoji) VALUES(?,?) ON CONFLICT IGNORE", (cat_n, cat_e))
 
         usuarios_demo = [
             ("Super", "Admin", "superadmin@tienda.com", "Admin@2024", "superadmin"),
@@ -221,7 +228,7 @@ def init_db():
         ]
         for nom, ape, email, pw, rol in usuarios_demo:
             h = hash_pass(pw)
-            _exec("INSERT INTO usuarios(nombre,apellido,email,password,rol) VALUES(?,?,?,?,?) ON CONFLICT DO NOTHING",
+            _exec("INSERT INTO usuarios(nombre,apellido,email,password,rol) VALUES(?,?,?,?,?) ON CONFLICT IGNORE",
                   (nom, ape, email, h, rol))
 
         productos_demo = [
@@ -248,7 +255,7 @@ def init_db():
         ]
         for nom, desc, precio, oferta, stock, cat_id, dest, emoji in productos_demo:
             _exec(
-                "INSERT INTO productos(nombre,descripcion,precio,oferta,stock,cat_id,destacado,emoji) VALUES(?,?,?,?,?,?,?,?) ON CONFLICT DO NOTHING",
+                "INSERT INTO productos(nombre,descripcion,precio,oferta,stock,cat_id,destacado,emoji) VALUES(?,?,?,?,?,?,?,?) ON CONFLICT IGNORE",
                 (nom, desc, precio, oferta, stock, cat_id, dest, emoji)
             )
 
