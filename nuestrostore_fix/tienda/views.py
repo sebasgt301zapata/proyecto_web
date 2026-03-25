@@ -70,6 +70,8 @@ def api_registro(request):
 @csrf_exempt
 def api_productos(request):
     if request.method == "GET":
+        page     = max(1, int(request.GET.get("page", 1)))
+        per_page = int(request.GET.get("per_page", 0))   # 0 = sin límite (retrocompat.)
         rows = _exec("""
             SELECT p.id, p.nombre AS n, p.descripcion AS d,
                    p.precio AS p, p.oferta AS o, p.stock AS st,
@@ -89,7 +91,11 @@ def api_productos(request):
                 "dest": bool(r["dest"]), "e": r["e"] or "📦",
                 "img": r["img"]
             })
-        return JsonResponse({"ok": True, "productos": prods})
+        total = len(prods)
+        if per_page > 0:
+            start = (page - 1) * per_page
+            prods = prods[start:start + per_page]
+        return JsonResponse({"ok": True, "productos": prods, "total": total, "page": page})
 
     elif request.method == "POST":
         data = json.loads(request.body or '{}')
@@ -230,8 +236,12 @@ def api_crear_pedido(request):
         _exec("INSERT INTO pedidos(uid,u_nom,u_email,items,total) VALUES(?,?,?,?,?)",
               (uid, u_nom, u_email, json.dumps(items), total))
         for item in items:
-            _exec("UPDATE productos SET stock = GREATEST(0, stock - ?) WHERE id=?",
-                  (item.get("qty", 1), item.get("id")))
+            if _is_postgres():
+                _exec("UPDATE productos SET stock = GREATEST(0, stock - ?) WHERE id=?",
+                      (item.get("qty", 1), item.get("id")))
+            else:
+                _exec("UPDATE productos SET stock = MAX(0, stock - ?) WHERE id=?",
+                      (item.get("qty", 1), item.get("id")))
     log_action(u_nom, "PEDIDO", f"Total: {total:.2f}")
     return JsonResponse({"ok": True})
 
@@ -500,3 +510,59 @@ def api_musica_track(request, uid, mid):
         return JsonResponse({"ok": True})
 
     return JsonResponse({"ok": False, "error": "Método no permitido"}, status=405)
+
+
+# ── CONTACTOS ─────────────────────────────────────────
+@csrf_exempt
+def api_contactos(request):
+    if request.method == "GET":
+        rows = _exec("""
+            SELECT id, nombre, email, tel, asunto, mensaje, leido, fecha
+            FROM contactos ORDER BY id DESC
+        """)
+        return JsonResponse({"ok": True, "contactos": rows})
+
+    elif request.method == "POST":
+        data    = json.loads(request.body or '{}')
+        nombre  = (data.get("nombre") or "").strip()
+        email   = (data.get("email") or "").strip().lower()
+        tel     = (data.get("tel") or "").strip()
+        asunto  = (data.get("asunto") or "").strip()
+        mensaje = (data.get("mensaje") or "").strip()
+
+        if not nombre or not email or not asunto or not mensaje:
+            return JsonResponse({"ok": False, "error": "Todos los campos obligatorios son requeridos"})
+        if "@" not in email or "." not in email.split("@")[-1]:
+            return JsonResponse({"ok": False, "error": "Correo electrónico inválido"})
+        if len(mensaje) < 10:
+            return JsonResponse({"ok": False, "error": "El mensaje debe tener al menos 10 caracteres"})
+
+        with transaction.atomic():
+            _exec_insert(
+                "INSERT INTO contactos(nombre,email,tel,asunto,mensaje) VALUES(?,?,?,?,?)",
+                (nombre, email, tel, asunto, mensaje)
+            )
+        log_action(nombre, "CONTACTO", f"Asunto: {asunto}")
+        return JsonResponse({"ok": True, "mensaje": "Mensaje recibido correctamente"})
+
+    return JsonResponse({"ok": False, "error": "Método no permitido"}, status=405)
+
+
+@csrf_exempt
+@require_http_methods(["PUT"])
+def api_contacto_leer(request, cid):
+    _exec("UPDATE contactos SET leido=1 WHERE id=?", (cid,))
+    return JsonResponse({"ok": True})
+
+
+@csrf_exempt
+@require_http_methods(["DELETE"])
+def api_contacto_eliminar(request, cid):
+    _exec("DELETE FROM contactos WHERE id=?", (cid,))
+    return JsonResponse({"ok": True})
+
+
+# ── 404 ───────────────────────────────────────────────
+def error_404(request, exception=None):
+    from django.shortcuts import render as drender
+    return drender(request, '404.html', status=404)
