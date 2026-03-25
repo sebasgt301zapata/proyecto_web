@@ -288,9 +288,15 @@
       <div class="contact-hero-badge">📬 Estamos aquí para ti</div>
       <h2>¿Cómo podemos<br/><span>Ayudarte?</span></h2>
       <p>Contáctanos por el canal que prefieras. Respondemos en menos de 24 horas.</p>
+      <div class="contact-hero-trust">
+        <span>⚡ Respuesta rápida</span>
+        <span>🔒 100% confidencial</span>
+        <span>🤝 Soporte real</span>
+      </div>
     </div>
   </div>
 
+  <!-- Canales rápidos -->
   <div class="contact-channels">
     <a class="contact-channel" href="https://wa.me/582120000000" target="_blank" rel="noopener">
       <div class="cc-ico cc-ico-wa">💬</div>
@@ -314,12 +320,20 @@
     </div>
   </div>
 
+  <!-- Cuerpo principal -->
   <div class="contact-body">
+    <!-- Formulario mejorado -->
     <div class="contact-form-wrap">
       <div class="cf-header">
         <div class="cf-icon">✉️</div>
         <div><h3>Envíanos un Mensaje</h3><p>Te respondemos en menos de 24 horas</p></div>
       </div>
+
+      <!-- Aviso si está logueado -->
+      <div id="cfLoginNote" class="cf-login-note" style="display:none">
+        <span>👤</span><span id="cfLoginNoteText">Tus datos se completaron automáticamente</span>
+      </div>
+
       <div class="cf-row">
         <div class="fg"><label>Nombre *</label><input class="fc" type="text" id="cfNombre" placeholder="Tu nombre completo" autocomplete="name"/></div>
         <div class="fg"><label>Correo *</label><input class="fc" type="email" id="cfEmail" placeholder="correo@ejemplo.com" inputmode="email" autocomplete="email"/></div>
@@ -334,16 +348,62 @@
           <option value="devolucion">↩️ Devolución o garantía</option>
           <option value="pago">💳 Problema con el pago</option>
           <option value="envio">🚚 Seguimiento de envío</option>
+          <option value="queja">😟 Queja o sugerencia</option>
           <option value="otro">💬 Otro</option>
         </select>
       </div>
-      <div class="fg"><label>Mensaje *</label><textarea class="fc" id="cfMensaje" rows="5" placeholder="Cuéntanos en qué podemos ayudarte…" style="resize:vertical"></textarea></div>
+      <div class="fg">
+        <label>Mensaje * <span id="cfCharCount" class="cf-char-count">0 / 500</span></label>
+        <textarea class="fc" id="cfMensaje" rows="5" maxlength="500" placeholder="Cuéntanos en qué podemos ayudarte. Cuanto más detallado, mejor te ayudaremos…" style="resize:vertical" oninput="actualizarContador()"></textarea>
+      </div>
+
+      <!-- Prioridad -->
+      <div class="fg">
+        <label>Prioridad</label>
+        <div class="cf-priority-row">
+          <label class="cf-prio-opt">
+            <input type="radio" name="cfPrioridad" value="normal" checked/>
+            <span class="cf-prio-badge prio-normal">🟢 Normal</span>
+          </label>
+          <label class="cf-prio-opt">
+            <input type="radio" name="cfPrioridad" value="urgente"/>
+            <span class="cf-prio-badge prio-urgente">🔴 Urgente</span>
+          </label>
+          <label class="cf-prio-opt">
+            <input type="radio" name="cfPrioridad" value="informativo"/>
+            <span class="cf-prio-badge prio-info">🔵 Informativo</span>
+          </label>
+        </div>
+      </div>
+
       <div id="cfErr" class="form-err" style="display:none"></div>
-      <div id="cfOk" class="form-ok" style="display:none">✅ ¡Mensaje enviado! Te responderemos pronto.</div>
-      <button class="bp contact-send-btn" onclick="enviarContacto()">📨 Enviar Mensaje →</button>
+      <div id="cfOk" class="form-ok" style="display:none">
+        ✅ ¡Mensaje enviado con éxito! Te responderemos pronto al correo indicado.
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="bp contact-send-btn" onclick="enviarContacto()" style="flex:1">📨 Enviar Mensaje →</button>
+        <a class="contact-wa-btn" href="https://wa.me/582120000000" target="_blank" rel="noopener">💬 WhatsApp</a>
+      </div>
     </div>
 
+    <!-- Columna de info -->
     <div class="contact-info-wrap">
+
+      <!-- Mapa estático de Caracas -->
+      <div class="contact-info-card contact-map-card">
+        <div class="cic-title">📍 Nuestra Ubicación</div>
+        <div class="contact-map-wrap">
+          <iframe
+            src="https://www.openstreetmap.org/export/embed.html?bbox=-66.9800%2C10.4500%2C-66.8600%2C10.5100&layer=mapnik&marker=10.4806%2C-66.9036"
+            width="100%" height="180" frameborder="0"
+            style="border-radius:12px;border:0;display:block"
+            loading="lazy" title="Ubicación NuestroStore Caracas">
+          </iframe>
+          <div class="contact-map-label">📍 Caracas, Venezuela · Zona Metropolitana</div>
+        </div>
+      </div>
+
+      <!-- Horario -->
       <div class="contact-info-card">
         <div class="cic-title">🕐 Horario de Atención</div>
         <div class="cic-schedule">
@@ -354,6 +414,7 @@
         <div class="cic-note">⚡ WhatsApp disponible 24/7 para urgencias</div>
       </div>
 
+      <!-- FAQ -->
       <div class="contact-info-card">
         <div class="cic-title">❓ Preguntas Frecuentes</div>
         <div class="contact-faq">
@@ -373,9 +434,14 @@
             <div class="cfaq-q">¿Tienen garantía los productos? <span class="cfaq-arr">▼</span></div>
             <div class="cfaq-a">Sí, todos nuestros productos tienen garantía mínima de 30 días. Algunos artículos tienen garantía extendida del fabricante.</div>
           </div>
+          <div class="cfaq-item" onclick="toggleFaq(this)">
+            <div class="cfaq-q">¿Hacen envíos a todo Venezuela? <span class="cfaq-arr">▼</span></div>
+            <div class="cfaq-a">Sí, hacemos envíos a todo el territorio nacional. El costo y tiempo varía según el estado. Consulta tarifas al comprar.</div>
+          </div>
         </div>
       </div>
 
+      <!-- Redes sociales -->
       <div class="contact-info-card contact-social-card">
         <div class="cic-title">🌐 Síguenos</div>
         <div class="contact-social-grid">
@@ -387,6 +453,12 @@
       </div>
     </div>
   </div>
+
+  <!-- Botón flotante WhatsApp -->
+  <a class="contact-wa-float" href="https://wa.me/582120000000?text=Hola%2C%20necesito%20ayuda%20con%20mi%20pedido" target="_blank" rel="noopener" aria-label="Contactar por WhatsApp">
+    <span class="wa-float-ico">💬</span>
+    <span class="wa-float-txt">¿Necesitas ayuda?</span>
+  </a>
 
   <footer>
     <div class="footer-grid">
@@ -572,12 +644,6 @@
     </div>
   </div>
 </div>
-
-<div class="tcs" id="tcs"></div>
-<script src="{% static 'js/app.js' %}"></script>
-</body>
-</html>
-
 
 <div class="tcs" id="tcs"></div>
 <script src="{% static 'js/app.js' %}"></script>
