@@ -1,92 +1,65 @@
-# 🛒 NuestroStore v6 — Django Edition
+# NuestroStore 🛍️
 
-## 🚀 Cómo ejecutar
+Tienda online venezolana construida con Django + SQLite/PostgreSQL.
 
-### 1. Instalar Django
+## ✅ Mejoras implementadas
+
+### Sección Contacto (nueva)
+- Página `/contacto` completa con hero, formulario, canales rápidos, FAQ acordeón y redes sociales
+- Tabla `contactos` en la base de datos
+- API REST: `POST /api/contactos`, `PUT /api/contactos/<id>/leer`, `DELETE /api/contactos/<id>/eliminar`
+- Panel **📬 Mensajes** en el panel de Administrador y Superadmin
+- Formulario conectado al backend real (sin setTimeout simulado)
+
+### Correcciones de compatibilidad
+- `GREATEST(0, ...)` → `MAX(0, ...)` para SQLite en descuento de stock al pedir
+- `ON CONFLICT DO NOTHING` → `ON CONFLICT IGNORE` (SQLite)
+- `commit_unless_managed()` eliminado (deprecado en Django 3+)
+
+### Seguridad
+- `ALLOWED_HOSTS` configurable por variable de entorno en producción
+- `.env.example` con instrucciones claras
+- `SECRET_KEY` y `DEBUG` siempre vienen de variables de entorno
+
+### Escalabilidad
+- API de productos soporta paginación: `GET /api/productos?page=1&per_page=50`
+- Sin límite de resultados por defecto (retrocompatible)
+
+### UX
+- Página 404 personalizada con diseño de la marca
+- Botón **📬 Contacto** en nav desktop y bottom nav móvil
+
+## 🚀 Inicio rápido
+
 ```bash
-pip install django
-# o
+cd nuestrostore_fix
 pip install -r requirements.txt
+cp .env.example .env        # edita los valores
+python manage.py collectstatic --noinput
+python main.py              # o: gunicorn nuestrostore.wsgi
 ```
 
-### 2. Ejecutar (modo fácil)
-```bash
-python main.py
-```
-Esto inicializa la base de datos, muestra las credenciales y levanta el servidor en el puerto 8000.
+## 🔑 Cuentas demo
 
-### 3. Ejecutar (modo Django estándar)
-```bash
-python manage.py runserver 0.0.0.0:8000
-```
-> ⚠️ Con este modo debes primero crear la BD manualmente:
-> ```python
-> import django, os
-> os.environ['DJANGO_SETTINGS_MODULE'] = 'nuestrostore.settings'
-> django.setup()
-> from tienda.database import init_db
-> init_db()
-> ```
+| Rol | Email | Contraseña |
+|-----|-------|------------|
+| Superadmin | superadmin@tienda.com | Admin@2024 |
+| Admin | carlos@admin.com | Admin@2024 |
+| Cliente | ana@cliente.com | cliente123 |
 
----
-
-## 🔐 Credenciales de acceso
-
-| Rol        | Email                       | Contraseña   |
-|------------|-----------------------------|--------------|
-| SuperAdmin | superadmin@tienda.com       | Admin@2024   |
-| Admin      | carlos@admin.com            | Admin@2024   |
-| Cliente    | ana@cliente.com             | cliente123   |
-
----
-
-## 🏗️ Estructura del proyecto
+## 📁 Estructura
 
 ```
-nuestrostore_django/
-├── main.py                    ← Punto de entrada (reemplaza Flask main.py)
-├── manage.py                  ← CLI Django estándar
-├── requirements.txt
-├── tienda.db                  ← Base de datos SQLite (se crea automáticamente)
-├── nuestrostore/
-│   ├── settings.py
-│   ├── urls.py
-│   └── wsgi.py
-└── tienda/
-    ├── views.py               ← API REST (equivale a Flask routes.py)
-    ├── urls.py                ← Rutas Django
-    ├── database.py            ← SQLite directo (sin ORM Django)
-    ├── templates/
-    │   └── index.html         ← Frontend SPA
-    └── static/
-        ├── css/styles.css     ← Estilos mejorados para móvil
-        └── js/app.js          ← JS con bug de doble carrito corregido
+nuestrostore_fix/
+├── nuestrostore/       # Configuración Django
+├── tienda/
+│   ├── templates/      # index.html, 404.html
+│   ├── static/
+│   │   ├── css/styles.css
+│   │   └── js/app.js
+│   ├── views.py        # API REST completa
+│   ├── urls.py         # Rutas
+│   └── database.py     # ORM manual + init_db()
+├── .env.example
+└── requirements.txt
 ```
-
----
-
-## 🐛 Bug del doble carrito — corregido
-
-**Causa:** La función `actualizarUI()` regeneraba el innerHTML de `navIcons` y `deskActs`,
-creando nuevos elementos `.cart-badge` dinámicamente. Al mismo tiempo, `actualizarBadge()`
-usaba `querySelectorAll(".cart-badge")` que encontraba badges huérfanos del DOM anterior,
-causando conteos duplicados y badges que no desaparecían correctamente.
-
-**Solución:**
-- Cada badge tiene un **ID único**: `#cartBadgeMobile`, `#cartBadgeDesk`, `#cartBadgeNav`
-- `actualizarBadge()` busca por `getElementById()` en lugar de `querySelectorAll(".cart-badge")`
-- El badge del bottom nav (`#cartBadgeNav`) está en el HTML estático y nunca se regenera
-- Los badges de header se crean con sus IDs correctos cuando se regenera el HTML de usuario
-
----
-
-## 📱 Mejoras móviles
-
-- Carrito como **sidebar deslizable desde abajo** en móvil / desde la derecha en escritorio
-- Iconos móviles optimizados para pantallas pequeñas
-- Soporte para `safe-area-inset` (notch en iPhone)
-- Animación de entrada en toasts
-- Inputs con `inputmode` correcto para teclados móviles
-- Botones con feedback táctil (`:active` states)
-- Pantallas muy pequeñas (≤360px) con layout en columna única
-- `maximum-scale=5.0` para permitir zoom de accesibilidad
