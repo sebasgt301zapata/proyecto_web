@@ -8,8 +8,6 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-nuestrostore-change-t
 
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-# En producción define ALLOWED_HOSTS como variable de entorno separada por comas
-# Ej: ALLOWED_HOSTS=tudominio.com,www.tudominio.com
 _allowed = os.environ.get('ALLOWED_HOSTS', '')
 ALLOWED_HOSTS = [h.strip() for h in _allowed.split(',') if h.strip()] if _allowed else ['*']
 
@@ -21,7 +19,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # Debe ir justo después de SecurityMiddleware
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -45,14 +43,9 @@ TEMPLATES = [
 WSGI_APPLICATION = 'nuestrostore.wsgi.application'
 
 DATABASE_URL = os.environ.get('DATABASE_URL')
-
 if DATABASE_URL:
     DATABASES = {
-        'default': dj_database_url.parse(
-            DATABASE_URL,
-            conn_max_age=600,
-            conn_health_checks=True,
-        )
+        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, conn_health_checks=True)
     }
 else:
     DATABASES = {
@@ -67,17 +60,24 @@ TIME_ZONE = 'America/Caracas'
 USE_I18N = True
 USE_TZ = False
 
-STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / 'tienda' / 'static']
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+# ─── ARCHIVOS ESTÁTICOS ───────────────────────────────────────────────────────
+# STATIC_ROOT es donde collectstatic copia los archivos.
+# STATICFILES_DIRS es donde están los archivos fuente.
+# En Render, collectstatic corre en build.sh y llena STATIC_ROOT.
+# WhiteNoise sirve desde STATIC_ROOT en producción.
 
-# WhiteNoise: CompressedStaticFilesStorage (sin hash en nombres)
-# Esto evita el error "ValueError: Missing staticfiles manifest entry"
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [BASE_DIR / 'tienda' / 'static']
+
+# Sin manifest hash — evita "Missing staticfiles manifest entry"
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
-# Permite servir estáticos sin collectstatic en desarrollo
+# CRÍTICO: permite que WhiteNoise sirva archivos directamente desde
+# STATICFILES_DIRS aunque collectstatic no haya corrido todavía.
+# Esto hace que funcione tanto en desarrollo como si collectstatic falla.
 WHITENOISE_USE_FINDERS = True
+WHITENOISE_AUTOREFRESH = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
 DATA_UPLOAD_MAX_MEMORY_SIZE = 20 * 1024 * 1024
