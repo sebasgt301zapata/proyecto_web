@@ -2,6 +2,7 @@
 var PRODS=[],CATS=[{id:0,n:"🏷️ Todos"}],RESENIAS={},REPORTES=[],LOGS=[],PEDIDOS=[],USUARIOS=[];
 var usuario=null,carrito=[],catActiva=0,busqueda="",sortActivo="def";
 var aTab="productos",sTab="stats",editId=null,newPF={n:"",d:"",p:"",o:"",st:"",cat:1,dest:false,img:null};
+var CONTACTOS=[];
 var contFact=1000,paginaActual="inicio",starSelVal=5;
 var imgTempAdmin=null,imgTempSuper=null,spEditId=null,spNewPF={n:"",d:"",p:"",o:"",st:"",cat:1,dest:false,img:null};
 var swTimer=null;
@@ -31,16 +32,17 @@ function bs(n){return "Bs. "+Number(n).toLocaleString("es-VE",{minimumFractionDi
 // ── PÁGINAS ──────────────────────────────────
 function irPagina(pg){
   paginaActual=pg;
-  var ids={inicio:"pInicio",tienda:"pTienda"};
+  var ids={inicio:"pInicio",tienda:"pTienda",contacto:"pContacto"};
   Object.keys(ids).forEach(function(k){var el=document.getElementById(ids[k]);if(el)el.className=k===pg?"pagina active":"pagina";});
   document.querySelectorAll(".btab").forEach(function(b){b.classList.remove("on");var l=b.querySelector(".iline");if(l)l.style.display="none";});
-  var bmap={inicio:"bt0",tienda:"bt1"};
+  var bmap={inicio:"bt0",tienda:"bt1",contacto:"bt4"};
   if(bmap[pg]){var btn=document.getElementById(bmap[pg]);if(btn){btn.classList.add("on");var l=btn.querySelector(".iline");if(l)l.style.display="block";}}
   document.querySelectorAll(".dnav-btn").forEach(function(b){b.classList.remove("active");});
-  var dmap={inicio:"dnav0",tienda:"dnav1"};
+  var dmap={inicio:"dnav0",tienda:"dnav1",contacto:"dnav2"};
   if(dmap[pg]){var db=document.getElementById(dmap[pg]);if(db)db.classList.add("active");}
   if(pg==="tienda"){cargarCats();renderProds();actualizarEstadsTienda();}
   if(pg==="inicio")renderInicio();
+  if(pg==="contacto"){setTimeout(autocompletarContacto,100);}
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
@@ -200,6 +202,9 @@ function initCarouselSwipe(name){
   outer.addEventListener("mouseleave",function(){isDragging=false;});
   outer.addEventListener("touchstart",function(e){startX=e.touches[0].clientX;},{passive:true});
   outer.addEventListener("touchend",function(e){var diff=startX-e.changedTouches[0].clientX;if(Math.abs(diff)>40){if(diff>0)carouselNext(name);else carouselPrev(name);}},{passive:true});
+  // Pausar al hover
+  outer.addEventListener("mouseenter",function(){var c=CR[name];if(c.timer){clearInterval(c.timer);c.timer=null;}});
+  outer.addEventListener("mouseleave",function(){var c=CR[name];if(!c.timer&&c.total>c.perPage){var delay=name==="ofertas"?5000:4200;c.timer=setInterval(function(){carouselNext(name);},delay);}});
 }
 
 window.addEventListener("resize",function(){
@@ -255,9 +260,11 @@ function tarjetaInner(p,showOferta,starsStr,cnt){
   var starsEl=starsStr?'<div class="pstars">'+starsStr+(cnt?' <small style="color:var(--gr);font-size:.7rem">('+cnt+')</small>':'')+'</div>':"";
   var ofPct=(showOferta&&p.o&&p.p>0)?Math.round((1-p.o/p.p)*100):0;
   var pctBadge=ofPct>0?'<span class="pdesc-pct">-'+ofPct+'%</span>':"";
+  var stockBadge=(p.st>0&&p.st<=5)?'<span style="position:absolute;bottom:8px;left:8px;background:rgba(230,81,0,.9);color:#fff;font-size:.62rem;font-weight:900;padding:3px 7px;border-radius:50px;z-index:2">⚡ Solo '+p.st+'</span>':"";
   return '<div class="pi">'+imgEl+
     ((showOferta&&p.o)||(!showOferta&&p.o)?'<span class="pbo">🔥 OFERTA</span>':'')+
     pctBadge+(p.dest?'<span class="pbd">⭐</span>':'')+
+    stockBadge+
     '</div><div class="pif">'+
     '<div class="pcat">'+p.cat+'</div>'+
     '<div class="pnm">'+p.n+'</div>'+
@@ -273,7 +280,19 @@ function tarjetaHTML(p,showOferta,starsStr,cnt){
 function cargarCats(){var c=document.getElementById("cats");if(!c)return;c.innerHTML=CATS.map(function(cat){return '<button class="cc'+(cat.id===catActiva?" on":"")+'" onclick="filtCat('+cat.id+',this)">'+cat.n+'</button>';}).join("");}
 function filtCat(id,btn){catActiva=id;document.querySelectorAll(".cc").forEach(function(b){b.classList.remove("on");});btn.classList.add("on");renderProds();}
 function sortProds(val){sortActivo=val;renderProds();}
-function prodsFiltrados(){return PRODS.filter(function(p){if(p.st<=0)return false;var mc=catActiva===0||p.cid===catActiva;var mb=!busqueda||p.n.toLowerCase().indexOf(busqueda.toLowerCase())>=0||(p.d||"").toLowerCase().indexOf(busqueda.toLowerCase())>=0;return mc&&mb;});}
+function prodsFiltrados(){
+  var q=busqueda.toLowerCase().trim();
+  return PRODS.filter(function(p){
+    if(p.st<=0)return false;
+    var mc=catActiva===0||p.cid===catActiva;
+    if(!q)return mc;
+    var mb=p.n.toLowerCase().indexOf(q)>=0||
+           (p.d||"").toLowerCase().indexOf(q)>=0||
+           (p.cat||"").toLowerCase().indexOf(q)>=0||
+           String(p.p).indexOf(q)>=0;
+    return mc&&mb;
+  });
+}
 function renderProds(){
   var g=document.getElementById("pg");if(!g)return;
   var lista=prodsFiltrados();
@@ -281,7 +300,21 @@ function renderProds(){
   else if(sortActivo==="precioDesc")lista.sort(function(a,b){return (b.o||b.p)-(a.o||a.p);});
   else if(sortActivo==="nombre")lista.sort(function(a,b){return a.n.localeCompare(b.n);});
   else if(sortActivo==="valorados")lista.sort(function(a,b){return promedioEstrellas(b.id)-promedioEstrellas(a.id);});
-  if(!lista.length){g.innerHTML='<div style="grid-column:1/-1" class="empty"><div class="eico">🔍</div><h3>Sin resultados</h3><p>Prueba otra búsqueda</p></div>';return;}
+  // Contador de resultados
+  var filtroInfo=document.getElementById("filtroInfo");
+  if(!filtroInfo){
+    var toolbar=document.querySelector(".tienda-toolbar");
+    if(toolbar){filtroInfo=document.createElement("div");filtroInfo.id="filtroInfo";filtroInfo.style.cssText="font-size:.8rem;font-weight:700;color:var(--gr);padding:6px 16px 0;max-width:960px;margin:0 auto;";toolbar.after(filtroInfo);}
+  }
+  if(filtroInfo){
+    var txt="";
+    if(busqueda)txt+="🔍 \""+busqueda+"\" — ";
+    if(catActiva>0){var cat=CATS.find(function(c){return c.id===catActiva;});if(cat)txt+=cat.n+" — ";}
+    txt+=lista.length+" resultado"+(lista.length!==1?"s":"");
+    if(busqueda||catActiva>0)txt+=' <span style="cursor:pointer;color:var(--na);text-decoration:underline;margin-left:6px" onclick="catActiva=0;busqueda=\'\';document.getElementById(\'sBusq\').value=\'\';renderProds();cargarCats()">✕ Limpiar</span>';
+    filtroInfo.innerHTML=txt;
+  }
+  if(!lista.length){g.innerHTML='<div style="grid-column:1/-1" class="empty"><div class="eico">🔍</div><h3>Sin resultados</h3><p>Prueba otra búsqueda o categoría</p>'+(busqueda||catActiva>0?'<button class="btn-hero-2" style="margin-top:12px;font-size:.85rem" onclick="catActiva=0;busqueda=\'\';document.getElementById(\'sBusq\').value=\'\';renderProds();cargarCats()">Ver todos los productos</button>':'')+' </div>';return;}
   g.innerHTML=lista.map(function(p){var avg=promedioEstrellas(p.id);var stars=avg>0?starsHtml(avg):null;var cnt=RESENIAS[p.id]?RESENIAS[p.id].length:0;return tarjetaHTML(p,true,stars,cnt);}).join("");
 }
 
@@ -475,8 +508,34 @@ function actualizarUI(){
 }
 
 // ── CARRITO ──────────────────────────────────
-function addCart(id){if(!usuario){toast("Inicia sesión","e");abrirModal("mLogin");return;}var p=PRODS.find(function(x){return x.id===id;});if(!p||p.st<=0){toast("Producto agotado","e");return;}var ex=carrito.find(function(x){return x.id===id;});if(ex)ex.qty++;else carrito.push({id:p.id,n:p.n,p:(p.o||p.p),qty:1,e:emojiProd(p),img:p.img||null});actualizarCarrito();toast(p.n+" agregado 🛒","s");}
-function cambiarQty(id,delta){var ex=carrito.find(function(x){return x.id===id;});if(!ex)return;ex.qty=Math.max(1,ex.qty+delta);actualizarCarrito();}
+function addCart(id){
+  if(!usuario){toast("Inicia sesión para comprar","e");abrirModal("mLogin");return;}
+  var p=PRODS.find(function(x){return x.id===id;});
+  if(!p||p.st<=0){toast("Producto agotado ❌","e");return;}
+  var ex=carrito.find(function(x){return x.id===id;});
+  var cantActual=ex?ex.qty:0;
+  if(cantActual>=p.st){toast("Solo hay "+p.st+" unidad"+(p.st!==1?"es":"")+" disponible","e");return;}
+  if(ex) ex.qty++;
+  else carrito.push({id:p.id,n:p.n,p:(p.o||p.p),qty:1,e:emojiProd(p),img:p.img||null,maxSt:p.st});
+  actualizarCarrito();
+  toast(p.n+" agregado al carrito 🛒","s");
+  // Animar badge
+  ["cartBadgeMobile","cartBadgeDesk","cartBadgeNav"].forEach(function(bid){
+    var el=document.getElementById(bid);
+    if(el){el.classList.remove("badge-pulse");void el.offsetWidth;el.classList.add("badge-pulse");}
+  });
+}
+function cambiarQty(id,delta){
+  var ex=carrito.find(function(x){return x.id===id;});
+  if(!ex)return;
+  var p=PRODS.find(function(x){return x.id===id;});
+  var maxSt=p?p.st:(ex.maxSt||999);
+  var nueva=ex.qty+delta;
+  if(nueva<1){quitarCart(id);return;}
+  if(nueva>maxSt){toast("Máximo "+maxSt+" unidad"+(maxSt!==1?"es":"")+" disponibles","e");return;}
+  ex.qty=nueva;
+  actualizarCarrito();
+}
 function quitarCart(id){carrito=carrito.filter(function(x){return x.id!==id;});actualizarCarrito();}
 function actualizarCarrito(){
   var total=carrito.reduce(function(s,x){return s+x.p*x.qty;},0),count=carrito.reduce(function(s,x){return s+x.qty;},0);
@@ -490,7 +549,26 @@ function actualizarCarrito(){
 function actualizarBadge(count){var n=count!==undefined?count:carrito.reduce(function(s,x){return s+x.qty;},0);["cartBadgeMobile","cartBadgeDesk","cartBadgeNav"].forEach(function(bid){var el=document.getElementById(bid);if(el){el.textContent=n;el.style.display=n>0?"flex":"none";}});}
 function abrirCarrito(){actualizarCarrito();document.getElementById("csh").classList.add("open");document.getElementById("cov").classList.add("show");document.body.style.overflow="hidden";}
 function cerrarCarrito(){document.getElementById("csh").classList.remove("open");document.getElementById("cov").classList.remove("show");document.body.style.overflow="";}
-function pedido(){if(!usuario){toast("Inicia sesión","e");abrirModal("mLogin");return;}if(!carrito.length){toast("Carrito vacío","e");return;}var total=carrito.reduce(function(s,x){return s+x.p*x.qty;},0);api("/pedidos","POST",{uid:usuario.id,items:JSON.parse(JSON.stringify(carrito)),total:total}).then(function(r){if(!r.ok){toast("Error","e");return;}carrito=[];actualizarCarrito();cerrarCarrito();toast("¡Pedido procesado! 🎉","s");});}
+function pedido(){
+  if(!usuario){toast("Inicia sesión","e");abrirModal("mLogin");return;}
+  if(!carrito.length){toast("Carrito vacío","e");return;}
+  var total=carrito.reduce(function(s,x){return s+x.p*x.qty;},0);
+  var resumen=carrito.map(function(it){return "• "+it.n+" × "+it.qty+" = "+bs(it.p*it.qty);}).join("\n");
+  var iva=total*0.16;
+  if(!confirm("📋 CONFIRMAR PEDIDO\n\n"+resumen+"\n\n─────────────────\nSubtotal: "+bs(total)+"\nIVA (16%): "+bs(iva)+"\nTOTAL: "+bs(total+iva)+"\n\n¿Confirmas la compra?")){return;}
+  var btn=document.querySelector(".btn-pagar");
+  if(btn){btn.disabled=true;btn.textContent="Procesando…";}
+  api("/pedidos","POST",{uid:usuario.id,items:JSON.parse(JSON.stringify(carrito)),total:total}).then(function(r){
+    if(btn){btn.disabled=false;btn.textContent="Pagar →";}
+    if(!r.ok){toast("Error al procesar el pedido","e");return;}
+    carrito=[];
+    actualizarCarrito();
+    cerrarCarrito();
+    toast("¡Pedido confirmado! 🎉 Te contactaremos pronto.","s");
+    // Actualizar stock local
+    if(r.ok) cargarDatos();
+  });
+}
 
 // ── FACTURA ──────────────────────────────────
 function generarFactura(){
@@ -558,7 +636,7 @@ function abrirCuentaCliente(){
       '<button class="bs" style="flex:1;font-size:.85rem;padding:10px;margin-top:0" onclick="cerrarSesion();cerrarModal(\'mPanel\')">🚪 Salir</button>'+
     '</div>'+
     '<button onclick="mpPanelToggle()" id="mpPanelBtn" style="width:100%;margin-bottom:18px;padding:10px 14px;border-radius:10px;border:2px solid #e0d0c0;background:#fff8f0;font-weight:800;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;color:var(--na3)">'+mpPanelBtnLabel()+'</button>'+
-    '<div class="tabs"><button class="tab on" onclick="cTabN(this,1)">🚨 Reportes</button><button class="tab" onclick="cTabN(this,2)">📦 Pedidos</button><button class="tab" onclick="cTabN(this,3)">⭐ Reseñas</button></div>'+
+    '<div class="tabs"><button class="tab on" onclick="cTabN(this,1)">🚨 Reportes</button><button class="tab" onclick="cTabN(this,2)">📦 Pedidos</button><button class="tab" onclick="cTabN(this,3)">📋 Historial</button><button class="tab" onclick="cTabN(this,4)">⭐ Reseñas</button></div>'+
     '<div id="cTabBody"></div>';
   cTabN(pb.querySelector(".tab"),1);
   abrirModal("mPanel");
@@ -566,28 +644,149 @@ function abrirCuentaCliente(){
 function cTabN(btn,t){
   document.querySelectorAll("#panB .tab").forEach(function(b){b.classList.remove("on");});btn.classList.add("on");
   var c=document.getElementById("cTabBody");
+  c.innerHTML='<div style="text-align:center;padding:24px;color:var(--gr)">Cargando\u2026</div>';
   if(t===1){api("/mis-reportes/"+usuario.id).then(function(r){if(r.ok)REPORTES=r.reportes;c.innerHTML=renderMisReportes(REPORTES);});}
   else if(t===2){api("/mis-pedidos/"+usuario.id).then(function(r){if(r.ok)PEDIDOS=r.pedidos;c.innerHTML=renderMisPedidos(PEDIDOS);});}
-  else{api("/resenias").then(function(r){if(!r.ok){c.innerHTML='<div class="empty"><div class="eico">⭐</div><h3>Sin reseñas</h3></div>';return;}var mis=r.resenias.filter(function(x){return x.uid===usuario.id;});if(!mis.length){c.innerHTML='<div class="empty"><div class="eico">⭐</div><h3>Sin reseñas aún</h3></div>';return;}c.innerHTML='<div style="display:flex;flex-direction:column;gap:10px">'+mis.map(function(res){var pn=(PRODS.find(function(p){return p.id===res.pid;})||{n:"Producto"}).n;return '<div style="border:2px solid #f0f0f0;border-radius:12px;padding:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><strong style="color:var(--na3)">'+pn+'</strong><span style="color:#f59e0b">'+starsHtml(res.estrellas)+'</span></div><p style="font-size:.88rem;color:#444">'+res.comentario+'</p><small style="color:var(--gr)">'+res.fecha+'</small></div>';}).join("")+'</div>';});}
+  else if(t===3){
+    Promise.all([api("/mis-pedidos/"+usuario.id),api("/mis-reportes/"+usuario.id)]).then(function(res){
+      if(res[0].ok)PEDIDOS=res[0].pedidos;if(res[1].ok)REPORTES=res[1].reportes;
+      c.innerHTML=renderHistorial(PEDIDOS,REPORTES);
+    });
+  } else{api("/resenias").then(function(r){if(!r.ok){c.innerHTML='<div class="empty"><div class="eico">\u2b50</div><h3>Sin rese\u00f1as</h3></div>';return;}var mis=r.resenias.filter(function(x){return x.uid===usuario.id;});if(!mis.length){c.innerHTML='<div class="empty"><div class="eico">\u2b50</div><h3>Sin rese\u00f1as a\u00fan</h3></div>';return;}c.innerHTML='<div style="display:flex;flex-direction:column;gap:10px">'+mis.map(function(res){var pn=(PRODS.find(function(p){return p.id===res.pid;})||{n:"Producto"}).n;return '<div style="border:2px solid #f0f0f0;border-radius:12px;padding:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><strong style="color:var(--na3)">'+pn+'</strong><span style="color:#f59e0b">'+starsHtml(res.estrellas)+'</span></div><p style="font-size:.88rem;color:#444">'+res.comentario+'</p><small style="color:var(--gr)">'+res.fecha+'</small></div>';}).join("")+'</div>';});}
 }
+
 function renderMisReportes(lista){
-  if(!lista||!lista.length)return '<div class="empty"><div class="eico">📋</div><h3>Sin reportes</h3></div><button class="bp" style="margin-top:12px" onclick="cerrarModal(\'mPanel\');abrirRep(0)">+ Enviar Reporte</button>';
+  if(!lista||!lista.length)return '<div class="empty"><div class="eico">\ud83d\udccb</div><h3>Sin reportes</h3><p>\u00bfEncontraste un problema? Av\u00edsanos.</p></div><button class="bp" style="margin-top:12px" onclick="cerrarModal(\'mPanel\');abrirRep(0)">+ Enviar Reporte</button>';
   return '<div style="display:flex;flex-direction:column;gap:10px">'+lista.map(function(r){
     var col=r.estado==="resuelto"?"#2e7d32":r.estado==="en_revision"?"#1565c0":"#e65100";
-    var lbl=r.estado==="resuelto"?"✅ Resuelto":r.estado==="en_revision"?"🔄 En revisión":"⏳ Pendiente";
-    return '<div class="rep-card">'+
-      '<div class="rep-card-head"><strong style="font-size:.88rem;flex:1">'+r.pNom+'</strong><span style="background:'+col+'22;color:'+col+';padding:2px 9px;border-radius:50px;font-size:.72rem;font-weight:800">'+lbl+'</span></div>'+
-      '<div class="rep-card-body"><div style="color:var(--gr);font-size:.78rem;margin-bottom:6px">📅 '+r.fecha+' · 🏷️ '+r.tipo+'</div>'+
-      '<div class="rep-desc-box">'+(r.desc||r.descripcion||"")+'</div>'+
-      (r.respuesta?'<div class="rep-respuesta-box"><strong>💬 Respuesta ('+( r.respFecha||"")+'):</strong>'+r.respuesta+'</div>':'')+
-      '</div></div>';
+    var lbl=r.estado==="resuelto"?"\u2705 Resuelto":r.estado==="en_revision"?"\ud83d\udd04 En revisi\u00f3n":"\u23f3 Pendiente";
+    var bg=r.estado==="resuelto"?"#e8f5e9":r.estado==="en_revision"?"#e3f2fd":"#fff3e0";
+    return '<div style="border:2px solid '+col+'33;border-radius:14px;padding:14px;background:'+bg+'22">'+
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">'+
+        '<div style="width:36px;height:36px;border-radius:10px;background:'+col+'22;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0">\ud83d\udea8</div>'+
+        '<div style="flex:1;min-width:0">'+
+          '<strong style="font-size:.88rem;color:var(--bk)">'+r.pNom+'</strong>'+
+          '<div style="font-size:.74rem;color:var(--gr)">\ud83d\udcc5 '+r.fecha+' \u00b7 \ud83c\udff7\ufe0f '+r.tipo+'</div>'+
+        '</div>'+
+        '<span style="background:'+col+'22;color:'+col+';padding:3px 10px;border-radius:50px;font-size:.72rem;font-weight:900">'+lbl+'</span>'+
+      '</div>'+
+      '<div style="background:rgba(0,0,0,.04);border-radius:10px;padding:10px 12px;font-size:.83rem;color:#444;line-height:1.55;margin-bottom:'+(r.respuesta?'8':'0')+'px">'+(r.desc||r.descripcion||"")+'</div>'+
+      (r.respuesta?'<div style="background:#fff;border-left:3px solid '+col+';border-radius:0 10px 10px 0;padding:10px 12px;margin-top:8px">'+
+        '<div style="font-size:.72rem;font-weight:900;color:'+col+';margin-bottom:4px">\ud83d\udcac Respuesta del equipo \u00b7 '+(r.respFecha||"")+'</div>'+
+        '<div style="font-size:.83rem;color:#333;line-height:1.55">'+r.respuesta+'</div>'+
+      '</div>':
+      '<div style="font-size:.75rem;color:var(--gr);margin-top:6px;font-style:italic">\u23f3 Esperando respuesta del equipo\u2026</div>')+
+    '</div>';
   }).join("")+'</div><button class="bp" style="margin-top:14px" onclick="cerrarModal(\'mPanel\');abrirRep(0)">+ Nuevo Reporte</button>';
 }
-function renderMisPedidos(lista){if(!lista||!lista.length)return '<div class="empty"><div class="eico">📦</div><h3>Sin pedidos aún</h3></div>';return '<div style="display:flex;flex-direction:column;gap:10px">'+lista.map(function(ped){var items=ped.items.map(function(it){return (it.e||"📦")+' '+it.n+' ×'+it.qty;}).join(", ");return '<div style="border:2px solid #f0f0f0;border-radius:12px;padding:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><strong style="font-size:.85rem;color:var(--na3)">Pedido #'+ped.id+'</strong><span style="background:#e8f5e9;color:#2e7d32;padding:2px 9px;border-radius:50px;font-size:.72rem;font-weight:800">✅ Procesado</span></div><div style="color:var(--gr);font-size:.78rem;margin-bottom:6px">📅 '+ped.fecha+'</div><p style="font-size:.82rem;color:#555;margin-bottom:6px">'+items+'</p><div style="font-weight:800;color:var(--na3)">Total: '+bs(ped.total)+'</div></div>';}).join("")+'</div>';}
+
+function renderMisPedidos(lista){
+  if(!lista||!lista.length)return '<div class="empty"><div class="eico">\ud83d\udce6</div><h3>Sin pedidos a\u00fan</h3><p>Cuando realices una compra aparecer\u00e1 aqu\u00ed.</p><button class="btn-hero-2" style="margin-top:12px;font-size:.85rem" onclick="cerrarModal(\'mPanel\');irPagina(\'tienda\')">\ud83d\udecd\ufe0f Ir a la Tienda</button></div>';
+  var total=lista.reduce(function(s,p){return s+(p.total||0);},0);
+  var totalItems=lista.reduce(function(s,p){return s+(p.items?p.items.reduce(function(a,i){return a+(i.qty||1);},0):0);},0);
+  var stats='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px">'+
+    '<div style="background:linear-gradient(135deg,#fff8e1,#fff3cd);border:1.5px solid #fde68a;border-radius:12px;padding:10px;text-align:center">'+
+      '<div style="font-family:\'Bebas Neue\',cursive;font-size:1.5rem;color:var(--na3)">'+lista.length+'</div>'+
+      '<div style="font-size:.7rem;font-weight:800;color:var(--gr)">PEDIDOS</div>'+
+    '</div>'+
+    '<div style="background:linear-gradient(135deg,#e8f5e9,#c8e6c9);border:1.5px solid #a5d6a7;border-radius:12px;padding:10px;text-align:center">'+
+      '<div style="font-family:\'Bebas Neue\',cursive;font-size:1.5rem;color:#2e7d32">'+totalItems+'</div>'+
+      '<div style="font-size:.7rem;font-weight:800;color:var(--gr)">ART\u00cdCULOS</div>'+
+    '</div>'+
+    '<div style="background:linear-gradient(135deg,#fce7f3,#f8bbd0);border:1.5px solid #f48fb1;border-radius:12px;padding:10px;text-align:center">'+
+      '<div style="font-family:\'Bebas Neue\',cursive;font-size:1.1rem;color:#880e4f;line-height:1.3">'+bs(total)+'</div>'+
+      '<div style="font-size:.7rem;font-weight:800;color:var(--gr)">GASTADO</div>'+
+    '</div>'+
+  '</div>';
+  return stats+'<div style="display:flex;flex-direction:column;gap:12px">'+lista.map(function(ped){
+    var estadoColor={procesado:"#2e7d32",enviado:"#1565c0",entregado:"#4a148c",cancelado:"#c62828"}[ped.estado]||"#2e7d32";
+    var estadoBg={procesado:"#e8f5e9",enviado:"#e3f2fd",entregado:"#f3e5f5",cancelado:"#ffebee"}[ped.estado]||"#e8f5e9";
+    var estadoLabel={procesado:"\u2705 Procesado",enviado:"\ud83d\ude9a En camino",entregado:"\ud83d\udce6 Entregado",cancelado:"\u274c Cancelado"}[ped.estado]||"\u2705 Procesado";
+    var iva=ped.total*0.16;
+    return '<div style="border:2px solid #f0e6d6;border-radius:16px;overflow:hidden">'+
+      '<div style="background:linear-gradient(135deg,var(--na3),var(--na2));padding:12px 16px;display:flex;align-items:center;justify-content:space-between">'+
+        '<div>'+
+          '<div style="font-family:\'Bebas Neue\',cursive;font-size:1.1rem;color:#fff;letter-spacing:1px">Pedido #'+ped.id+'</div>'+
+          '<div style="font-size:.72rem;color:rgba(255,255,255,.8)">\ud83d\udcc5 '+ped.fecha+'</div>'+
+        '</div>'+
+        '<span style="background:'+estadoBg+';color:'+estadoColor+';padding:4px 12px;border-radius:50px;font-size:.72rem;font-weight:900">'+estadoLabel+'</span>'+
+      '</div>'+
+      '<div style="padding:12px 16px;background:#fff">'+
+        '<div style="font-size:.75rem;font-weight:900;color:var(--gr);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Productos</div>'+
+        '<div style="display:flex;flex-direction:column;gap:6px">'+
+        ped.items.map(function(it){
+          var p=PRODS.find(function(x){return x.id===it.id;});
+          var imgEl=it.img?'<img src="'+it.img+'" style="width:36px;height:36px;object-fit:cover;border-radius:8px;flex-shrink:0"/>':(p&&p.img?'<img src="'+p.img+'" style="width:36px;height:36px;object-fit:cover;border-radius:8px;flex-shrink:0"/>':'<div style="width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#fff8e1,#ffe082);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0">'+(it.e||"\ud83d\udce6")+'</div>');
+          return '<div style="display:flex;align-items:center;gap:10px;padding:6px;border-radius:10px;background:#faf5f0">'+
+            imgEl+
+            '<div style="flex:1;min-width:0">'+
+              '<div style="font-size:.84rem;font-weight:800;color:var(--bk);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+it.n+'</div>'+
+              '<div style="font-size:.75rem;color:var(--gr)">'+bs(it.p)+' \u00d7 '+it.qty+'</div>'+
+            '</div>'+
+            '<div style="font-weight:900;color:var(--na3);font-size:.88rem;flex-shrink:0">'+bs(it.p*it.qty)+'</div>'+
+          '</div>';
+        }).join("")+
+        '</div>'+
+        '<div style="margin-top:10px;padding-top:10px;border-top:2px dashed #f0e6d6">'+
+          '<div style="display:flex;justify-content:space-between;font-size:.78rem;color:var(--gr);margin-bottom:3px"><span>Subtotal</span><span>'+bs(ped.total)+'</span></div>'+
+          '<div style="display:flex;justify-content:space-between;font-size:.78rem;color:var(--gr);margin-bottom:6px"><span>IVA (16%)</span><span>'+bs(iva)+'</span></div>'+
+          '<div style="display:flex;justify-content:space-between;font-weight:900;font-size:.95rem"><span style="color:var(--bk)">Total</span><span style="color:var(--na3)">'+bs(ped.total+iva)+'</span></div>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }).join("")+'</div>';
+}
+
+function renderHistorial(pedidos,reportes){
+  var eventos=[];
+  (pedidos||[]).forEach(function(p){eventos.push({tipo:"pedido",fecha:p.fecha,data:p});});
+  (reportes||[]).forEach(function(r){eventos.push({tipo:"reporte",fecha:r.fecha,data:r});});
+  eventos.sort(function(a,b){return (b.fecha||"").localeCompare(a.fecha||"");});
+  if(!eventos.length)return '<div class="empty"><div class="eico">\ud83d\udccb</div><h3>Sin historial</h3><p>Tus compras y reportes aparecer\u00e1n aqu\u00ed.</p></div>';
+  return '<div style="position:relative">'+
+    '<div style="position:absolute;left:18px;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--na2),var(--am));border-radius:2px;z-index:0"></div>'+
+    '<div style="display:flex;flex-direction:column;gap:12px;padding-left:44px;position:relative;z-index:1">'+
+    eventos.map(function(ev){
+      var isPedido=ev.tipo==="pedido";var d=ev.data;
+      var dot=isPedido?
+        '<div style="position:absolute;left:-30px;top:14px;width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,var(--na3),var(--na2));border:3px solid #fff;box-shadow:0 2px 8px rgba(255,109,0,.3);display:flex;align-items:center;justify-content:center;font-size:.6rem">\ud83d\uded2</div>':
+        '<div style="position:absolute;left:-30px;top:14px;width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,#1565c0,#42a5f5);border:3px solid #fff;box-shadow:0 2px 8px rgba(21,101,192,.3);display:flex;align-items:center;justify-content:center;font-size:.6rem">\ud83d\udea8</div>';
+      if(isPedido){
+        var estadoLabel={procesado:"\u2705 Procesado",enviado:"\ud83d\ude9a Enviado",entregado:"\ud83d\udce6 Entregado",cancelado:"\u274c Cancelado"}[d.estado]||"\u2705 Procesado";
+        var nItems=d.items?d.items.reduce(function(s,i){return s+(i.qty||1);},0):0;
+        return '<div style="position:relative;background:#fff;border:1.5px solid #f0e6d6;border-radius:14px;padding:14px">'+dot+
+          '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">'+
+            '<div><div style="font-weight:900;font-size:.88rem;color:var(--na3)">Pedido #'+d.id+'</div>'+
+            '<div style="font-size:.74rem;color:var(--gr)">\ud83d\udcc5 '+d.fecha+'</div></div>'+
+            '<span style="background:#e8f5e9;color:#2e7d32;padding:2px 9px;border-radius:50px;font-size:.7rem;font-weight:900">'+estadoLabel+'</span>'+
+          '</div>'+
+          '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
+            d.items.slice(0,3).map(function(it){return '<div style="background:#faf5f0;border-radius:8px;padding:4px 8px;font-size:.75rem;font-weight:700;color:var(--bk)">'+(it.e||"\ud83d\udce6")+' '+it.n+' \u00d7'+it.qty+'</div>';}).join("")+
+            (d.items.length>3?'<div style="background:#f5f5f5;border-radius:8px;padding:4px 8px;font-size:.75rem;color:var(--gr)">+'+(d.items.length-3)+' m\u00e1s</div>':'')+
+          '</div>'+
+          '<div style="margin-top:8px;font-weight:900;font-size:.9rem;color:var(--na3);text-align:right">'+bs(d.total+d.total*0.16)+'</div>'+
+        '</div>';
+      } else {
+        var col=d.estado==="resuelto"?"#2e7d32":d.estado==="en_revision"?"#1565c0":"#e65100";
+        var lbl=d.estado==="resuelto"?"\u2705 Resuelto":d.estado==="en_revision"?"\ud83d\udd04 En revisi\u00f3n":"\u23f3 Pendiente";
+        return '<div style="position:relative;background:#fff;border:1.5px solid #dbeafe;border-radius:14px;padding:14px">'+dot+
+          '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">'+
+            '<div><div style="font-weight:900;font-size:.88rem;color:#1565c0">Reporte: '+d.pNom+'</div>'+
+            '<div style="font-size:.74rem;color:var(--gr)">\ud83d\udcc5 '+d.fecha+' \u00b7 \ud83c\udff7\ufe0f '+d.tipo+'</div></div>'+
+            '<span style="background:'+col+'22;color:'+col+';padding:2px 9px;border-radius:50px;font-size:.7rem;font-weight:900">'+lbl+'</span>'+
+          '</div>'+
+          '<div style="font-size:.82rem;color:#555;line-height:1.5;background:#f0f4ff;border-radius:8px;padding:8px 10px">'+(d.desc||d.descripcion||"")+'</div>'+
+          (d.respuesta?'<div style="margin-top:6px;font-size:.78rem;color:#1565c0;font-weight:700">\ud83d\udcac Respondido \u00b7 '+d.respFecha+'</div>':'')+
+        '</div>';
+      }
+    }).join("")+
+    '</div></div>';
+}
+
 
 // ── PANEL ────────────────────────────────────
 function abrirPanel(){if(!usuario){abrirModal("mLogin");return;}if(usuario.rol==="administrador"){document.getElementById("panT").textContent="⚙️ Panel Administrador";buildAdmin();abrirModal("mPanel");}else if(usuario.rol==="superadmin"){document.getElementById("panT").textContent="👑 Super Administrador";buildSuper();abrirModal("mPanel");}else{abrirCuentaCliente();}}
-function buildAdmin(){var pb=document.getElementById("panB");pb.innerHTML='<div class="tabs"><button class="tab'+(aTab==="productos"?" on":"")+'" onclick="setATab(\'productos\',this)">📦 Productos</button><button class="tab'+(aTab==="agregar"?" on":"")+'" onclick="setATab(\'agregar\',this)">'+(editId?"💾 Editar":"➕ Añadir")+'</button><button class="tab'+(aTab==="categorias"?" on":"")+'" onclick="setATab(\'categorias\',this)">🏷️ Categorías</button><button class="tab'+(aTab==="reportes"?" on":"")+'" onclick="setATab(\'reportes\',this)">🚨 Reportes</button></div><div id="aTB"></div>';renderAdminTab();}
+function buildAdmin(){var pb=document.getElementById("panB");pb.innerHTML='<div class="tabs"><button class="tab'+(aTab==="productos"?" on":"")+'" onclick="setATab(\'productos\',this)">📦 Productos</button><button class="tab'+(aTab==="agregar"?" on":"")+'" onclick="setATab(\'agregar\',this)">'+(editId?"💾 Editar":"➕ Añadir")+'</button><button class="tab'+(aTab==="categorias"?" on":"")+'" onclick="setATab(\'categorias\',this)">🏷️ Categorías</button><button class="tab'+(aTab==="reportes"?" on":"")+'" onclick="setATab(\'reportes\',this)">🚨 Reportes</button><button class="tab'+(aTab==="mensajes"?" on":"")+'" onclick="setATab(\'mensajes\',this)" id="tabMensajesAdmin">📬 Mensajes</button></div><div id="aTB"></div>';renderAdminTab();}
 function setATab(t,btn){aTab=t;document.querySelectorAll("#panB .tab").forEach(function(b){b.classList.remove("on");});btn.classList.add("on");renderAdminTab();}
 function renderAdminTab(){api("/reportes").then(function(r){if(r.ok){REPORTES=r.reportes;_renderAdminTab();}else _renderAdminTab();});}
 function _renderAdminTab(){
@@ -623,6 +822,41 @@ function _renderAdminTab(){
       '</div>';
     }).join("")+'</div>';
   }
+  if(aTab==="mensajes"){
+    function _renderMensajesAdmin(msgs){
+      if(!msgs.length){c.innerHTML='<div class="empty"><div class="eico">📬</div><h3>Sin mensajes</h3><p>Aún no hay mensajes de contacto.</p></div>';return;}
+      var noLeidos=msgs.filter(function(m){return !m.leido;}).length;
+      c.innerHTML=(noLeidos?'<div style="margin-bottom:12px;background:#fff3e0;border:1.5px solid #ffb74d;border-radius:10px;padding:10px 14px;font-size:.85rem;font-weight:800;color:#e65100">🔔 '+noLeidos+' mensaje'+(noLeidos!==1?"s":"")+" sin leer</div>":"")+
+      '<div style="display:flex;flex-direction:column;gap:10px">'+msgs.map(function(m){
+        var badge=m.leido?'<span style="background:#e8f5e9;color:#2e7d32;font-size:.7rem;font-weight:800;padding:3px 9px;border-radius:50px">✅ Leído</span>':'<span style="background:#fff3e0;color:#e65100;font-size:.7rem;font-weight:800;padding:3px 9px;border-radius:50px">🔔 Nuevo</span>';
+        var asuntoLabel={"pedido":"📦 Pedido","producto":"🛍️ Producto","devolucion":"↩️ Devolución","pago":"💳 Pago","envio":"🚚 Envío","queja":"😟 Queja","otro":"💬 Otro"}[m.asunto]||m.asunto;
+        var prioBadge=m.prioridad?'<span class="prio-badge-'+(m.prioridad||"normal")+"'>"+(m.prioridad==="urgente"?"🔴 Urgente":m.prioridad==="informativo"?"🔵 Info":"🟢 Normal")+"</span>":"";
+        return '<div style="background:#fff;border:1.5px solid '+(m.leido?"#e0e0e0":"#ffcc80")+';border-radius:14px;padding:14px">'+
+          '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">'+
+            '<div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--am),var(--na2));display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff;font-size:.95rem;flex-shrink:0">'+(m.nombre||"?")[0].toUpperCase()+'</div>'+
+            '<div style="flex:1;min-width:0"><strong style="font-size:.86rem">'+m.nombre+'</strong><br><small style="color:var(--gr)">'+m.email+(m.tel?' · '+m.tel:'')+'</small></div>'+
+            badge+prioBadge+'<span style="background:#f5f5f5;color:var(--na3);font-size:.7rem;font-weight:800;padding:3px 9px;border-radius:50px">'+asuntoLabel+'</span>'+
+          '</div>'+
+          '<div style="background:#faf5f0;border-radius:10px;padding:10px 12px;font-size:.84rem;color:var(--bk);line-height:1.55;margin-bottom:8px">'+m.mensaje+'</div>'+
+          '<div style="display:flex;gap:8px;align-items:center;justify-content:space-between">'+
+            '<small style="color:var(--gr)">'+m.fecha+'</small>'+
+            '<div style="display:flex;gap:6px">'+
+              (!m.leido?'<button class="bte" onclick="marcarMensajeLeido('+m.id+')">✅ Leído</button>':'')+
+              '<a class="bte" href="mailto:'+m.email+'?subject=Re: '+m.asunto+'" style="text-decoration:none">📧 Responder</a>'+
+              '<button class="btd" onclick="eliminarMensaje('+m.id+')">🗑️</button>'+
+            '</div>'+
+          '</div>'+
+        '</div>';
+      }).join("")+'</div>';
+    }
+    if(CONTACTOS.length){_renderMensajesAdmin(CONTACTOS);}
+    else{
+      api("/contactos").then(function(r){
+        CONTACTOS=r.ok?(r.contactos||[]):[];
+        _renderMensajesAdmin(CONTACTOS);
+      });
+    }
+  }
 }
 function _renderCategorias(c){api("/categorias").then(function(r){var cats=r.ok?r.categorias:[];c.innerHTML='<div style="margin-bottom:16px;background:#fff8e1;border-radius:10px;padding:14px;border-left:4px solid var(--am)"><div style="font-weight:800;margin-bottom:10px;color:var(--na3)">➕ Nueva Categoría</div><div class="f2"><div class="fg"><label>Nombre *</label><input class="fc" id="catNom" placeholder="Ej: Tecnología"/></div><div class="fg"><label>Emoji</label><input class="fc" id="catEmoji" placeholder="🏷️" maxlength="4"/></div></div><button class="bp" style="margin-top:0" onclick="crearCategoria()">➕ Crear</button></div><div class="tw"><table><thead><tr><th>Emoji</th><th>Nombre</th><th>Acción</th></tr></thead><tbody>'+cats.map(function(cat){return '<tr><td style="font-size:1.5rem">'+cat.emoji+'</td><td><strong>'+cat.nombre+'</strong></td><td><button class="btd" onclick="elimCategoria('+cat.id+',\''+cat.nombre.replace(/'/g,"\\'")+'\')">🗑️</button></td></tr>';}).join("")+'</tbody></table></div>';});}
 function crearCategoria(){var nom=(document.getElementById("catNom").value||"").trim(),emoji=(document.getElementById("catEmoji").value||"🏷️").trim();if(!nom){toast("Nombre requerido","e");return;}api("/categorias","POST",{nombre:nom,emoji:emoji}).then(function(r){if(!r.ok){toast(r.error||"Error","e");return;}toast("Categoría '"+nom+"' creada ✅","s");document.getElementById("catNom").value="";document.getElementById("catEmoji").value="";cargarDatos();_renderAdminTab();});}
@@ -637,14 +871,30 @@ function guardarProd(){var n=document.getElementById("nNom").value.trim(),pr=par
 function elimP(id){if(!confirm("¿Eliminar?"))return;api("/productos/"+id,"DELETE").then(function(r){if(!r.ok){toast("Error","e");return;}toast("Eliminado","i");cargarDatos();buildAdmin();});}
 
 // ── SUPERADMIN ───────────────────────────────
-function buildSuper(){var pb=document.getElementById("panB");pb.innerHTML='<div class="tabs"><button class="tab'+(sTab==="stats"?" on":"")+'" onclick="setSTab(\'stats\',this)">📊 Stats</button><button class="tab'+(sTab==="users"?" on":"")+'" onclick="setSTab(\'users\',this)">👥 Usuarios</button><button class="tab'+(sTab==="prods"?" on":"")+'" onclick="setSTab(\'prods\',this)">📦 Productos</button><button class="tab'+(sTab==="categorias"?" on":"")+'" onclick="setSTab(\'categorias\',this)">🏷️ Categorías</button><button class="tab'+(sTab==="reportes"?" on":"")+'" onclick="setSTab(\'reportes\',this)">🚨 Reportes</button><button class="tab'+(sTab==="cadmin"?" on":"")+'" onclick="setSTab(\'cadmin\',this)">➕ Admin</button><button class="tab'+(sTab==="logs"?" on":"")+'" onclick="setSTab(\'logs\',this)">📋 Logs</button></div><div id="sTB"></div>';renderSuperTab();}
+function buildSuper(){var pb=document.getElementById("panB");pb.innerHTML='<div class="tabs"><button class="tab'+(sTab==="stats"?" on":"")+'" onclick="setSTab(\'stats\',this)">📊 Stats</button><button class="tab'+(sTab==="users"?" on":"")+'" onclick="setSTab(\'users\',this)">👥 Usuarios</button><button class="tab'+(sTab==="prods"?" on":"")+'" onclick="setSTab(\'prods\',this)">📦 Productos</button><button class="tab'+(sTab==="categorias"?" on":"")+'" onclick="setSTab(\'categorias\',this)">🏷️ Categorías</button><button class="tab'+(sTab==="reportes"?" on":"")+'" onclick="setSTab(\'reportes\',this)">🚨 Reportes</button><button class="tab'+(sTab==="mensajes"?" on":"")+'" onclick="setSTab(\'mensajes\',this)" id="tabMensajesSuper">📬 Mensajes</button><button class="tab'+(sTab==="cadmin"?" on":"")+'" onclick="setSTab(\'cadmin\',this)">➕ Admin</button><button class="tab'+(sTab==="logs"?" on":"")+'" onclick="setSTab(\'logs\',this)">📋 Logs</button></div><div id="sTB"></div>';renderSuperTab();}
 function setSTab(t,btn){sTab=t;document.querySelectorAll("#panB .tab").forEach(function(b){b.classList.remove("on");});btn.classList.add("on");renderSuperTab();}
-function renderSuperTab(){Promise.all([api("/productos").then(function(r){if(r.ok)PRODS=r.productos;}),api("/usuarios").then(function(r){if(r.ok)USUARIOS=r.usuarios;}),api("/reportes").then(function(r){if(r.ok)REPORTES=r.reportes;}),api("/logs").then(function(r){if(r.ok)LOGS=r.logs;})]).then(function(){_renderSuperTab();});}
+function renderSuperTab(){Promise.all([api("/productos").then(function(r){if(r.ok)PRODS=r.productos;}),api("/usuarios").then(function(r){if(r.ok)USUARIOS=r.usuarios;}),api("/reportes").then(function(r){if(r.ok)REPORTES=r.reportes;}),api("/logs").then(function(r){if(r.ok)LOGS=r.logs;}),api("/contactos").then(function(r){if(r.ok)CONTACTOS=r.contactos||[];})]).then(function(){_renderSuperTab();});}
 function _renderSuperTab(){
   var c=document.getElementById("sTB");if(!c)return;
   if(sTab==="stats"){
-    var cl=USUARIOS.filter(function(u){return u.rol==="cliente";}).length,ad=USUARIOS.filter(function(u){return u.rol==="administrador";}).length;
-    c.innerHTML='<div class="sgrid"><div class="sc"><div class="sn">'+cl+'</div><div class="sl">👥 Clientes</div></div><div class="sc"><div class="sn">'+ad+'</div><div class="sl">⚙️ Admins</div></div><div class="sc"><div class="sn">'+PRODS.filter(function(p){return p.st>0;}).length+'</div><div class="sl">📦 Disponibles</div></div><div class="sc"><div class="sn">'+REPORTES.filter(function(r){return r.estado==="pendiente";}).length+'</div><div class="sl">🚨 Pendientes</div></div>';
+    var cl=USUARIOS.filter(function(u){return u.rol==="cliente";}).length;
+    var ad=USUARIOS.filter(function(u){return u.rol==="administrador";}).length;
+    var sinLeer=CONTACTOS.filter(function(m){return !m.leido;}).length;
+    var pendientes=REPORTES.filter(function(r){return r.estado==="pendiente";}).length;
+    var agotados=PRODS.filter(function(p){return p.st<=0;}).length;
+    var enOferta=PRODS.filter(function(p){return p.o&&p.o<p.p&&p.st>0;}).length;
+    c.innerHTML='<div class="sgrid">'+
+      '<div class="sc"><div class="sn">'+cl+'</div><div class="sl">👥 Clientes</div></div>'+
+      '<div class="sc"><div class="sn">'+ad+'</div><div class="sl">⚙️ Admins</div></div>'+
+      '<div class="sc"><div class="sn">'+PRODS.filter(function(p){return p.st>0;}).length+'</div><div class="sl">📦 Disponibles</div></div>'+
+      '<div class="sc '+(agotados>0?"sc-warn":"")+'"><div class="sn">'+agotados+'</div><div class="sl">🚫 Agotados</div></div>'+
+      '<div class="sc '+(pendientes>0?"sc-warn":"")+'"><div class="sn">'+pendientes+'</div><div class="sl">🚨 Rep. Pendientes</div></div>'+
+      '<div class="sc '+(sinLeer>0?"sc-warn":"")+'"><div class="sn">'+sinLeer+'</div><div class="sl">📬 Msgs Nuevos</div></div>'+
+      '<div class="sc"><div class="sn">'+enOferta+'</div><div class="sl">🔥 En Oferta</div></div>'+
+      '<div class="sc"><div class="sn">'+PRODS.length+'</div><div class="sl">🗂️ Total Prods.</div></div>'+
+    '</div>'+
+    (agotados>0?'<div style="background:#fff3e0;border:1.5px solid #ffb74d;border-radius:12px;padding:12px 16px;margin-top:12px;font-size:.85rem;font-weight:700;color:#e65100">⚠️ Tienes '+agotados+' producto'+(agotados!==1?"s":"")+" agotado"+(agotados!==1?"s":"")+'. <span style="cursor:pointer;text-decoration:underline" onclick="setSTab(\'prods\',document.querySelector(\'.tab\'))">Revisar inventario →</span></div>':'')+
+    (sinLeer>0?'<div style="background:#e8f5e9;border:1.5px solid #81c784;border-radius:12px;padding:12px 16px;margin-top:8px;font-size:.85rem;font-weight:700;color:#2e7d32">📬 Tienes '+sinLeer+' mensaje'+(sinLeer!==1?"s":"")+" sin leer. <span style=\"cursor:pointer;text-decoration:underline\" onclick=\"sTab='mensajes';buildSuper()\">Ver mensajes →</span></div>':'');
   }else if(sTab==="users"){
     c.innerHTML='<div class="tw"><table><thead><tr><th>Nombre</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>'+USUARIOS.map(function(u){var bc=u.rol==="superadmin"?"bsu":u.rol==="administrador"?"ba":"bc";return '<tr><td><div style="display:flex;align-items:center;gap:8px"><div style="width:30px;height:30px;border-radius:50%;background:var(--am);color:var(--na3);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.8rem;flex-shrink:0">'+(u.n[0])+'</div><div><strong>'+u.n+' '+u.a+'</strong><br><small style="color:var(--gr)">'+u.email+'</small></div></div></td><td><span class="bdg '+bc+'">'+u.rol+'</span></td><td><span class="bdg '+(u.act?"bok":"bno")+'">'+(u.act?"✅":"❌")+'</span></td><td>'+(u.rol!=="superadmin"?'<select onchange="cambiarRol('+u.id+',this.value)" style="padding:3px 6px;border:1px solid #ddd;border-radius:5px;font-size:.75rem"><option value="cliente"'+(u.rol==="cliente"?" selected":"")+'>Cliente</option><option value="administrador"'+(u.rol==="administrador"?" selected":"")+'>Admin</option></select><button class="'+(u.act?"btd":"btok")+'" onclick="togUser('+u.id+')">'+(u.act?"🚫":"✅")+'</button>':'<em style="color:var(--gr);font-size:.8rem">Propietario</em>')+'</td></tr>';}).join("")+'</tbody></table></div>';
   }else if(sTab==="prods"){
@@ -665,6 +915,31 @@ function _renderSuperTab(){
         (r.respuesta?'<div class="rep-respuesta-box"><strong>💬 Respuesta ('+( r.respFecha||"")+'):</strong>'+r.respuesta+'</div>':'')+
         '<button class="bte" style="margin-top:8px" onclick="abrirRespRep('+r.id+')">💬 Responder</button>'+
         '</div></div>';
+    }).join("")+'</div>';
+  }else if(sTab==="mensajes"){
+    if(!CONTACTOS.length){c.innerHTML='<div class="empty"><div class="eico">📬</div><h3>Sin mensajes</h3><p>Aún no hay mensajes de contacto.</p></div>';return;}
+    var noLeidos=CONTACTOS.filter(function(m){return !m.leido;}).length;
+    c.innerHTML='<div style="margin-bottom:12px;display:flex;align-items:center;gap:10px"><strong style="font-size:.9rem">📬 Bandeja de entrada</strong>'+(noLeidos?'<span style="background:linear-gradient(135deg,var(--na3),var(--na2));color:#fff;font-size:.72rem;font-weight:900;padding:3px 10px;border-radius:50px">'+noLeidos+' nuevo'+(noLeidos>1?'s':'')+'</span>':'')+'</div>'+
+    '<div style="display:flex;flex-direction:column;gap:10px">'+CONTACTOS.map(function(m){
+      var badge=m.leido?'<span style="background:#e8f5e9;color:#2e7d32;font-size:.7rem;font-weight:800;padding:3px 9px;border-radius:50px">✅ Leído</span>':'<span style="background:#fff3e0;color:#e65100;font-size:.7rem;font-weight:800;padding:3px 9px;border-radius:50px">🔔 Nuevo</span>';
+      var asuntoLabel={"pedido":"📦 Pedido","producto":"🛍️ Producto","devolucion":"↩️ Devolución","pago":"💳 Pago","envio":"🚚 Envío","queja":"😟 Queja","otro":"💬 Otro"}[m.asunto]||m.asunto;
+        var prioBadge=m.prioridad?'<span class="prio-badge-'+(m.prioridad||"normal")+"'>"+(m.prioridad==="urgente"?"🔴 Urgente":m.prioridad==="informativo"?"🔵 Info":"🟢 Normal")+"</span>":"";
+      return '<div style="background:#fff;border:1.5px solid '+(m.leido?"#e0e0e0":"#ffcc80")+';border-radius:14px;padding:14px">'+
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">'+
+          '<div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--am),var(--na2));display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff;font-size:1rem;flex-shrink:0">'+(m.nombre||"?")[0].toUpperCase()+'</div>'+
+          '<div style="flex:1;min-width:0"><strong style="font-size:.88rem">'+m.nombre+'</strong><br><small style="color:var(--gr)">'+m.email+(m.tel?' · '+m.tel:'')+'</small></div>'+
+          badge+prioBadge+'<span style="background:#f5f5f5;color:var(--na3);font-size:.7rem;font-weight:800;padding:3px 9px;border-radius:50px">'+asuntoLabel+'</span>'+
+        '</div>'+
+        '<div style="background:#faf5f0;border-radius:10px;padding:10px 12px;font-size:.85rem;color:var(--bk);line-height:1.55;margin-bottom:8px">'+m.mensaje+'</div>'+
+        '<div style="display:flex;gap:8px;align-items:center;justify-content:space-between">'+
+          '<small style="color:var(--gr)">'+m.fecha+'</small>'+
+          '<div style="display:flex;gap:6px">'+
+            (!m.leido?'<button class="bte" onclick="marcarMensajeLeido('+m.id+')">✅ Marcar leído</button>':'')+
+            '<a class="bte" href="mailto:'+m.email+'?subject=Re: '+m.asunto+'" style="text-decoration:none">📧 Responder</a>'+
+            '<button class="btd" onclick="eliminarMensaje('+m.id+')">🗑️</button>'+
+          '</div>'+
+        '</div>'+
+      '</div>';
     }).join("")+'</div>';
   }else if(sTab==="cadmin"){
     c.innerHTML='<div style="max-width:480px"><div class="f2"><div class="fg"><label>Nombre *</label><input class="fc" id="aNom" placeholder="Nombre"/></div><div class="fg"><label>Apellido *</label><input class="fc" id="aApe" placeholder="Apellido"/></div></div><div class="fg"><label>Email *</label><input class="fc" type="email" id="aEmail" placeholder="correo@ejemplo.com"/></div><div class="fg"><label>Contraseña *</label><input class="fc" type="password" id="aPass" placeholder="Mínimo 8 caracteres"/></div><button class="bp" onclick="crearAdmin()">➕ Crear Administrador</button></div>';
@@ -1386,4 +1661,99 @@ function mpFmtTime(secs){
   var m = Math.floor(secs / 60);
   var s = Math.floor(secs % 60);
   return m + ":" + (s < 10 ? "0" : "") + s;
+}
+
+// ── CONTACTO ─────────────────────────────────────────────────────────────────
+function actualizarContador(){
+  var ta=document.getElementById("cfMensaje");
+  var cnt=document.getElementById("cfCharCount");
+  if(!ta||!cnt)return;
+  var n=ta.value.length,max=500;
+  cnt.textContent=n+" / "+max;
+  cnt.style.color=n>450?"#c62828":n>350?"#e65100":"var(--gr)";
+}
+
+function autocompletarContacto(){
+  if(!usuario)return;
+  var nm=document.getElementById("cfNombre"),em=document.getElementById("cfEmail"),tel=document.getElementById("cfTel");
+  if(nm&&!nm.value)nm.value=(usuario.n||"")+" "+(usuario.a||"");
+  if(em&&!em.value)em.value=usuario.email||"";
+  if(tel&&!tel.value&&usuario.tel)tel.value=usuario.tel;
+  var note=document.getElementById("cfLoginNote"),txt=document.getElementById("cfLoginNoteText");
+  if(note){note.style.display="flex";}
+  if(txt)txt.textContent="✨ Datos completados con tu cuenta";
+}
+
+function enviarContacto(){
+  var nombre  = (document.getElementById("cfNombre")||{}).value||"";
+  var email   = (document.getElementById("cfEmail")||{}).value||"";
+  var tel     = (document.getElementById("cfTel")||{}).value||"";
+  var asunto  = (document.getElementById("cfAsunto")||{}).value||"";
+  var mensaje = (document.getElementById("cfMensaje")||{}).value||"";
+  var prioEl  = document.querySelector('input[name="cfPrioridad"]:checked');
+  var prioridad = prioEl ? prioEl.value : "normal";
+  var errEl   = document.getElementById("cfErr");
+  var okEl    = document.getElementById("cfOk");
+
+  errEl.style.display="none";
+  okEl.style.display="none";
+
+  if(!nombre.trim()){errEl.textContent="Por favor escribe tu nombre.";errEl.style.display="block";return;}
+  if(!email.trim()||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){errEl.textContent="Escribe un correo electrónico válido.";errEl.style.display="block";return;}
+  if(!asunto){errEl.textContent="Selecciona un asunto para tu mensaje.";errEl.style.display="block";return;}
+  if(!mensaje.trim()||mensaje.trim().length<10){errEl.textContent="El mensaje debe tener al menos 10 caracteres.";errEl.style.display="block";return;}
+
+  var btn=document.querySelector(".contact-send-btn");
+  if(btn){btn.disabled=true;btn.textContent="Enviando…";}
+
+  var payload={nombre:nombre.trim(),email:email.trim().toLowerCase(),tel:tel.trim(),asunto:asunto,mensaje:mensaje.trim(),prioridad:prioridad};
+
+  api("/contactos","POST",payload)
+    .then(function(r){
+      if(btn){btn.disabled=false;btn.textContent="📨 Enviar Mensaje →";}
+      if(!r.ok){errEl.textContent=r.error||"Error al enviar. Intenta de nuevo.";errEl.style.display="block";return;}
+      okEl.style.display="block";
+      document.getElementById("cfNombre").value="";
+      document.getElementById("cfEmail").value="";
+      document.getElementById("cfTel").value="";
+      document.getElementById("cfAsunto").value="";
+      document.getElementById("cfMensaje").value="";
+      actualizarContador();
+      var prio=document.querySelector('input[name="cfPrioridad"][value="normal"]');
+      if(prio)prio.checked=true;
+      toast("Mensaje enviado correctamente ✅","s");
+    })
+    .catch(function(){
+      if(btn){btn.disabled=false;btn.textContent="📨 Enviar Mensaje →";}
+      errEl.textContent="Error de conexión. Intenta de nuevo.";
+      errEl.style.display="block";
+    });
+}
+
+function toggleFaq(el){
+  var isOpen = el.classList.contains("open");
+  document.querySelectorAll(".cfaq-item").forEach(function(i){i.classList.remove("open");});
+  if(!isOpen) el.classList.add("open");
+}
+
+// ── MENSAJES DE CONTACTO (helpers) ────────────────────────────
+function marcarMensajeLeido(id){
+  api("/contactos/"+id+"/leer","PUT").then(function(r){
+    if(!r.ok){toast("Error","e");return;}
+    var m=CONTACTOS.find(function(x){return x.id===id;});
+    if(m)m.leido=1;
+    toast("Marcado como leído ✅","s");
+    if(aTab==="mensajes")renderAdminTab();
+    if(sTab==="mensajes")renderSuperTab();
+  });
+}
+function eliminarMensaje(id){
+  if(!confirm("¿Eliminar este mensaje?"))return;
+  api("/contactos/"+id+"/eliminar","DELETE").then(function(r){
+    if(!r.ok){toast("Error","e");return;}
+    CONTACTOS=CONTACTOS.filter(function(x){return x.id!==id;});
+    toast("Mensaje eliminado","i");
+    if(aTab==="mensajes")renderAdminTab();
+    if(sTab==="mensajes")renderSuperTab();
+  });
 }
