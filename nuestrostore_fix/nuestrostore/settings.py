@@ -21,7 +21,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Debe ir justo después de SecurityMiddleware
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -70,7 +70,13 @@ USE_TZ = False
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'tienda' / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# WhiteNoise: CompressedStaticFilesStorage (sin hash en nombres)
+# Esto evita el error "ValueError: Missing staticfiles manifest entry"
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+
+# Permite servir estáticos sin collectstatic en desarrollo
+WHITENOISE_USE_FINDERS = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
