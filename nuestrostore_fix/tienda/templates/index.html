@@ -37,7 +37,7 @@
         🛒<span class="bdot" id="cartBadgeMobile" style="display:none">0</span>
       </button>
     </div>
-    <div class="desk-acts" id="deskActs">
+    <div class="desk-acts" id="deskActs"><span id="cartBadgeDesk" style="display:none"></span>
       <button class="bdn bdn-o" onclick="abrirModal('mLogin')">Iniciar Sesión</button>
       <button class="bdn bdn-f" onclick="abrirModal('mReg')">Registrarse</button>
     </div>
@@ -199,6 +199,40 @@
           <a onclick="irPagina('inicio')">🏠 Inicio</a>
           <a onclick="irPagina('tienda')">🛍️ Tienda</a>
           <a onclick="irPagina('contacto')">📬 Contacto</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-title">Mi Cuenta</div>
+        <div class="footer-links">
+          <a onclick="abrirModal('mLogin')">🔐 Iniciar Sesión</a>
+          <a onclick="abrirModal('mReg')">✨ Registrarse</a>
+          <a onclick="abrirCarrito()">🛒 Mi Carrito</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-title">Contacto</div>
+        <div class="footer-links">
+          <a>📧 info@nuestrostore.com</a>
+          <a>📞 +58 212 000 0000</a>
+          <a>📍 Caracas, Venezuela</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-pols">
+      <div class="footer-pols-title">📋 Nuestras Políticas</div>
+      <div class="footer-pols-grid">
+        <div class="fpol"><span class="fpol-ico">🛡️</span><div><strong>Privacidad</strong><p>Tus datos están protegidos.</p></div></div>
+        <div class="fpol"><span class="fpol-ico">↩️</span><div><strong>Devoluciones</strong><p>30 días sin preguntas.</p></div></div>
+        <div class="fpol"><span class="fpol-ico">🚚</span><div><strong>Envíos</strong><p>Express 24-48h disponible.</p></div></div>
+        <div class="fpol"><span class="fpol-ico">💳</span><div><strong>Pagos</strong><p>Móvil, transferencia y divisas.</p></div></div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© <span class="anioActual"></span> NuestroStore · Todos los derechos reservados</p>
+    </div>
+  </footer>
+</div>
+
 <div id="pTienda" class="pagina">
   <div class="tienda-hero">
     <div class="tienda-hero-in">
