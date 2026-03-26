@@ -2047,3 +2047,18 @@ footer{
 .prio-badge-urgente{background:#ffebee;color:#c62828;font-size:.68rem;font-weight:900;padding:2px 8px;border-radius:50px;}
 .prio-badge-normal{background:#e8f5e9;color:#2e7d32;font-size:.68rem;font-weight:900;padding:2px 8px;border-radius:50px;}
 .prio-badge-informativo{background:#e3f2fd;color:#1565c0;font-size:.68rem;font-weight:900;padding:2px 8px;border-radius:50px;}
+
+@keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+
+/* ── Missing classes fix ─────────────────── */
+.about-visual{display:none;}
+@media(min-width:900px){.about-visual{display:flex;justify-content:center;align-items:center;}}
+.anioActual{display:inline;}
+.cart-btn{position:relative;}
+.contact-channel-loc{cursor:default;}
+.contact-social-card{}
+.wa-float-txt{display:none;}
+@media(min-width:480px){.wa-float-txt{display:inline;}}
+
+/* ── webkit prefix for backdrop-filter ──── */
+.hero-badge,.hero-stats,.btn-hero-2{-webkit-backdrop-filter:blur(8px);}
