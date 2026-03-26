@@ -40,8 +40,16 @@ function irPagina(pg){
   document.querySelectorAll(".dnav-btn").forEach(function(b){b.classList.remove("active");});
   var dmap={inicio:"dnav0",tienda:"dnav1",contacto:"dnav2"};
   if(dmap[pg]){var db=document.getElementById(dmap[pg]);if(db)db.classList.add("active");}
-  if(pg==="tienda"){cargarCats();renderProds();actualizarEstadsTienda();}
-  if(pg==="inicio")renderInicio();
+  if(pg==="tienda"){
+    cargarCats();
+    if(PRODS.length){renderProds();actualizarEstadsTienda();}
+    else{
+      var g=document.getElementById("pg");
+      if(g)g.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:60px 20px"><div style="font-size:3rem;animation:spin 1s linear infinite">🔄</div><p style="font-weight:700;color:var(--na3);margin-top:16px">Cargando productos...</p></div>';
+      cargarDatos();
+    }
+  }
+  if(pg==="inicio"&&PRODS.length)renderInicio();
   if(pg==="contacto"){setTimeout(autocompletarContacto,100);}
   window.scrollTo({top:0,behavior:"smooth"});
 }
@@ -77,7 +85,9 @@ async function cargarDatos(){
   }
   var rr=await api("/resenias");
   if(rr.ok){RESENIAS={};rr.resenias.forEach(function(res){if(!RESENIAS[res.pid])RESENIAS[res.pid]=[];RESENIAS[res.pid].push(res);});}
-  if(paginaActual==="inicio")renderInicio();
+  // Always re-render current page after data loads
+  if(paginaActual==="inicio") renderInicio();
+  if(paginaActual==="tienda"){cargarCats();renderProds();actualizarEstadsTienda();}
 }
 function actualizarStatsHero(){
   var cs=PRODS.filter(function(p){return p.st>0;});
@@ -235,6 +245,9 @@ function promedioEstrellas(pid){var arr=RESENIAS[pid];if(!arr||!arr.length)retur
 function starsHtml(avg){var full=Math.round(avg),h="";for(var i=1;i<=5;i++)h+='<span style="color:'+(i<=full?"#f59e0b":"#d1d5db")+'">★</span>';return h;}
 
 function renderInicio(){
+  // Remove loading skeleton
+  var sk=document.getElementById("skeletonLoader");
+  if(sk)sk.remove();
   var ofs=PRODS.filter(function(p){return p.o&&p.o<p.p&&p.st>0;});
   if(!ofs.length)ofs=PRODS.filter(function(p){return p.st>0;}).slice(0,6);
   ofs=ofs.slice(0,6);
@@ -294,6 +307,7 @@ function prodsFiltrados(){
   });
 }
 function renderProds(){
+  var sk=document.getElementById("skeletonLoader");if(sk)sk.remove();
   var g=document.getElementById("pg");if(!g)return;
   var lista=prodsFiltrados();
   if(sortActivo==="precioAsc")lista.sort(function(a,b){return (a.o||a.p)-(b.o||b.p);});
@@ -1008,6 +1022,18 @@ document.addEventListener("DOMContentLoaded",function(){
   initSearch();
   mpInit();
   irPagina("inicio");
+  // Show loading skeleton while data loads
+  var pI = document.getElementById("pInicio");
+  if(pI && !PRODS.length){
+    var sk = document.getElementById("skeletonLoader");
+    if(!sk){
+      sk = document.createElement("div");
+      sk.id = "skeletonLoader";
+      sk.style.cssText = "padding:60px 20px;text-align:center;color:var(--na3);font-size:1.1rem;font-weight:700;";
+      sk.innerHTML = '<div style="font-size:3rem;margin-bottom:16px;animation:spin 1s linear infinite">🔄</div>Cargando productos...';
+      pI.prepend(sk);
+    }
+  }
 
   // Restaurar carrito desde localStorage
   try{
