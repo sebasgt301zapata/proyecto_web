@@ -338,10 +338,10 @@ function verProd(id){
     '<div class="ppr" style="margin-bottom:6px"><span class="ppr-v" style="font-size:2rem">'+bs(p.o||p.p)+'</span>'+(p.o?'<span class="ppr-o">'+bs(p.p)+'</span>':'')+
     '</div>'+(agotado?'<div style="background:#ffebee;border-radius:8px;padding:10px 14px;text-align:center;font-weight:800;color:#c62828;margin-bottom:14px">❌ Producto Agotado</div>':
     '<p style="color:#888;font-size:.85rem;margin-bottom:18px">📦 Stock: '+p.st+' unidades</p>'+
-    '<button class="bp" onclick="addCart('+p.id+');cerrarModal(\"\1\")">🛒 Agregar al Carrito</button>')+
+    '<button class="bp" onclick="addCart('+p.id+');cerrarModal(\"mProd\")">🛒 Agregar al Carrito</button>')+
     (usuario&&!agotado?'<button class="bs" onclick="abrirResenia('+p.id+')">\u2b50 Escribir Reseña</button>':'')+
 
-    (usuario?'<button class="bs" onclick="cerrarModal(\"\1\");abrirRep('+p.id+')">🚨 Reportar Problema</button>':'')+resHtml;
+    (usuario?'<button class="bs" onclick="cerrarModal(\"mProd\");abrirRep('+p.id+')">🚨 Reportar Problema</button>':'')+resHtml;
   abrirModal("mProd");
 }
 
@@ -367,7 +367,7 @@ function abrirPerfil(){
     var html='<div class="perfil-hero">'+
       '<div class="perfil-ava-wrap">'+
         '<div class="perfil-ava" id="perfilAvaPreview">'+avaDisplay+'</div>'+
-        '<div class="perfil-ava-edit" onclick="document.getElementById(\"\1\").click()">📷</div>'+
+        '<div class="perfil-ava-edit" onclick="document.getElementById(\"perfilImgInput\").click()">📷</div>'+
         '<input type="file" id="perfilImgInput" accept="image/*" style="display:none" onchange="cargarAvatarImg(event)"/>'+
       '</div>'+
       '<div class="perfil-info">'+
@@ -498,11 +498,11 @@ function actualizarUI(){
     if(bt3ico)bt3ico.innerHTML=avatarMobile;
   }else{
     navIcons.innerHTML=
-      '<button class="nic" onclick="abrirModal(\"\1\")">👤</button>'+
+      '<button class="nic" onclick="abrirModal(\\"mLogin\\")">👤</button>'+
       '<button class="nic cart-btn" onclick="abrirCarrito()" style="position:relative">🛒<span class="bdot" id="cartBadgeMobile" style="display:none">0</span></button>';
     deskActs.innerHTML=
-      '<button class="bdn bdn-o" onclick="abrirModal(\"\1\")">Iniciar sesión</button>'+
-      '<button class="bdn bdn-f" onclick="abrirModal(\"\1\")">Registrarse →</button>';
+      '<button class="bdn bdn-o" onclick="abrirModal(\\"mLogin\\")">Iniciar sesión</button>'+
+      '<button class="bdn bdn-f" onclick="abrirModal(\\"mReg\\")">Registrarse →</button>';
     if(bt3ico)bt3ico.textContent="👤";
   }
   actualizarBadge();
@@ -634,8 +634,8 @@ function abrirCuentaCliente(){
     '<div><div style="font-weight:800;font-size:1.1rem">'+usuario.n+' '+usuario.a+'</div><div style="opacity:.85;font-size:.85rem">'+usuario.email+'</div>'+
     '<span style="background:var(--am);color:var(--na3);padding:2px 10px;border-radius:50px;font-size:.72rem;font-weight:900;margin-top:4px;display:inline-block">👤 Cliente</span></div></div>'+
     '<div style="display:flex;gap:8px;margin-bottom:12px">'+
-      '<button class="bp" style="flex:1;font-size:.85rem;padding:10px" onclick="cerrarModal(\"\1\");abrirPerfil()">✏️ Editar Perfil</button>'+
-      '<button class="bs" style="flex:1;font-size:.85rem;padding:10px;margin-top:0" onclick="cerrarSesion();cerrarModal(\"\1\")">🚪 Salir</button>'+
+      '<button class="bp" style="flex:1;font-size:.85rem;padding:10px" onclick="cerrarModal(\"mPanel\");abrirPerfil()">✏️ Editar Perfil</button>'+
+      '<button class="bs" style="flex:1;font-size:.85rem;padding:10px;margin-top:0" onclick="cerrarSesion();cerrarModal(\"mPanel\")">🚪 Salir</button>'+
     '</div>'+
     '<button onclick="mpPanelToggle()" id="mpPanelBtn" style="width:100%;margin-bottom:18px;padding:10px 14px;border-radius:10px;border:2px solid #e0d0c0;background:#fff8f0;font-weight:800;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;color:var(--na3)">'+mpPanelBtnLabel()+'</button>'+
     '<div class="tabs"><button class="tab on" onclick="cTabN(this,1)">🚨 Reportes</button><button class="tab" onclick="cTabN(this,2)">📦 Pedidos</button><button class="tab" onclick="cTabN(this,3)">📋 Historial</button><button class="tab" onclick="cTabN(this,4)">⭐ Reseñas</button></div>'+
@@ -658,7 +658,7 @@ function cTabN(btn,t){
 }
 
 function renderMisReportes(lista){
-  if(!lista||!lista.length)return '<div class="empty"><div class="eico">📋</div><h3>Sin reportes</h3><p>¿Encontraste un problema? Avísanos.</p></div><button class="bp" style="margin-top:12px" onclick="cerrarModal(\"\1\");abrirRep(0)">+ Enviar Reporte</button>';
+  if(!lista||!lista.length)return '<div class="empty"><div class="eico">📋</div><h3>Sin reportes</h3><p>¿Encontraste un problema? Avísanos.</p></div><button class="bp" style="margin-top:12px" onclick="cerrarModal(\"mProd\");abrirRep(0)">+ Enviar Reporte</button>';
   return '<div style="display:flex;flex-direction:column;gap:10px">'+lista.map(function(r){
     var col=r.estado==="resuelto"?"#2e7d32":r.estado==="en_revision"?"#1565c0":"#e65100";
     var lbl=r.estado==="resuelto"?"✅ Resuelto":r.estado==="en_revision"?"🔄 En revisión":"⏳ Pendiente";
@@ -679,11 +679,11 @@ function renderMisReportes(lista){
       '</div>':
       '<div style="font-size:.75rem;color:var(--gr);margin-top:6px;font-style:italic">⏳ Esperando respuesta del equipo…</div>')+
     '</div>';
-  }).join("")+'</div><button class="bp" style="margin-top:14px" onclick="cerrarModal(\"\1\");abrirRep(0)">+ Nuevo Reporte</button>';
+  }).join("")+'</div><button class="bp" style="margin-top:14px" onclick="cerrarModal(\"mProd\");abrirRep(0)">+ Nuevo Reporte</button>';
 }
 
 function renderMisPedidos(lista){
-  if(!lista||!lista.length)return '<div class="empty"><div class="eico">📦</div><h3>Sin pedidos aún</h3><p>Cuando realices una compra aparecerá aquí.</p><button class="btn-hero-2" style="margin-top:12px;font-size:.85rem" onclick="cerrarModal(\"\1\");irPagina(\"\1\")">🛍️ Ir a la Tienda</button></div>';
+  if(!lista||!lista.length)return '<div class="empty"><div class="eico">📦</div><h3>Sin pedidos aún</h3><p>Cuando realices una compra aparecerá aquí.</p><button class="btn-hero-2" style="margin-top:12px;font-size:.85rem" onclick="cerrarModal(\"mPanel\");irPagina(\"tienda\")">🛍️ Ir a la Tienda</button></div>';
   var total=lista.reduce(function(s,p){return s+(p.total||0);},0);
   var totalItems=lista.reduce(function(s,p){return s+(p.items?p.items.reduce(function(a,i){return a+(i.qty||1);},0):0);},0);
   var stats='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px">'+
@@ -788,7 +788,7 @@ function renderHistorial(pedidos,reportes){
 
 // ── PANEL ────────────────────────────────────
 function abrirPanel(){if(!usuario){abrirModal("mLogin");return;}if(usuario.rol==="administrador"){document.getElementById("panT").textContent="⚙️ Panel Administrador";buildAdmin();abrirModal("mPanel");}else if(usuario.rol==="superadmin"){document.getElementById("panT").textContent="👑 Super Administrador";buildSuper();abrirModal("mPanel");}else{abrirCuentaCliente();}}
-function buildAdmin(){var pb=document.getElementById("panB");pb.innerHTML='<div class="tabs"><button class="tab'+(aTab==="productos"?" on":"")+'" onclick="setATab(\"\1\",this)">📦 Productos</button><button class="tab'+(aTab==="agregar"?" on":"")+'" onclick="setATab(\"\1\",this)">'+(editId?"💾 Editar":"➕ Añadir")+'</button><button class="tab'+(aTab==="categorias"?" on":"")+'" onclick="setATab(\"\1\",this)">🏷️ Categorías</button><button class="tab'+(aTab==="reportes"?" on":"")+'" onclick="setATab(\"\1\",this)">🚨 Reportes</button><button class="tab'+(aTab==="mensajes"?" on":"")+'" onclick="setATab(\"\1\",this)" id="tabMensajesAdmin">📬 Mensajes</button></div><div id="aTB"></div>';renderAdminTab();}
+function buildAdmin(){var pb=document.getElementById("panB");pb.innerHTML='<div class="tabs"><button class="tab'+(aTab==="productos"?" on":"")+'" onclick="setATab(\"productos\",this)">📦 Productos</button><button class="tab'+(aTab==="agregar"?" on":"")+'" onclick="setATab(\"agregar\",this)">'+(editId?"💾 Editar":"➕ Añadir")+'</button><button class="tab'+(aTab==="categorias"?" on":"")+'" onclick="setATab(\"categorias\",this)">🏷️ Categorías</button><button class="tab'+(aTab==="reportes"?" on":"")+'" onclick="setATab(\"reportes\",this)">🚨 Reportes</button><button class="tab'+(aTab==="mensajes"?" on":"")+'" onclick="setATab(\"mensajes\",this)" id="tabMensajesAdmin">📬 Mensajes</button></div><div id="aTB"></div>';renderAdminTab();}
 function setATab(t,btn){aTab=t;document.querySelectorAll("#panB .tab").forEach(function(b){b.classList.remove("on");});btn.classList.add("on");renderAdminTab();}
 function renderAdminTab(){api("/reportes").then(function(r){if(r.ok){REPORTES=r.reportes;_renderAdminTab();}else _renderAdminTab();});}
 function _renderAdminTab(){
@@ -1204,7 +1204,7 @@ function mpRenderLocked(){
     '  <div class="mp-locked-ico">🔒</div>',
     '  <div class="mp-locked-txt">Solo para usuarios registrados</div>',
     '  <div class="mp-locked-sub">Inicia sesión para agregar y reproducir tu música favorita</div>',
-    '  <button class="mp-locked-btn" onclick="mpHide();abrirModal(\"\1\")">🔐 Iniciar Sesión</button>',
+    '  <button class="mp-locked-btn" onclick="mpHide();abrirModal(\"mLogin\")">🔐 Iniciar Sesión</button>',
     '</div>'
   ].join("");
 }
