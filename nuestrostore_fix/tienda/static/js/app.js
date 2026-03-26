@@ -117,11 +117,11 @@ function mostrarSugerencias(q){
   if(!matches.length){sugg.innerHTML='<div class="sw-sugg-empty">🔍 Sin resultados para "'+q+'"</div>';sugg.style.display="block";return;}
   var catMatches=CATS.filter(function(c){return c.id>0&&c.n.toLowerCase().indexOf(ql)>=0;}).slice(0,2);
   var html="";
-  if(catMatches.length){html+='<div class="sw-sugg-sep">Categorías</div>';html+=catMatches.map(function(c){return '<div class="sw-sugg-item" onclick="filtrarYVer(''+c.id+'')"><span class="sugg-ico">🏷️</span><span class="sugg-nm">'+resaltarTexto(c.n,q)+'</span></div>';}).join("");}
+  if(catMatches.length){html+='<div class="sw-sugg-sep">Categorías</div>';html+=catMatches.map(function(c){return '<div class="sw-sugg-item" onclick="filtrarYVer('+c.id+')"><span class="sugg-ico">🏷️</span><span class="sugg-nm">'+resaltarTexto(c.n,q)+'</span></div>';}).join("");}
   html+='<div class="sw-sugg-sep">Productos</div>';
   html+=matches.map(function(p){
     var ico=p.img?'<img src="'+p.img+'" style="width:28px;height:28px;object-fit:cover;border-radius:6px;" />':(emojiProd(p));
-    return '<div class="sw-sugg-item" onclick="verProd('+p.id+');document.getElementById('swSugg').style.display='none'"><span class="sugg-ico">'+ico+'</span><span class="sugg-nm">'+resaltarTexto(p.n,q)+'</span><span class="sugg-cat">'+p.cat+'</span></div>';
+    return '<div class="sw-sugg-item" onclick="verProd('+p.id+');document.getElementById(\'swSugg\').style.display=\'none\'"><span class="sugg-ico">'+ico+'</span><span class="sugg-nm">'+resaltarTexto(p.n,q)+'</span><span class="sugg-cat">'+p.cat+'</span></div>';
   }).join("");
   sugg.innerHTML=html;sugg.style.display="block";
 }
@@ -311,10 +311,10 @@ function renderProds(){
     if(busqueda)txt+="🔍 \""+busqueda+"\" — ";
     if(catActiva>0){var cat=CATS.find(function(c){return c.id===catActiva;});if(cat)txt+=cat.n+" — ";}
     txt+=lista.length+" resultado"+(lista.length!==1?"s":"");
-    if(busqueda||catActiva>0)txt+=' <span style="cursor:pointer;color:var(--na);text-decoration:underline;margin-left:6px" onclick="catActiva=0;busqueda='';document.getElementById('sBusq').value='';renderProds();cargarCats()">✕ Limpiar</span>';
+    if(busqueda||catActiva>0)txt+=' <span style="cursor:pointer;color:var(--na);text-decoration:underline;margin-left:6px" onclick="catActiva=0;busqueda="";document.getElementById(\"sBusq\").value="";renderProds();cargarCats()">✕ Limpiar</span>';
     filtroInfo.innerHTML=txt;
   }
-  if(!lista.length){g.innerHTML='<div style="grid-column:1/-1" class="empty"><div class="eico">🔍</div><h3>Sin resultados</h3><p>Prueba otra búsqueda o categoría</p>'+(busqueda||catActiva>0?'<button class="btn-hero-2" style="margin-top:12px;font-size:.85rem" onclick="catActiva=0;busqueda='';document.getElementById('sBusq').value='';renderProds();cargarCats()">Ver todos los productos</button>':'')+' </div>';return;}
+  if(!lista.length){g.innerHTML='<div style="grid-column:1/-1" class="empty"><div class="eico">🔍</div><h3>Sin resultados</h3><p>Prueba otra búsqueda o categoría</p>'+(busqueda||catActiva>0?'<button class="btn-hero-2" style="margin-top:12px;font-size:.85rem" onclick="catActiva=0;busqueda="";document.getElementById(\"sBusq\").value="";renderProds();cargarCats()">Ver todos los productos</button>':'')+' </div>';return;}
   g.innerHTML=lista.map(function(p){var avg=promedioEstrellas(p.id);var stars=avg>0?starsHtml(avg):null;var cnt=RESENIAS[p.id]?RESENIAS[p.id].length:0;return tarjetaHTML(p,true,stars,cnt);}).join("");
 }
 
@@ -338,15 +338,17 @@ function verProd(id){
     '<div class="ppr" style="margin-bottom:6px"><span class="ppr-v" style="font-size:2rem">'+bs(p.o||p.p)+'</span>'+(p.o?'<span class="ppr-o">'+bs(p.p)+'</span>':'')+
     '</div>'+(agotado?'<div style="background:#ffebee;border-radius:8px;padding:10px 14px;text-align:center;font-weight:800;color:#c62828;margin-bottom:14px">❌ Producto Agotado</div>':
     '<p style="color:#888;font-size:.85rem;margin-bottom:18px">📦 Stock: '+p.st+' unidades</p>'+
-    '<button class="bp" onclick="addCart('+p.id+');cerrarModal('mProd')">🛒 Agregar al Carrito</button>')+
-    (usuario&&!agotado?'<button class="bs" onclick="abrirResenia('+p.id+',''+p.n.replace(/'/g,"\'")+'\')">⭐ Escribir Reseña</button>':'')+
-    (usuario?'<button class="bs" onclick="cerrarModal('mProd');abrirRep('+p.id+')">🚨 Reportar Problema</button>':'')+resHtml;
+    '<button class="bp" onclick="addCart('+p.id+');cerrarModal(\"\1\")">🛒 Agregar al Carrito</button>')+
+    (usuario&&!agotado?'<button class="bs" onclick="abrirResenia('+p.id+')">\u2b50 Escribir Reseña</button>':'')+
+
+    (usuario?'<button class="bs" onclick="cerrarModal(\"\1\");abrirRep('+p.id+')">🚨 Reportar Problema</button>':'')+resHtml;
   abrirModal("mProd");
 }
 
 // ── RESEÑAS ──────────────────────────────────
 function selStar(v){starSelVal=v;document.getElementById("resEstrellas").value=v;document.querySelectorAll("#starSelector .star").forEach(function(s){s.classList.toggle("sel",parseInt(s.getAttribute("data-v"))<=v);});}
-function abrirResenia(pid,nom){if(!usuario){toast("Inicia sesión","e");abrirModal("mLogin");return;}document.getElementById("resPid").value=pid;document.getElementById("resProdNom").textContent="📦 "+nom;document.getElementById("resComentario").value="";starSelVal=5;selStar(5);cerrarModal("mProd");abrirModal("mResenia");}
+function abrirResenia(pid,nom){
+  if(!nom){var pp=PRODS.find(function(x){return x.id===pid;});nom=pp?pp.n:"Producto";}if(!usuario){toast("Inicia sesión","e");abrirModal("mLogin");return;}document.getElementById("resPid").value=pid;document.getElementById("resProdNom").textContent="📦 "+nom;document.getElementById("resComentario").value="";starSelVal=5;selStar(5);cerrarModal("mProd");abrirModal("mResenia");}
 function enviarResenia(){if(!usuario){toast("Inicia sesión","e");return;}var pid=parseInt(document.getElementById("resPid").value),coment=document.getElementById("resComentario").value.trim();if(!coment){toast("Escribe un comentario","e");return;}api("/resenias","POST",{uid:usuario.id,pid:pid,estrellas:starSelVal,comentario:coment}).then(function(r){if(!r.ok){toast(r.error||"Error","e");return;}toast("¡Reseña publicada! ⭐","s");cerrarModal("mResenia");api("/resenias").then(function(rr){if(rr.ok){RESENIAS={};rr.resenias.forEach(function(res){if(!RESENIAS[res.pid])RESENIAS[res.pid]=[];RESENIAS[res.pid].push(res);});renderInicio();if(paginaActual==="tienda")renderProds();}});});}
 
 // ── PERFIL ───────────────────────────────────
@@ -365,7 +367,7 @@ function abrirPerfil(){
     var html='<div class="perfil-hero">'+
       '<div class="perfil-ava-wrap">'+
         '<div class="perfil-ava" id="perfilAvaPreview">'+avaDisplay+'</div>'+
-        '<div class="perfil-ava-edit" onclick="document.getElementById('perfilImgInput').click()">📷</div>'+
+        '<div class="perfil-ava-edit" onclick="document.getElementById(\"\1\").click()">📷</div>'+
         '<input type="file" id="perfilImgInput" accept="image/*" style="display:none" onchange="cargarAvatarImg(event)"/>'+
       '</div>'+
       '<div class="perfil-info">'+
@@ -375,7 +377,7 @@ function abrirPerfil(){
       '</div>'+
     '</div>'+
     '<div style="font-weight:800;font-size:.88rem;color:var(--gr2);margin-bottom:8px">Elige un avatar emoji:</div>'+
-    '<div class="avatar-grid">'+AVATARES.map(function(av){return '<div class="ava-opt'+(perfilAvatarSel===av?" sel":"")+'" onclick="selAvatar(''+av+'')" title="'+av+'">'+av+'</div>';}).join("")+'</div>'+
+    '<div class="avatar-grid">'+AVATARES.map(function(av){return '<div class="ava-opt'+(perfilAvatarSel===av?' sel':''  )+'" data-av="'+av+'" onclick="selAvatar(this.getAttribute(\"data-av\"))" title="'+av+'">'+av+'</div>';}).join('')+'</div>'+
     '<div class="f2">'+
       '<div class="fg"><label>Nombre *</label><input class="fc" id="pfNom" value="'+pf.nombre+'"/></div>'+
       '<div class="fg"><label>Apellido *</label><input class="fc" id="pfApe" value="'+pf.apellido+'"/></div>'+
@@ -496,11 +498,11 @@ function actualizarUI(){
     if(bt3ico)bt3ico.innerHTML=avatarMobile;
   }else{
     navIcons.innerHTML=
-      '<button class="nic" onclick="abrirModal('mLogin')">👤</button>'+
+      '<button class="nic" onclick="abrirModal(\"\1\")">👤</button>'+
       '<button class="nic cart-btn" onclick="abrirCarrito()" style="position:relative">🛒<span class="bdot" id="cartBadgeMobile" style="display:none">0</span></button>';
     deskActs.innerHTML=
-      '<button class="bdn bdn-o" onclick="abrirModal('mLogin')">Iniciar sesión</button>'+
-      '<button class="bdn bdn-f" onclick="abrirModal('mReg')">Registrarse →</button>';
+      '<button class="bdn bdn-o" onclick="abrirModal(\"\1\")">Iniciar sesión</button>'+
+      '<button class="bdn bdn-f" onclick="abrirModal(\"\1\")">Registrarse →</button>';
     if(bt3ico)bt3ico.textContent="👤";
   }
   actualizarBadge();
@@ -632,8 +634,8 @@ function abrirCuentaCliente(){
     '<div><div style="font-weight:800;font-size:1.1rem">'+usuario.n+' '+usuario.a+'</div><div style="opacity:.85;font-size:.85rem">'+usuario.email+'</div>'+
     '<span style="background:var(--am);color:var(--na3);padding:2px 10px;border-radius:50px;font-size:.72rem;font-weight:900;margin-top:4px;display:inline-block">👤 Cliente</span></div></div>'+
     '<div style="display:flex;gap:8px;margin-bottom:12px">'+
-      '<button class="bp" style="flex:1;font-size:.85rem;padding:10px" onclick="cerrarModal('mPanel');abrirPerfil()">✏️ Editar Perfil</button>'+
-      '<button class="bs" style="flex:1;font-size:.85rem;padding:10px;margin-top:0" onclick="cerrarSesion();cerrarModal('mPanel')">🚪 Salir</button>'+
+      '<button class="bp" style="flex:1;font-size:.85rem;padding:10px" onclick="cerrarModal(\"\1\");abrirPerfil()">✏️ Editar Perfil</button>'+
+      '<button class="bs" style="flex:1;font-size:.85rem;padding:10px;margin-top:0" onclick="cerrarSesion();cerrarModal(\"\1\")">🚪 Salir</button>'+
     '</div>'+
     '<button onclick="mpPanelToggle()" id="mpPanelBtn" style="width:100%;margin-bottom:18px;padding:10px 14px;border-radius:10px;border:2px solid #e0d0c0;background:#fff8f0;font-weight:800;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;color:var(--na3)">'+mpPanelBtnLabel()+'</button>'+
     '<div class="tabs"><button class="tab on" onclick="cTabN(this,1)">🚨 Reportes</button><button class="tab" onclick="cTabN(this,2)">📦 Pedidos</button><button class="tab" onclick="cTabN(this,3)">📋 Historial</button><button class="tab" onclick="cTabN(this,4)">⭐ Reseñas</button></div>'+
@@ -656,7 +658,7 @@ function cTabN(btn,t){
 }
 
 function renderMisReportes(lista){
-  if(!lista||!lista.length)return '<div class="empty"><div class="eico">📋</div><h3>Sin reportes</h3><p>¿Encontraste un problema? Avísanos.</p></div><button class="bp" style="margin-top:12px" onclick="cerrarModal('mPanel');abrirRep(0)">+ Enviar Reporte</button>';
+  if(!lista||!lista.length)return '<div class="empty"><div class="eico">📋</div><h3>Sin reportes</h3><p>¿Encontraste un problema? Avísanos.</p></div><button class="bp" style="margin-top:12px" onclick="cerrarModal(\"\1\");abrirRep(0)">+ Enviar Reporte</button>';
   return '<div style="display:flex;flex-direction:column;gap:10px">'+lista.map(function(r){
     var col=r.estado==="resuelto"?"#2e7d32":r.estado==="en_revision"?"#1565c0":"#e65100";
     var lbl=r.estado==="resuelto"?"✅ Resuelto":r.estado==="en_revision"?"🔄 En revisión":"⏳ Pendiente";
@@ -677,11 +679,11 @@ function renderMisReportes(lista){
       '</div>':
       '<div style="font-size:.75rem;color:var(--gr);margin-top:6px;font-style:italic">⏳ Esperando respuesta del equipo…</div>')+
     '</div>';
-  }).join("")+'</div><button class="bp" style="margin-top:14px" onclick="cerrarModal('mPanel');abrirRep(0)">+ Nuevo Reporte</button>';
+  }).join("")+'</div><button class="bp" style="margin-top:14px" onclick="cerrarModal(\"\1\");abrirRep(0)">+ Nuevo Reporte</button>';
 }
 
 function renderMisPedidos(lista){
-  if(!lista||!lista.length)return '<div class="empty"><div class="eico">📦</div><h3>Sin pedidos aún</h3><p>Cuando realices una compra aparecerá aquí.</p><button class="btn-hero-2" style="margin-top:12px;font-size:.85rem" onclick="cerrarModal('mPanel');irPagina('tienda')">🛍️ Ir a la Tienda</button></div>';
+  if(!lista||!lista.length)return '<div class="empty"><div class="eico">📦</div><h3>Sin pedidos aún</h3><p>Cuando realices una compra aparecerá aquí.</p><button class="btn-hero-2" style="margin-top:12px;font-size:.85rem" onclick="cerrarModal(\"\1\");irPagina(\"\1\")">🛍️ Ir a la Tienda</button></div>';
   var total=lista.reduce(function(s,p){return s+(p.total||0);},0);
   var totalItems=lista.reduce(function(s,p){return s+(p.items?p.items.reduce(function(a,i){return a+(i.qty||1);},0):0);},0);
   var stats='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px">'+
@@ -786,7 +788,7 @@ function renderHistorial(pedidos,reportes){
 
 // ── PANEL ────────────────────────────────────
 function abrirPanel(){if(!usuario){abrirModal("mLogin");return;}if(usuario.rol==="administrador"){document.getElementById("panT").textContent="⚙️ Panel Administrador";buildAdmin();abrirModal("mPanel");}else if(usuario.rol==="superadmin"){document.getElementById("panT").textContent="👑 Super Administrador";buildSuper();abrirModal("mPanel");}else{abrirCuentaCliente();}}
-function buildAdmin(){var pb=document.getElementById("panB");pb.innerHTML='<div class="tabs"><button class="tab'+(aTab==="productos"?" on":"")+'" onclick="setATab('productos',this)">📦 Productos</button><button class="tab'+(aTab==="agregar"?" on":"")+'" onclick="setATab('agregar',this)">'+(editId?"💾 Editar":"➕ Añadir")+'</button><button class="tab'+(aTab==="categorias"?" on":"")+'" onclick="setATab('categorias',this)">🏷️ Categorías</button><button class="tab'+(aTab==="reportes"?" on":"")+'" onclick="setATab('reportes',this)">🚨 Reportes</button><button class="tab'+(aTab==="mensajes"?" on":"")+'" onclick="setATab('mensajes',this)" id="tabMensajesAdmin">📬 Mensajes</button></div><div id="aTB"></div>';renderAdminTab();}
+function buildAdmin(){var pb=document.getElementById("panB");pb.innerHTML='<div class="tabs"><button class="tab'+(aTab==="productos"?" on":"")+'" onclick="setATab(\"\1\",this)">📦 Productos</button><button class="tab'+(aTab==="agregar"?" on":"")+'" onclick="setATab(\"\1\",this)">'+(editId?"💾 Editar":"➕ Añadir")+'</button><button class="tab'+(aTab==="categorias"?" on":"")+'" onclick="setATab(\"\1\",this)">🏷️ Categorías</button><button class="tab'+(aTab==="reportes"?" on":"")+'" onclick="setATab(\"\1\",this)">🚨 Reportes</button><button class="tab'+(aTab==="mensajes"?" on":"")+'" onclick="setATab(\"\1\",this)" id="tabMensajesAdmin">📬 Mensajes</button></div><div id="aTB"></div>';renderAdminTab();}
 function setATab(t,btn){aTab=t;document.querySelectorAll("#panB .tab").forEach(function(b){b.classList.remove("on");});btn.classList.add("on");renderAdminTab();}
 function renderAdminTab(){api("/reportes").then(function(r){if(r.ok){REPORTES=r.reportes;_renderAdminTab();}else _renderAdminTab();});}
 function _renderAdminTab(){
@@ -858,9 +860,26 @@ function _renderAdminTab(){
     }
   }
 }
-function _renderCategorias(c){api("/categorias").then(function(r){var cats=r.ok?r.categorias:[];c.innerHTML='<div style="margin-bottom:16px;background:#fff8e1;border-radius:10px;padding:14px;border-left:4px solid var(--am)"><div style="font-weight:800;margin-bottom:10px;color:var(--na3)">➕ Nueva Categoría</div><div class="f2"><div class="fg"><label>Nombre *</label><input class="fc" id="catNom" placeholder="Ej: Tecnología"/></div><div class="fg"><label>Emoji</label><input class="fc" id="catEmoji" placeholder="🏷️" maxlength="4"/></div></div><button class="bp" style="margin-top:0" onclick="crearCategoria()">➕ Crear</button></div><div class="tw"><table><thead><tr><th>Emoji</th><th>Nombre</th><th>Acción</th></tr></thead><tbody>'+cats.map(function(cat){return '<tr><td style="font-size:1.5rem">'+cat.emoji+'</td><td><strong>'+cat.nombre+'</strong></td><td><button class="btd" onclick="elimCategoria('+cat.id+',''+cat.nombre.replace(/'/g,"\'")+'\')">🗑️</button></td></tr>';}).join("")+'</tbody></table></div>';});}
+function _renderCategorias(c){api("/categorias").then(function(r){
+  var cats=r.ok?r.categorias:[];
+  var html='';
+  html+='<div style="margin-bottom:16px;background:#fff8e1;border-radius:10px;padding:14px;border-left:4px solid var(--am)">';
+  html+='<div style="font-weight:800;margin-bottom:10px;color:var(--na3)">➕ Nueva Categoría</div>';
+  html+='<div class="f2"><div class="fg"><label>Nombre *</label><input class="fc" id="catNom" placeholder="Ej: Tecnología"/></div>';
+  html+='<div class="fg"><label>Emoji</label><input class="fc" id="catEmoji" placeholder="🏷️" maxlength="4"/></div></div>';
+  html+='<button class="bp" style="margin-top:0" onclick="crearCategoria()">➕ Crear</button></div>';
+  html+='<div class="tw"><table><thead><tr><th>Emoji</th><th>Nombre</th><th>Acción</th></tr></thead><tbody>';
+  cats.forEach(function(cat){
+    html+='<tr><td>'+cat.emoji+'</td><td>'+cat.nombre+'</td>';
+    html+='<td><button class="btd" data-cid="'+cat.id+'" onclick="elimCategoria(parseInt(this.dataset.cid))">🗑️ Eliminar</button></td></tr>';
+  });
+  html+='</tbody></table></div>';
+  c.innerHTML=html;
+});}
+
 function crearCategoria(){var nom=(document.getElementById("catNom").value||"").trim(),emoji=(document.getElementById("catEmoji").value||"🏷️").trim();if(!nom){toast("Nombre requerido","e");return;}api("/categorias","POST",{nombre:nom,emoji:emoji}).then(function(r){if(!r.ok){toast(r.error||"Error","e");return;}toast("Categoría '"+nom+"' creada ✅","s");document.getElementById("catNom").value="";document.getElementById("catEmoji").value="";cargarDatos();_renderAdminTab();});}
-function elimCategoria(id,nom){if(!confirm("¿Eliminar '"+nom+"'?"))return;api("/categorias/"+id,"DELETE").then(function(r){if(!r.ok){toast(r.error||"No se puede eliminar","e");return;}toast("Eliminada","i");cargarDatos();_renderAdminTab();});}
+function elimCategoria(id,nom){
+  if(nom===undefined){var cc=CATS.find(function(x){return x.id===id;});nom=cc?cc.nombre:("#"+id);}if(!confirm("¿Eliminar '"+nom+"'?"))return;api("/categorias/"+id,"DELETE").then(function(r){if(!r.ok){toast(r.error||"No se puede eliminar","e");return;}toast("Eliminada","i");cargarDatos();_renderAdminTab();});}
 function elimFoto(pid){if(!confirm("¿Eliminar foto?"))return;api("/productos/"+pid+"/foto","PUT").then(function(r){if(!r.ok){toast("Error","e");return;}var p=PRODS.find(function(x){return x.id===pid;});if(p)p.img=null;toast("Foto eliminada ✅","s");cargarDatos();_renderAdminTab();});}
 function quitarFotoFormAdmin(){if(!editId)return;if(!confirm("¿Quitar la foto de este producto?"))return;api("/productos/"+editId+"/foto","PUT").then(function(r){if(!r.ok){toast("Error al quitar foto","e");return;}var p=PRODS.find(function(x){return x.id===editId;});if(p)p.img=null;imgTempAdmin=null;newPF.img=null;toast("Foto quitada ✅","s");cargarDatos();aTab="agregar";buildAdmin();});}
 function quitarFotoFormSuper(){if(!spEditId)return;if(!confirm("¿Quitar la foto de este producto?"))return;api("/productos/"+spEditId+"/foto","PUT").then(function(r){if(!r.ok){toast("Error al quitar foto","e");return;}var p=PRODS.find(function(x){return x.id===spEditId;});if(p)p.img=null;imgTempSuper=null;spNewPF.img=null;toast("Foto quitada ✅","s");cargarDatos();sprodTab("add",document.getElementById("spTabAdd"));});}
@@ -871,7 +890,17 @@ function guardarProd(){var n=document.getElementById("nNom").value.trim(),pr=par
 function elimP(id){if(!confirm("¿Eliminar?"))return;api("/productos/"+id,"DELETE").then(function(r){if(!r.ok){toast("Error","e");return;}toast("Eliminado","i");cargarDatos();buildAdmin();});}
 
 // ── SUPERADMIN ───────────────────────────────
-function buildSuper(){var pb=document.getElementById("panB");pb.innerHTML='<div class="tabs"><button class="tab'+(sTab==="stats"?" on":"")+'" onclick="setSTab('stats',this)">📊 Stats</button><button class="tab'+(sTab==="users"?" on":"")+'" onclick="setSTab('users',this)">👥 Usuarios</button><button class="tab'+(sTab==="prods"?" on":"")+'" onclick="setSTab('prods',this)">📦 Productos</button><button class="tab'+(sTab==="categorias"?" on":"")+'" onclick="setSTab('categorias',this)">🏷️ Categorías</button><button class="tab'+(sTab==="reportes"?" on":"")+'" onclick="setSTab('reportes',this)">🚨 Reportes</button><button class="tab'+(sTab==="mensajes"?" on":"")+'" onclick="setSTab('mensajes',this)" id="tabMensajesSuper">📬 Mensajes</button><button class="tab'+(sTab==="cadmin"?" on":"")+'" onclick="setSTab('cadmin',this)">➕ Admin</button><button class="tab'+(sTab==="logs"?" on":"")+'" onclick="setSTab('logs',this)">📋 Logs</button></div><div id="sTB"></div>';renderSuperTab();}
+
+function _notifBanner(count, singular, plural, color, borderColor, action, actionLabel) {
+  if(count <= 0) return '';
+  var noun = count !== 1 ? plural : singular;
+  var banner = '<div style="background:'+color+';border:1.5px solid '+borderColor+';border-radius:12px;padding:12px 16px;margin-top:12px;font-size:.85rem;font-weight:700;">';
+  banner += '⚠️ Tienes ' + count + ' ' + noun;
+  if(action) banner += '. <span style="cursor:pointer;text-decoration:underline" onclick="'+action+'">'+actionLabel+'</span>';
+  banner += '</div>';
+  return banner;
+}
+function buildSuper(){var pb=document.getElementById("panB");pb.innerHTML='<div class="tabs"><button class="tab'+(sTab==="stats"?" on":"")+'" onclick="setSTab("stats",this)">📊 Stats</button><button class="tab'+(sTab==="users"?" on":"")+'" onclick="setSTab("users",this)">👥 Usuarios</button><button class="tab'+(sTab==="prods"?" on":"")+'" onclick="setSTab("prods",this)">📦 Productos</button><button class="tab'+(sTab==="categorias"?" on":"")+'" onclick="setSTab("categorias",this)">🏷️ Categorías</button><button class="tab'+(sTab==="reportes"?" on":"")+'" onclick="setSTab("reportes",this)">🚨 Reportes</button><button class="tab'+(sTab==="mensajes"?" on":"")+'" onclick="setSTab("mensajes",this)" id="tabMensajesSuper">📬 Mensajes</button><button class="tab'+(sTab==="cadmin"?" on":"")+'" onclick="setSTab("cadmin",this)">➕ Admin</button><button class="tab'+(sTab==="logs"?" on":"")+'" onclick="setSTab("logs",this)">📋 Logs</button></div><div id="sTB"></div>';renderSuperTab();}
 function setSTab(t,btn){sTab=t;document.querySelectorAll("#panB .tab").forEach(function(b){b.classList.remove("on");});btn.classList.add("on");renderSuperTab();}
 function renderSuperTab(){Promise.all([api("/productos").then(function(r){if(r.ok)PRODS=r.productos;}),api("/usuarios").then(function(r){if(r.ok)USUARIOS=r.usuarios;}),api("/reportes").then(function(r){if(r.ok)REPORTES=r.reportes;}),api("/logs").then(function(r){if(r.ok)LOGS=r.logs;}),api("/contactos").then(function(r){if(r.ok)CONTACTOS=r.contactos||[];})]).then(function(){_renderSuperTab();});}
 function _renderSuperTab(){
@@ -893,12 +922,12 @@ function _renderSuperTab(){
       '<div class="sc"><div class="sn">'+enOferta+'</div><div class="sl">🔥 En Oferta</div></div>'+
       '<div class="sc"><div class="sn">'+PRODS.length+'</div><div class="sl">🗂️ Total Prods.</div></div>'+
     '</div>'+
-    (agotados>0?'<div style="background:#fff3e0;border:1.5px solid #ffb74d;border-radius:12px;padding:12px 16px;margin-top:12px;font-size:.85rem;font-weight:700;color:#e65100">⚠️ Tienes '+agotados+' producto'+(agotados!==1?"s":"")+" agotado"+(agotados!==1?"s":"")+'. <span style="cursor:pointer;text-decoration:underline" onclick="setSTab('prods',document.querySelector('.tab'))">Revisar inventario →</span></div>':'')+
-    (sinLeer>0?'<div style="background:#e8f5e9;border:1.5px solid #81c784;border-radius:12px;padding:12px 16px;margin-top:8px;font-size:.85rem;font-weight:700;color:#2e7d32">📬 Tienes '+sinLeer+' mensaje'+(sinLeer!==1?"s":"")+" sin leer. <span style=\"cursor:pointer;text-decoration:underline\" onclick=\"sTab='mensajes';buildSuper()\">Ver mensajes →</span></div>':'');
+    _notifBanner(agotados,"producto agotado","productos agotados","#fff3e0","#ffb74d","setSTab(\"prods\",this)","Revisar inventario →")+
+    _notifBanner(sinLeer,"mensaje sin leer","mensajes sin leer","#e8f5e9","#81c784","sTab='mensajes';renderSuperTab()","Ver mensajes →");
   }else if(sTab==="users"){
     c.innerHTML='<div class="tw"><table><thead><tr><th>Nombre</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>'+USUARIOS.map(function(u){var bc=u.rol==="superadmin"?"bsu":u.rol==="administrador"?"ba":"bc";return '<tr><td><div style="display:flex;align-items:center;gap:8px"><div style="width:30px;height:30px;border-radius:50%;background:var(--am);color:var(--na3);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.8rem;flex-shrink:0">'+(u.n[0])+'</div><div><strong>'+u.n+' '+u.a+'</strong><br><small style="color:var(--gr)">'+u.email+'</small></div></div></td><td><span class="bdg '+bc+'">'+u.rol+'</span></td><td><span class="bdg '+(u.act?"bok":"bno")+'">'+(u.act?"✅":"❌")+'</span></td><td>'+(u.rol!=="superadmin"?'<select onchange="cambiarRol('+u.id+',this.value)" style="padding:3px 6px;border:1px solid #ddd;border-radius:5px;font-size:.75rem"><option value="cliente"'+(u.rol==="cliente"?" selected":"")+'>Cliente</option><option value="administrador"'+(u.rol==="administrador"?" selected":"")+'>Admin</option></select><button class="'+(u.act?"btd":"btok")+'" onclick="togUser('+u.id+')">'+(u.act?"🚫":"✅")+'</button>':'<em style="color:var(--gr);font-size:.8rem">Propietario</em>')+'</td></tr>';}).join("")+'</tbody></table></div>';
   }else if(sTab==="prods"){
-    c.innerHTML='<div class="tabs" style="margin-bottom:14px"><button class="tab on" id="spTabList" onclick="sprodTab('list',this)">📋 Lista</button><button class="tab" id="spTabAdd" onclick="sprodTab('add',this)">➕ Agregar</button></div><div id="spBody"></div>';
+    c.innerHTML='<div class="tabs" style="margin-bottom:14px"><button class="tab on" id="spTabList" onclick="sprodTab("list",this)">📋 Lista</button><button class="tab" id="spTabAdd" onclick="sprodTab("add",this)">➕ Agregar</button></div><div id="spBody"></div>';
     sprodTab("list",document.getElementById("spTabList"));
   }else if(sTab==="categorias"){
     _renderCategorias(c);
@@ -1175,7 +1204,7 @@ function mpRenderLocked(){
     '  <div class="mp-locked-ico">🔒</div>',
     '  <div class="mp-locked-txt">Solo para usuarios registrados</div>',
     '  <div class="mp-locked-sub">Inicia sesión para agregar y reproducir tu música favorita</div>',
-    '  <button class="mp-locked-btn" onclick="mpHide();abrirModal('mLogin')">🔐 Iniciar Sesión</button>',
+    '  <button class="mp-locked-btn" onclick="mpHide();abrirModal(\"\1\")">🔐 Iniciar Sesión</button>',
     '</div>'
   ].join("");
 }
