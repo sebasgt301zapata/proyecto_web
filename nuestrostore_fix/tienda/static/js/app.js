@@ -537,7 +537,7 @@ function actualizarUI(){
       '<button class="bdn bdn-lang" onclick="abrirIdiomaMoneda()" title="Idioma / Moneda">🌐</button>'+
       '<div class="hdr-cart-btn" onclick="abrirCarrito()">🛒<span class="hdr-cart-badge" id="cartBadgeDesk" style="display:none">0</span></div>'+
       '<div class="hdr-divider"></div>'+
-      '<div class="uchip" onclick="abrirCuentaCliente()">'+
+      '<div class="uchip" onclick="abrirPanel()">'+
         '<div class="ava">'+avatarContent+'</div>'+
         '<div class="uchip-body">'+
           '<div class="uchip-name">'+nombre+'</div>'+
@@ -545,8 +545,7 @@ function actualizarUI(){
         '</div>'+
         '<span class="uchip-arrow">▾</span>'+
       '</div>'+
-      panelBtn+
-      '<button class="bdn bdn-o" style="padding:8px 12px;font-size:.78rem" onclick="cerrarSesion()">Salir</button>';
+      panelBtn;
     if(bt3ico)bt3ico.innerHTML=avatarMobile;
   }else{
     navIcons.innerHTML=
@@ -916,51 +915,93 @@ function abrirIdiomaMoneda(){
     modal.addEventListener("click", function(e){ if(e.target===modal) cerrarModal("mIdiomaMoneda"); });
   }
 
-  // Build inner HTML safely with current state
   var langOpts = [
-    {code:"es", flag:"🇻🇪", name:"Español"},
-    {code:"en", flag:"🇺🇸", name:"English"},
-    {code:"pt", flag:"🇧🇷", name:"Português"}
+    {code:"es", flag:"🇻🇪", name:"Español",   sub:"Venezuela"},
+    {code:"en", flag:"🇺🇸", name:"English",   sub:"United States"},
+    {code:"pt", flag:"🇧🇷", name:"Português", sub:"Brasil"}
   ];
   var curOpts = [
-    {code:"VES", sym:"Bs.",   name:"Bolívares"},
-    {code:"USD", sym:"$",     name:"Dólares"},
-    {code:"EUR", sym:"€",     name:"Euros"},
-    {code:"COP", sym:"COP$",  name:"Pesos Col."}
+    {code:"VES", sym:"Bs.",   name:"Bolívar",      rate:"Moneda local"},
+    {code:"USD", sym:"$",     name:"Dólar",        rate:"Tasa BCV ref."},
+    {code:"EUR", sym:"€",     name:"Euro",         rate:"Tasa ref."},
+    {code:"COP", sym:"COP$",  name:"Peso Col.",    rate:"Tasa ref."}
   ];
 
   var langHTML = langOpts.map(function(l){
-    return '<button class="lang-opt'+(LANG===l.code?" sel":"") +
-      '" data-lang="'+l.code+'" onclick="setLang(this.dataset.lang);actualizarLangUI()">'+
-      '<span style="font-size:1.6rem">'+l.flag+'</span>'+
-      '<span>'+l.name+'</span></button>';
+    var isSel = LANG===l.code;
+    return(
+      '<button class="ilm-opt'+(isSel?" ilm-sel":"") +
+        '" data-lang="'+l.code+'" onclick="setLang(this.dataset.lang);actualizarLangUI()">'+
+        '<span class="ilm-flag">'+l.flag+'</span>'+
+        '<span class="ilm-name">'+l.name+'</span>'+
+        '<span class="ilm-sub">'+l.sub+'</span>'+
+        (isSel?'<span class="ilm-check">✓</span>':'')+
+      '</button>'
+    );
   }).join("");
 
   var curHTML = curOpts.map(function(c){
-    return '<button class="currency-opt'+(CURRENCY===c.code?" sel":"")+
-      '" data-cur="'+c.code+'" onclick="setCurrency(this.dataset.cur);actualizarLangUI()">'+
-      '<span class="cur-symbol">'+c.sym+'</span>'+
-      '<span class="cur-name">'+c.name+'</span></button>';
+    var isSel = CURRENCY===c.code;
+    var cur = CURRENCIES[c.code]||{};
+    var sample = bs(100);
+    var sampleStr = (isSel?' · <em>'+sample+' = 100</em>':'');
+    return(
+      '<button class="ilm-cur-opt'+(isSel?" ilm-sel":"") +
+        '" data-cur="'+c.code+'" onclick="setCurrency(this.dataset.cur);actualizarLangUI()">'+
+        '<div class="ilm-cur-sym">'+c.sym+'</div>'+
+        '<div class="ilm-cur-body">'+
+          '<div class="ilm-cur-name">'+c.name+'</div>'+
+          '<div class="ilm-cur-sub">'+c.rate+(isSel?(' · 100 Bs = '+bs(100)):'')+'</div>'+
+        '</div>'+
+        (isSel?'<span class="ilm-check">✓</span>':'')+
+      '</button>'
+    );
   }).join("");
 
   modal.innerHTML =
-    '<div class="mdl" style="max-width:420px">'+
+    '<div class="mdl ilm-modal">'+
       '<div class="mh">'+
-        '<h2>🌐 Idioma y Moneda</h2>'+
-        '<button class="bx" onclick="cerrarModal(\"mIdiomaMoneda\")">✕</button>'+
+        '<div style="display:flex;align-items:center;gap:10px">'+
+          '<div style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.3rem">🌐</div>'+
+          '<div>'+
+            '<h2 style="font-size:1.3rem">Idioma y Moneda</h2>'+
+            '<p style="font-size:.72rem;opacity:.8;margin-top:1px">Tu preferencia se guarda automáticamente</p>'+
+          '</div>'+
+        '</div>'+
+        '<button class="bx" onclick="cerrarModal(\\"mIdiomaMoneda\\")">✕</button>'+
       '</div>'+
-      '<div class="mb">'+
-        '<div class="fg">'+
-          '<label style="font-weight:800;font-size:.9rem;color:var(--gr2);margin-bottom:10px;display:block">🌍 Idioma</label>'+
-          '<div class="lang-grid" id="langGrid">'+langHTML+'</div>'+
+      '<div class="mb" style="padding:0">'+
+
+        '<!-- IDIOMA -->'+
+        '<div class="ilm-section">'+
+          '<div class="ilm-section-title">'+
+            '<span class="ilm-section-ico">🌍</span>'+
+            '<div>'+
+              '<div class="ilm-section-label">Idioma de la interfaz</div>'+
+              '<div class="ilm-section-sub">Cambia el idioma de textos y botones</div>'+
+            '</div>'+
+          '</div>'+
+          '<div class="ilm-lang-grid" id="ilmLangGrid">'+langHTML+'</div>'+
         '</div>'+
-        '<div class="fg" style="margin-top:18px">'+
-          '<label style="font-weight:800;font-size:.9rem;color:var(--gr2);margin-bottom:10px;display:block">💰 Moneda</label>'+
-          '<div class="currency-grid" id="curGrid">'+curHTML+'</div>'+
+
+        '<div class="ilm-divider"></div>'+
+
+        '<!-- MONEDA -->'+
+        '<div class="ilm-section">'+
+          '<div class="ilm-section-title">'+
+            '<span class="ilm-section-ico">💰</span>'+
+            '<div>'+
+              '<div class="ilm-section-label">Moneda de visualización</div>'+
+              '<div class="ilm-section-sub">Los precios se convierten automáticamente</div>'+
+            '</div>'+
+          '</div>'+
+          '<div class="ilm-cur-grid" id="ilmCurGrid">'+curHTML+'</div>'+
         '</div>'+
-        '<p style="font-size:.75rem;color:var(--gr);text-align:center;margin-top:14px;padding-top:10px;border-top:1px solid #f0e8e0">'+
-          '💡 Las tasas de cambio son referenciales'+
-        '</p>'+
+
+        '<div class="ilm-footer">'+
+          '<span>⚠️</span> Las tasas de cambio son referenciales y pueden variar'+
+        '</div>'+
+
       '</div>'+
     '</div>';
 
