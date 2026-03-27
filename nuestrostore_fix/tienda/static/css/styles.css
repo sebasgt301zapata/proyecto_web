@@ -2062,3 +2062,90 @@ footer{
 
 /* ── webkit prefix for backdrop-filter ──── */
 .hero-badge,.hero-stats,.btn-hero-2{-webkit-backdrop-filter:blur(8px);}
+
+/* ══════════════════════════════════════════
+   HISTORIAL DE COMPRAS + IDIOMA/MONEDA
+   ══════════════════════════════════════════ */
+
+/* ── Historial stats strip ─────────────── */
+.historial-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
+.hstat-card{border-radius:14px;padding:12px 10px;text-align:center;border:2px solid;}
+.hstat-orange{background:linear-gradient(135deg,#fff8e1,#fff3cd);border-color:#fde68a;}
+.hstat-green{background:linear-gradient(135deg,#e8f5e9,#c8e6c9);border-color:#a5d6a7;}
+.hstat-purple{background:linear-gradient(135deg,#fce7f3,#f8bbd0);border-color:#f48fb1;}
+.hstat-n{font-family:'Bebas Neue',cursive;font-size:1.6rem;line-height:1;color:var(--na3);}
+.hstat-green .hstat-n{color:#2e7d32;}
+.hstat-purple .hstat-n{color:#880e4f;}
+.hstat-n-sm{font-size:1.1rem;}
+.hstat-l{font-size:.68rem;font-weight:900;color:var(--gr);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;}
+
+/* ── Historial filter bar ──────────────── */
+.historial-filtro{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+.historial-search{flex:1;min-width:160px;padding:9px 12px!important;}
+.historial-select{padding:9px 12px;border:2px solid #ede0d0;border-radius:10px;font-size:.82rem;font-weight:700;background:#fdf8f4;outline:none;cursor:pointer;color:var(--bk);}
+.historial-select:focus{border-color:var(--na);}
+
+/* ── Historial pedido card ─────────────── */
+.historial-card{border:2px solid #f0e6d6;border-radius:16px;overflow:hidden;transition:box-shadow .2s,transform .15s;}
+.historial-card:hover{box-shadow:0 6px 24px rgba(255,109,0,.15);transform:translateY(-2px);}
+.historial-card-head{background:linear-gradient(135deg,var(--na3),var(--na2));padding:13px 16px;display:flex;align-items:center;justify-content:space-between;}
+.historial-num{font-family:'Bebas Neue',cursive;font-size:1.1rem;color:#fff;letter-spacing:1px;}
+.historial-fecha{font-size:.72rem;color:rgba(255,255,255,.8);margin-top:1px;}
+.historial-badge{padding:4px 12px;border-radius:50px;font-size:.72rem;font-weight:900;flex-shrink:0;}
+
+/* ── Items dentro del pedido ───────────── */
+.historial-items{padding:12px 16px;display:flex;flex-direction:column;gap:7px;background:#fff;}
+.hitem{display:flex;align-items:center;gap:10px;padding:7px;border-radius:10px;background:#faf5f0;}
+.hitem-img{width:38px;height:38px;border-radius:8px;object-fit:cover;flex-shrink:0;}
+.hitem-emoji{width:38px;height:38px;border-radius:8px;background:linear-gradient(135deg,#fff8e1,#ffe082);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;}
+.hitem-info{flex:1;min-width:0;}
+.hitem-name{font-size:.84rem;font-weight:800;color:var(--bk);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.hitem-price{font-size:.74rem;color:var(--gr);}
+.hitem-sub{font-weight:900;color:var(--na3);font-size:.86rem;flex-shrink:0;}
+.hitem-more{font-size:.78rem;color:var(--gr);text-align:center;padding:4px;font-style:italic;}
+
+/* ── Totales del pedido ────────────────── */
+.historial-totales{padding:10px 16px 12px;border-top:2px dashed #f0e6d6;background:#fff;}
+.htot-row{display:flex;justify-content:space-between;font-size:.8rem;color:var(--gr);margin-bottom:3px;}
+.htot-final{font-weight:900;font-size:.95rem;color:var(--bk);margin-top:6px;padding-top:6px;border-top:1px solid #f0e0c0;}
+.htot-final span:last-child{color:var(--na3);}
+
+/* ── Botones de acción del pedido ────────── */
+.historial-btn-rep,.historial-btn-fact{padding:7px 14px;border-radius:8px;font-size:.8rem;font-weight:700;cursor:pointer;border:none;transition:opacity .15s;}
+.historial-btn-rep{background:#ffebee;color:#c62828;}
+.historial-btn-rep:hover{background:#ffcdd2;}
+.historial-btn-fact{background:#e3f2fd;color:#1565c0;}
+.historial-btn-fact:hover{background:#bbdefb;}
+
+/* ── IDIOMA / MONEDA ────────────────────── */
+.bdn-lang{
+  background:#f7f3ee;border:2px solid #ede0d0;color:var(--gr2);
+  padding:7px 13px;border-radius:10px;font-size:1rem;
+  cursor:pointer;transition:all .15s;font-weight:700;
+}
+.bdn-lang:hover{background:#fff0e0;border-color:var(--na);color:var(--na3);}
+
+.lang-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.lang-opt{
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+  padding:12px 8px;border-radius:12px;border:2px solid #ede0d0;
+  background:#fdf8f4;cursor:pointer;font-size:.82rem;font-weight:700;
+  color:var(--gr2);transition:all .15s;
+}
+.lang-opt:first-child{font-size:1.6rem;}
+.lang-opt span{font-size:.78rem;}
+.lang-opt:hover{background:#fff0e0;border-color:var(--na);color:var(--na3);}
+.lang-opt.sel{background:linear-gradient(135deg,#fff8e1,#fff3e8);border-color:var(--na3);color:var(--na3);box-shadow:0 2px 10px rgba(230,81,0,.18);}
+
+.currency-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
+.currency-opt{
+  display:flex;align-items:center;gap:10px;
+  padding:13px 14px;border-radius:12px;border:2px solid #ede0d0;
+  background:#fdf8f4;cursor:pointer;text-align:left;
+  transition:all .15s;
+}
+.currency-opt:hover{background:#fff0e0;border-color:var(--na);}
+.currency-opt.sel{background:linear-gradient(135deg,#fff8e1,#fff3e8);border-color:var(--na3);box-shadow:0 2px 10px rgba(230,81,0,.18);}
+.cur-symbol{font-family:'Bebas Neue',cursive;font-size:1.4rem;color:var(--na3);line-height:1;min-width:32px;}
+.cur-name{font-size:.78rem;font-weight:700;color:var(--gr2);}
+.currency-opt.sel .cur-name{color:var(--na3);}
