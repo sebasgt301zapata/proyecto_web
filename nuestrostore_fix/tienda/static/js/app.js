@@ -27,7 +27,43 @@ async function api(path,method,body){
     return data;
   }catch(e){return{ok:false,error:"Error de conexión."};}
 }
-function bs(n){return "Bs. "+Number(n).toLocaleString("es-VE",{minimumFractionDigits:2,maximumFractionDigits:2});}
+// ── MONEDA E IDIOMA ──────────────────────────
+var LANG = localStorage.getItem("ns_lang") || "es";
+var CURRENCY = localStorage.getItem("ns_currency") || "VES";
+var CURRENCIES = {
+  VES:{name:"Bolívares",symbol:"Bs.",rate:1,locale:"es-VE"},
+  USD:{name:"Dólares",symbol:"$",rate:0.000028,locale:"en-US"},
+  EUR:{name:"Euros",symbol:"€",rate:0.000026,locale:"de-DE"},
+  COP:{name:"Pesos Col.",symbol:"COP$",rate:115,locale:"es-CO"}
+};
+var T={
+  es:{inicio:"Inicio",tienda:"Tienda",contacto:"Contacto",iniciarSesion:"Iniciar Sesión",registrarse:"Registrarse",buscar:"Buscar",buscarPlaceholder:"Buscar productos, categorías…",carrito:"Mi Carrito",cuenta:"Cuenta",bienvenido:"¡Bienvenido",cerrarSesion:"Cerrar sesión",editarPerfil:"Editar Perfil",misCompras:"Mis Compras",misReportes:"Mis Reportes",historial:"Historial",misResenias:"Mis Reseñas",agregarCarrito:"Agregar",sinPedidos:"Sin compras aún",verTienda:"Ver Tienda",pedido:"Pedido",productos:"Productos",articulos:"Artículos",gastado:"Gastado",subtotal:"Subtotal",total:"Total",procesado:"✅ Procesado",enviado:"🚚 En camino",entregado:"📦 Entregado",cancelado:"❌ Cancelado",ofertaDelDia:"🔥 Ofertas del Día",mejorValorados:"⭐ Mejor Valorados",verTodas:"Ver todas →",verTodos:"Ver todos →",agotado:"Agotado",enOferta:"OFERTA",sinResultados:"Sin resultados",cargando:"Cargando…",idioma:"Idioma",moneda:"Moneda"},
+  en:{inicio:"Home",tienda:"Shop",contacto:"Contact",iniciarSesion:"Login",registrarse:"Sign Up",buscar:"Search",buscarPlaceholder:"Search products, categories…",carrito:"My Cart",cuenta:"Account",bienvenido:"Welcome",cerrarSesion:"Log out",editarPerfil:"Edit Profile",misCompras:"My Orders",misReportes:"My Reports",historial:"History",misResenias:"My Reviews",agregarCarrito:"Add",sinPedidos:"No orders yet",verTienda:"Go to Shop",pedido:"Order",productos:"Products",articulos:"Items",gastado:"Spent",subtotal:"Subtotal",total:"Total",procesado:"✅ Processed",enviado:"🚚 Shipped",entregado:"📦 Delivered",cancelado:"❌ Cancelled",ofertaDelDia:"🔥 Today's Deals",mejorValorados:"⭐ Top Rated",verTodas:"See all →",verTodos:"See all →",agotado:"Out of stock",enOferta:"SALE",sinResultados:"No results",cargando:"Loading…",idioma:"Language",moneda:"Currency"},
+  pt:{inicio:"Início",tienda:"Loja",contacto:"Contato",iniciarSesion:"Entrar",registrarse:"Cadastrar",buscar:"Buscar",buscarPlaceholder:"Buscar produtos, categorias…",carrito:"Meu Carrinho",cuenta:"Conta",bienvenido:"Bem-vindo",cerrarSesion:"Sair",editarPerfil:"Editar Perfil",misCompras:"Minhas Compras",misReportes:"Meus Relatos",historial:"Histórico",misResenias:"Minhas Avaliações",agregarCarrito:"Adicionar",sinPedidos:"Sem compras ainda",verTienda:"Ver Loja",pedido:"Pedido",productos:"Produtos",articulos:"Itens",gastado:"Gasto",subtotal:"Subtotal",total:"Total",procesado:"✅ Processado",enviado:"🚚 Enviado",entregado:"📦 Entregado",cancelado:"❌ Cancelado",ofertaDelDia:"🔥 Ofertas do Dia",mejorValorados:"⭐ Mais Avaliados",verTodas:"Ver todas →",verTodos:"Ver todos →",agotado:"Esgotado",enOferta:"OFERTA",sinResultados:"Sem resultados",cargando:"Carregando…",idioma:"Idioma",moneda:"Moeda"}
+};
+function t(key){return(T[LANG]&&T[LANG][key])||T.es[key]||key;}
+function bs(n){
+  var cur=CURRENCIES[CURRENCY]||CURRENCIES.VES;
+  var conv=Number(n)*cur.rate;
+  if(CURRENCY==="VES") return cur.symbol+" "+conv.toLocaleString("es-VE",{minimumFractionDigits:2,maximumFractionDigits:2});
+  return cur.symbol+" "+conv.toLocaleString(cur.locale,{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function setLang(lang){
+  LANG=lang;localStorage.setItem("ns_lang",lang);
+  aplicarIdioma();
+  if(PRODS.length){renderInicio();if(paginaActual==="tienda"){cargarCats();renderProds();}}
+}
+function setCurrency(cur){
+  CURRENCY=cur;localStorage.setItem("ns_currency",cur);
+  if(PRODS.length){renderInicio();if(paginaActual==="tienda")renderProds();}
+  actualizarCarrito();
+}
+function aplicarIdioma(){
+  var dn0=document.getElementById("dnav0");if(dn0)dn0.innerHTML="🏠 "+t("inicio");
+  var dn1=document.getElementById("dnav1");if(dn1)dn1.innerHTML="🛍️ "+t("tienda");
+  var dn2=document.getElementById("dnav2");if(dn2)dn2.innerHTML="📬 "+t("contacto");
+  var sb=document.getElementById("sBusq");if(sb)sb.placeholder=t("buscarPlaceholder");
+}
 
 // ── PÁGINAS ──────────────────────────────────
 function irPagina(pg){
@@ -652,9 +688,9 @@ function abrirCuentaCliente(){
       '<button class="bs" style="flex:1;font-size:.85rem;padding:10px;margin-top:0" onclick="cerrarSesion();cerrarModal(\"mPanel\")">🚪 Salir</button>'+
     '</div>'+
     '<button onclick="mpPanelToggle()" id="mpPanelBtn" style="width:100%;margin-bottom:18px;padding:10px 14px;border-radius:10px;border:2px solid #e0d0c0;background:#fff8f0;font-weight:800;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;color:var(--na3)">'+mpPanelBtnLabel()+'</button>'+
-    '<div class="tabs"><button class="tab on" onclick="cTabN(this,1)">🚨 Reportes</button><button class="tab" onclick="cTabN(this,2)">📦 Pedidos</button><button class="tab" onclick="cTabN(this,3)">📋 Historial</button><button class="tab" onclick="cTabN(this,4)">⭐ Reseñas</button></div>'+
+    '<div class="tabs"><button class="tab on" onclick="cTabN(this,2)">🛍️ Mis Compras</button><button class="tab" onclick="cTabN(this,1)">🚨 Reportes</button><button class="tab" onclick="cTabN(this,3)">📋 Historial</button><button class="tab" onclick="cTabN(this,4)">⭐ Reseñas</button></div>'+
     '<div id="cTabBody"></div>';
-  cTabN(pb.querySelector(".tab"),1);
+  cTabN(pb.querySelector(".tab"),2);
   abrirModal("mPanel");
 }
 function cTabN(btn,t){
@@ -697,61 +733,126 @@ function renderMisReportes(lista){
 }
 
 function renderMisPedidos(lista){
-  if(!lista||!lista.length)return '<div class="empty"><div class="eico">📦</div><h3>Sin pedidos aún</h3><p>Cuando realices una compra aparecerá aquí.</p><button class="btn-hero-2" style="margin-top:12px;font-size:.85rem" onclick="cerrarModal(\"mPanel\");irPagina(\"tienda\")">🛍️ Ir a la Tienda</button></div>';
-  var total=lista.reduce(function(s,p){return s+(p.total||0);},0);
+  if(!lista||!lista.length)return(
+    '<div class="empty">'+
+    '<div class="eico">🛍️</div>'+
+    '<h3>'+t("sinPedidos")+'</h3>'+
+    '<p style="color:var(--gr);font-size:.88rem;margin:8px 0 16px">Tus compras aparecerán aquí</p>'+
+    '<button class="btn-hero-2" style="margin-top:4px;font-size:.85rem" onclick="cerrarModal(\"mPanel\");irPagina(\"tienda\")">🛍️ '+t("verTienda")+'</button>'+
+    '</div>'
+  );
+  var totalGastado=lista.reduce(function(s,p){return s+(p.total||0);},0);
   var totalItems=lista.reduce(function(s,p){return s+(p.items?p.items.reduce(function(a,i){return a+(i.qty||1);},0):0);},0);
-  var stats='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px">'+
-    '<div style="background:linear-gradient(135deg,#fff8e1,#fff3cd);border:1.5px solid #fde68a;border-radius:12px;padding:10px;text-align:center">'+
-      '<div style="font-family:\'Bebas Neue\',cursive;font-size:1.5rem;color:var(--na3)">'+lista.length+'</div>'+
-      '<div style="font-size:.7rem;font-weight:800;color:var(--gr)">PEDIDOS</div>'+
-    '</div>'+
-    '<div style="background:linear-gradient(135deg,#e8f5e9,#c8e6c9);border:1.5px solid #a5d6a7;border-radius:12px;padding:10px;text-align:center">'+
-      '<div style="font-family:\'Bebas Neue\',cursive;font-size:1.5rem;color:#2e7d32">'+totalItems+'</div>'+
-      '<div style="font-size:.7rem;font-weight:800;color:var(--gr)">ARTÍCULOS</div>'+
-    '</div>'+
-    '<div style="background:linear-gradient(135deg,#fce7f3,#f8bbd0);border:1.5px solid #f48fb1;border-radius:12px;padding:10px;text-align:center">'+
-      '<div style="font-family:\'Bebas Neue\',cursive;font-size:1.1rem;color:#880e4f;line-height:1.3">'+bs(total)+'</div>'+
-      '<div style="font-size:.7rem;font-weight:800;color:var(--gr)">GASTADO</div>'+
-    '</div>'+
-  '</div>';
-  return stats+'<div style="display:flex;flex-direction:column;gap:12px">'+lista.map(function(ped){
-    var estadoColor={procesado:"#2e7d32",enviado:"#1565c0",entregado:"#4a148c",cancelado:"#c62828"}[ped.estado]||"#2e7d32";
+  // Stats strip
+  var stats=(
+    '<div class="historial-stats">'+
+      '<div class="hstat-card hstat-orange">'+
+        '<div class="hstat-n">'+lista.length+'</div>'+
+        '<div class="hstat-l">'+t("pedido")+'s</div>'+
+      '</div>'+
+      '<div class="hstat-card hstat-green">'+
+        '<div class="hstat-n">'+totalItems+'</div>'+
+        '<div class="hstat-l">'+t("articulos")+'</div>'+
+      '</div>'+
+      '<div class="hstat-card hstat-purple">'+
+        '<div class="hstat-n hstat-n-sm">'+bs(totalGastado)+'</div>'+
+        '<div class="hstat-l">'+t("gastado")+'</div>'+
+      '</div>'+
+    '</div>'
+  );
+  // Search/filter bar
+  var filtro=(
+    '<div class="historial-filtro">'+
+      '<input class="fc historial-search" id="histSearch" placeholder="🔍 Buscar en mis compras…" oninput="filtrarHistorial(this.value)" style="margin:0;font-size:.85rem"/>'+
+      '<select class="historial-select" id="histEstado" onchange="filtrarHistorial(document.getElementById(\'histSearch\').value)">'+
+        '<option value="">Todos los estados</option>'+
+        '<option value="procesado">✅ Procesado</option>'+
+        '<option value="enviado">🚚 En camino</option>'+
+        '<option value="entregado">📦 Entregado</option>'+
+        '<option value="cancelado">❌ Cancelado</option>'+
+      '</select>'+
+    '</div>'
+  );
+  // Pedido cards
+  var cards=lista.map(function(ped,idx){
+    var estadoColor={procesado:"#2e7d32",enviado:"#1565c0",entregado:"#7b1fa2",cancelado:"#c62828"}[ped.estado]||"#2e7d32";
     var estadoBg={procesado:"#e8f5e9",enviado:"#e3f2fd",entregado:"#f3e5f5",cancelado:"#ffebee"}[ped.estado]||"#e8f5e9";
-    var estadoLabel={procesado:"✅ Procesado",enviado:"🚚 En camino",entregado:"📦 Entregado",cancelado:"❌ Cancelado"}[ped.estado]||"✅ Procesado";
-    var iva=ped.total*0.16;
-    return '<div style="border:2px solid #f0e6d6;border-radius:16px;overflow:hidden">'+
-      '<div style="background:linear-gradient(135deg,var(--na3),var(--na2));padding:12px 16px;display:flex;align-items:center;justify-content:space-between">'+
-        '<div>'+
-          '<div style="font-family:\'Bebas Neue\',cursive;font-size:1.1rem;color:#fff;letter-spacing:1px">Pedido #'+ped.id+'</div>'+
-          '<div style="font-size:.72rem;color:rgba(255,255,255,.8)">📅 '+ped.fecha+'</div>'+
+    var estadoLabel={procesado:t("procesado"),enviado:t("enviado"),entregado:t("entregado"),cancelado:t("cancelado")}[ped.estado]||t("procesado");
+    var subtotal=ped.total||0;
+    var iva=subtotal*0.16;
+    var totalConIva=subtotal+iva;
+    var items=ped.items||[];
+    return(
+      '<div class="historial-card" data-estado="'+ped.estado+'" data-search="'+
+        items.map(function(i){return i.n;}).join(" ").toLowerCase()+' '+ped.id+'"'+
+      '>'+
+        '<div class="historial-card-head">'+
+          '<div>'+
+            '<div class="historial-num">📦 '+t("pedido")+' #'+ped.id+'</div>'+
+            '<div class="historial-fecha">📅 '+ped.fecha+'</div>'+
+          '</div>'+
+          '<span class="historial-badge" style="background:'+estadoBg+';color:'+estadoColor+'">'+estadoLabel+'</span>'+
         '</div>'+
-        '<span style="background:'+estadoBg+';color:'+estadoColor+';padding:4px 12px;border-radius:50px;font-size:.72rem;font-weight:900">'+estadoLabel+'</span>'+
-      '</div>'+
-      '<div style="padding:12px 16px;background:#fff">'+
-        '<div style="font-size:.75rem;font-weight:900;color:var(--gr);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Productos</div>'+
-        '<div style="display:flex;flex-direction:column;gap:6px">'+
-        ped.items.map(function(it){
-          var p=PRODS.find(function(x){return x.id===it.id;});
-          var imgEl=it.img?'<img src="'+it.img+'" style="width:36px;height:36px;object-fit:cover;border-radius:8px;flex-shrink:0"/>':(p&&p.img?'<img src="'+p.img+'" style="width:36px;height:36px;object-fit:cover;border-radius:8px;flex-shrink:0"/>':'<div style="width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#fff8e1,#ffe082);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0">'+(it.e||"📦")+'</div>');
-          return '<div style="display:flex;align-items:center;gap:10px;padding:6px;border-radius:10px;background:#faf5f0">'+
-            imgEl+
-            '<div style="flex:1;min-width:0">'+
-              '<div style="font-size:.84rem;font-weight:800;color:var(--bk);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+it.n+'</div>'+
-              '<div style="font-size:.75rem;color:var(--gr)">'+bs(it.p)+' × '+it.qty+'</div>'+
-            '</div>'+
-            '<div style="font-weight:900;color:var(--na3);font-size:.88rem;flex-shrink:0">'+bs(it.p*it.qty)+'</div>'+
-          '</div>';
-        }).join("")+
+        '<div class="historial-items">'+
+          items.slice(0,4).map(function(it){
+            var p=PRODS.find(function(x){return x.id===it.id;})||{};
+            var imgEl=it.img||p.img
+              ?'<img src="'+(it.img||p.img)+'" class="hitem-img"/>'
+              :'<div class="hitem-emoji">'+(it.e||"📦")+'</div>';
+            return(
+              '<div class="hitem">'+
+                imgEl+
+                '<div class="hitem-info">'+
+                  '<div class="hitem-name">'+it.n+'</div>'+
+                  '<div class="hitem-price">'+bs(it.p)+' × '+it.qty+'</div>'+
+                '</div>'+
+                '<div class="hitem-sub">'+bs(it.p*it.qty)+'</div>'+
+              '</div>'
+            );
+          }).join("")+
+          (items.length>4?'<div class="hitem-more">+'+( items.length-4)+' más…</div>':"")+
         '</div>'+
-        '<div style="margin-top:10px;padding-top:10px;border-top:2px dashed #f0e6d6">'+
-          '<div style="display:flex;justify-content:space-between;font-size:.78rem;color:var(--gr);margin-bottom:3px"><span>Subtotal</span><span>'+bs(ped.total)+'</span></div>'+
-          '<div style="display:flex;justify-content:space-between;font-size:.78rem;color:var(--gr);margin-bottom:6px"><span>IVA (16%)</span><span>'+bs(iva)+'</span></div>'+
-          '<div style="display:flex;justify-content:space-between;font-weight:900;font-size:.95rem"><span style="color:var(--bk)">Total</span><span style="color:var(--na3)">'+bs(ped.total+iva)+'</span></div>'+
+        '<div class="historial-totales">'+
+          '<div class="htot-row"><span>'+t("subtotal")+'</span><span>'+bs(subtotal)+'</span></div>'+
+          '<div class="htot-row"><span>IVA (16%)</span><span>'+bs(iva)+'</span></div>'+
+          '<div class="htot-row htot-final"><span>'+t("total")+'</span><span>'+bs(totalConIva)+'</span></div>'+
         '</div>'+
-      '</div>'+
-    '</div>';
-  }).join("")+'</div>';
+        '<div style="display:flex;gap:8px;margin-top:10px">'+
+          '<button class="historial-btn-rep" onclick="abrirRepDesdePedido('+ped.id+')">🚨 Reportar</button>'+
+          '<button class="historial-btn-fact" onclick="verFacturaPedido('+idx+')">📄 Factura</button>'+
+        '</div>'+
+      '</div>'
+    );
+  }).join("");
+  return stats+filtro+'<div id="historialLista" style="display:flex;flex-direction:column;gap:12px;margin-top:4px">'+cards+'</div>';
 }
+
+function filtrarHistorial(q){
+  var estado=document.getElementById("histEstado");
+  var estVal=estado?estado.value:"";
+  var ql=(q||"").toLowerCase();
+  document.querySelectorAll(".historial-card").forEach(function(card){
+    var search=card.getAttribute("data-search")||"";
+    var cardEst=card.getAttribute("data-estado")||"";
+    var matchQ=!ql||search.indexOf(ql)>=0;
+    var matchE=!estVal||cardEst===estVal;
+    card.style.display=(matchQ&&matchE)?"":"none";
+  });
+}
+
+function abrirRepDesdePedido(pedId){
+  cerrarModal("mPanel");
+  setTimeout(function(){abrirRep(0,pedId);},150);
+}
+
+function verFacturaPedido(idx){
+  var pedidos=PEDIDOS;
+  if(!pedidos||!pedidos[idx])return;
+  var ped=pedidos[idx];
+  carrito=ped.items.map(function(it){return{id:it.id,n:it.n,p:it.p,qty:it.qty||1,e:it.e,img:it.img};});
+  generarFactura(ped.id);
+}
+
 
 function renderHistorial(pedidos,reportes){
   var eventos=[];
@@ -801,6 +902,73 @@ function renderHistorial(pedidos,reportes){
 
 
 // ── PANEL ────────────────────────────────────
+function abrirIdiomaMoneda(){
+  var modal = document.getElementById("mIdiomaMoneda");
+  if(!modal){
+    // Create modal dynamically
+    modal = document.createElement("div");
+    modal.id = "mIdiomaMoneda";
+    modal.className = "ov";
+    modal.innerHTML=(
+      '<div class="mdl" style="max-width:420px">'+
+        '<div class="mh"><h2>🌐 Idioma y Moneda</h2><button class="bx" onclick="cerrarModal(\"mIdiomaMoneda\")">✕</button></div>'+
+        '<div class="mb">'+
+          '<div class="fg">'+
+            '<label style="font-weight:800;font-size:.88rem;color:var(--gr2);margin-bottom:8px;display:block">🌍 Idioma</label>'+
+            '<div class="lang-grid">'+
+              '<button class="lang-opt'+(LANG==="es"?" sel":"")+'" onclick="setLang("es");actualizarLangUI()">🇻🇪<span>Español</span></button>'+
+              '<button class="lang-opt'+(LANG==="en"?" sel":"")+'" onclick="setLang("en");actualizarLangUI()">🇺🇸<span>English</span></button>'+
+              '<button class="lang-opt'+(LANG==="pt"?" sel":"")+'" onclick="setLang("pt");actualizarLangUI()">🇧🇷<span>Português</span></button>'+
+            '</div>'+
+          '</div>'+
+          '<div class="fg" style="margin-top:16px">'+
+            '<label style="font-weight:800;font-size:.88rem;color:var(--gr2);margin-bottom:8px;display:block">💰 Moneda</label>'+
+            '<div class="currency-grid">'+
+              '<button class="currency-opt'+(CURRENCY==="VES"?" sel":"")+'" onclick="setCurrency("VES");actualizarLangUI()">'+
+                '<span class="cur-symbol">Bs.</span><span class="cur-name">Bolívares</span>'+
+              '</button>'+
+              '<button class="currency-opt'+(CURRENCY==="USD"?" sel":"")+'" onclick="setCurrency("USD");actualizarLangUI()">'+
+                '<span class="cur-symbol">$</span><span class="cur-name">Dólares</span>'+
+              '</button>'+
+              '<button class="currency-opt'+(CURRENCY==="EUR"?" sel":"")+'" onclick="setCurrency("EUR");actualizarLangUI()">'+
+                '<span class="cur-symbol">€</span><span class="cur-name">Euros</span>'+
+              '</button>'+
+              '<button class="currency-opt'+(CURRENCY==="COP"?" sel":"")+'" onclick="setCurrency("COP");actualizarLangUI()">'+
+                '<span class="cur-symbol">COP$</span><span class="cur-name">Pesos Col.</span>'+
+              '</button>'+
+            '</div>'+
+          '</div>'+
+          '<p style="font-size:.75rem;color:var(--gr);text-align:center;margin-top:12px">💡 Las tasas de cambio son aproximadas</p>'+
+        '</div>'+
+      '</div>'
+    );
+    modal.addEventListener("click",function(e){if(e.target===modal)cerrarModal("mIdiomaMoneda");});
+    document.body.appendChild(modal);
+  } else {
+    // Update sel state
+    modal.querySelectorAll(".lang-opt").forEach(function(b){
+      b.classList.toggle("sel", b.getAttribute("onclick").indexOf("'"+LANG+"'")>=0);
+    });
+    modal.querySelectorAll(".currency-opt").forEach(function(b){
+      b.classList.toggle("sel", b.getAttribute("onclick").indexOf("'"+CURRENCY+"'")>=0);
+    });
+  }
+  abrirModal("mIdiomaMoneda");
+}
+
+function actualizarLangUI(){
+  var modal=document.getElementById("mIdiomaMoneda");
+  if(!modal)return;
+  modal.querySelectorAll(".lang-opt").forEach(function(b){
+    var oc=b.getAttribute("onclick")||"";
+    b.classList.toggle("sel",oc.indexOf("'"+LANG+"'")>=0||oc.indexOf('"'+LANG+'"')>=0);
+  });
+  modal.querySelectorAll(".currency-opt").forEach(function(b){
+    var oc=b.getAttribute("onclick")||"";
+    b.classList.toggle("sel",oc.indexOf("'"+CURRENCY+"'")>=0||oc.indexOf('"'+CURRENCY+'"')>=0);
+  });
+}
+
 function abrirPanel(){if(!usuario){abrirModal("mLogin");return;}if(usuario.rol==="administrador"){document.getElementById("panT").textContent="⚙️ Panel Administrador";buildAdmin();abrirModal("mPanel");}else if(usuario.rol==="superadmin"){document.getElementById("panT").textContent="👑 Super Administrador";buildSuper();abrirModal("mPanel");}else{abrirCuentaCliente();}}
 function buildAdmin(){var pb=document.getElementById("panB");pb.innerHTML='<div class="tabs"><button class="tab'+(aTab==="productos"?" on":"")+'" onclick="setATab(\"productos\",this)">📦 Productos</button><button class="tab'+(aTab==="agregar"?" on":"")+'" onclick="setATab(\"agregar\",this)">'+(editId?"💾 Editar":"➕ Añadir")+'</button><button class="tab'+(aTab==="categorias"?" on":"")+'" onclick="setATab(\"categorias\",this)">🏷️ Categorías</button><button class="tab'+(aTab==="reportes"?" on":"")+'" onclick="setATab(\"reportes\",this)">🚨 Reportes</button><button class="tab'+(aTab==="mensajes"?" on":"")+'" onclick="setATab(\"mensajes\",this)" id="tabMensajesAdmin">📬 Mensajes</button></div><div id="aTB"></div>';renderAdminTab();}
 function setATab(t,btn){aTab=t;document.querySelectorAll("#panB .tab").forEach(function(b){b.classList.remove("on");});btn.classList.add("on");renderAdminTab();}
@@ -1021,6 +1189,7 @@ document.addEventListener("DOMContentLoaded",function(){
 
   initSearch();
   mpInit();
+  aplicarIdioma();
   irPagina("inicio");
   // Show loading skeleton while data loads
   var pI = document.getElementById("pInicio");
