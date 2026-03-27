@@ -20,7 +20,7 @@
     <div class="search-wrap">
       <div class="sw" id="swBox">
         <span class="sw-ico">🔍</span>
-        <input id="sBusq" type="search" placeholder="Buscar productos…" autocomplete="off" enterkeyhint="search"/>
+        <input id="sBusq" type="search" placeholder="Buscar productos, categorías…" autocomplete="off" enterkeyhint="search"/>
         <button class="sw-clear" id="swClear" onclick="limpiarBusqueda()" style="display:none" aria-label="Limpiar">✕</button>
         <button class="sw-btn" onclick="buscar()" aria-label="Buscar"><span class="sw-btn-ico">🔍</span><span class="sw-btn-txt">Buscar</span></button>
       </div>
@@ -55,8 +55,8 @@
         <h1>Los Mejores<br/><span>Productos</span><br/>Al Mejor Precio</h1>
         <p class="hero-desc">Descubre miles de productos de calidad con envío rápido a toda Venezuela. Atención personalizada, garantía real y los mejores precios del mercado.</p>
         <div class="hero-btns">
-          <button class="btn-hero" onclick="irPagina('tienda')">🛍️ Ver Tienda</button>
-          <button class="btn-hero-2" onclick="document.getElementById('sec-valorados').scrollIntoView({behavior:'smooth'})">⭐ Mejor Valorados</button>
+          <button class="btn-hero" id="heroBtn1" onclick="irPagina('tienda')">🛍️ Ver Tienda</button>
+          <button class="btn-hero-2" id="heroBtn2" onclick="document.getElementById('sec-valorados').scrollIntoView({behavior:'smooth'})">⭐ Mejor Valorados</button>
         </div>
         <div class="hero-stats">
           <div class="hstat"><strong id="hsProd">–</strong><span>Productos</span></div>
@@ -550,17 +550,17 @@
 <!-- ══ BOTTOM NAV ══ -->
 <nav class="botnav">
   <button class="btab on" id="bt0" onclick="bTab('inicio',this)">
-    <div class="btab-ico-wrap">🏠</div><span>Inicio</span><div class="iline"></div>
+    <div class="btab-ico-wrap">🏠</div><span id="btnav0">Inicio</span><div class="iline"></div>
   </button>
   <button class="btab" id="bt1" onclick="bTab('tienda',this)">
-    <div class="btab-ico-wrap">🛍️</div><span>Tienda</span><div class="iline" style="display:none"></div>
+    <div class="btab-ico-wrap">🛍️</div><span id="btnav1">Tienda</span><div class="iline" style="display:none"></div>
   </button>
   <button class="btab cart-btn" id="bt2" onclick="abrirCarrito()" style="position:relative">
     <div class="btab-ico-wrap">🛒<span id="cartBadgeNav" style="position:absolute;top:-4px;right:-4px;background:linear-gradient(135deg,var(--na3),var(--na));color:#fff;border-radius:50%;width:17px;height:17px;font-size:.58rem;display:none;align-items:center;justify-content:center;font-weight:900;border:2px solid #fff"></span></div>
     <span>Carrito</span>
   </button>
   <button class="btab" id="bt3" onclick="bTab('cuenta',this)">
-    <div class="btab-ico-wrap"><span id="bt3ico">👤</span></div><span>Cuenta</span><div class="iline" style="display:none"></div>
+    <div class="btab-ico-wrap"><span id="bt3ico">👤</span></div><span id="btnav3">Cuenta</span><div class="iline" style="display:none"></div>
   </button>
   <button class="btab" id="bt4" onclick="bTab('contacto',this)">
     <div class="btab-ico-wrap">📬</div><span>Contacto</span><div class="iline" style="display:none"></div>
