@@ -530,12 +530,14 @@ function actualizarUI(){
     // Nombre truncado
     var nombre=usuario.n.split(" ")[0];
     navIcons.innerHTML=
+      '<button class="nic" onclick="abrirIdiomaMoneda()" style="font-size:1rem">🌐</button>'+
       '<button class="nic cart-btn" onclick="abrirCarrito()" style="position:relative">🛒<span class="bdot" id="cartBadgeMobile" style="display:none">0</span></button>'+
       '<button class="nic" onclick="abrirPanel()" style="font-size:'+(usuario.avatar&&(usuario.avatar.startsWith("data:")||/^\p{Emoji}/u.test(usuario.avatar)||usuario.avatar.length<=8)&&usuario.avatar.length<=2?'1.2rem':'0.85rem')+'">'+avatarMobile+'</button>';
     deskActs.innerHTML=
+      '<button class="bdn bdn-lang" onclick="abrirIdiomaMoneda()" title="Idioma / Moneda">🌐</button>'+
       '<div class="hdr-cart-btn" onclick="abrirCarrito()">🛒<span class="hdr-cart-badge" id="cartBadgeDesk" style="display:none">0</span></div>'+
       '<div class="hdr-divider"></div>'+
-      '<div class="uchip" onclick="abrirPerfil()">'+
+      '<div class="uchip" onclick="abrirCuentaCliente()">'+
         '<div class="ava">'+avatarContent+'</div>'+
         '<div class="uchip-body">'+
           '<div class="uchip-name">'+nombre+'</div>'+
@@ -548,9 +550,11 @@ function actualizarUI(){
     if(bt3ico)bt3ico.innerHTML=avatarMobile;
   }else{
     navIcons.innerHTML=
+      '<button class="nic" onclick="abrirIdiomaMoneda()" style="font-size:1rem">🌐</button>'+
       '<button class="nic" onclick="abrirModal(\\"mLogin\\")">👤</button>'+
       '<button class="nic cart-btn" onclick="abrirCarrito()" style="position:relative">🛒<span class="bdot" id="cartBadgeMobile" style="display:none">0</span></button>';
     deskActs.innerHTML=
+      '<button class="bdn bdn-lang" onclick="abrirIdiomaMoneda()" title="Idioma / Moneda">🌐</button>'+
       '<button class="bdn bdn-o" onclick="abrirModal(\\"mLogin\\")">Iniciar sesión</button>'+
       '<button class="bdn bdn-f" onclick="abrirModal(\\"mReg\\")">Registrarse →</button>';
     if(bt3ico)bt3ico.textContent="👤";
@@ -905,67 +909,72 @@ function renderHistorial(pedidos,reportes){
 function abrirIdiomaMoneda(){
   var modal = document.getElementById("mIdiomaMoneda");
   if(!modal){
-    // Create modal dynamically
     modal = document.createElement("div");
     modal.id = "mIdiomaMoneda";
     modal.className = "ov";
-    modal.innerHTML=(
-      '<div class="mdl" style="max-width:420px">'+
-        '<div class="mh"><h2>🌐 Idioma y Moneda</h2><button class="bx" onclick="cerrarModal(\"mIdiomaMoneda\")">✕</button></div>'+
-        '<div class="mb">'+
-          '<div class="fg">'+
-            '<label style="font-weight:800;font-size:.88rem;color:var(--gr2);margin-bottom:8px;display:block">🌍 Idioma</label>'+
-            '<div class="lang-grid">'+
-              '<button class="lang-opt'+(LANG==="es"?" sel":"")+'" onclick="setLang("es");actualizarLangUI()">🇻🇪<span>Español</span></button>'+
-              '<button class="lang-opt'+(LANG==="en"?" sel":"")+'" onclick="setLang("en");actualizarLangUI()">🇺🇸<span>English</span></button>'+
-              '<button class="lang-opt'+(LANG==="pt"?" sel":"")+'" onclick="setLang("pt");actualizarLangUI()">🇧🇷<span>Português</span></button>'+
-            '</div>'+
-          '</div>'+
-          '<div class="fg" style="margin-top:16px">'+
-            '<label style="font-weight:800;font-size:.88rem;color:var(--gr2);margin-bottom:8px;display:block">💰 Moneda</label>'+
-            '<div class="currency-grid">'+
-              '<button class="currency-opt'+(CURRENCY==="VES"?" sel":"")+'" onclick="setCurrency("VES");actualizarLangUI()">'+
-                '<span class="cur-symbol">Bs.</span><span class="cur-name">Bolívares</span>'+
-              '</button>'+
-              '<button class="currency-opt'+(CURRENCY==="USD"?" sel":"")+'" onclick="setCurrency("USD");actualizarLangUI()">'+
-                '<span class="cur-symbol">$</span><span class="cur-name">Dólares</span>'+
-              '</button>'+
-              '<button class="currency-opt'+(CURRENCY==="EUR"?" sel":"")+'" onclick="setCurrency("EUR");actualizarLangUI()">'+
-                '<span class="cur-symbol">€</span><span class="cur-name">Euros</span>'+
-              '</button>'+
-              '<button class="currency-opt'+(CURRENCY==="COP"?" sel":"")+'" onclick="setCurrency("COP");actualizarLangUI()">'+
-                '<span class="cur-symbol">COP$</span><span class="cur-name">Pesos Col.</span>'+
-              '</button>'+
-            '</div>'+
-          '</div>'+
-          '<p style="font-size:.75rem;color:var(--gr);text-align:center;margin-top:12px">💡 Las tasas de cambio son aproximadas</p>'+
-        '</div>'+
-      '</div>'
-    );
-    modal.addEventListener("click",function(e){if(e.target===modal)cerrarModal("mIdiomaMoneda");});
     document.body.appendChild(modal);
-  } else {
-    // Update sel state
-    modal.querySelectorAll(".lang-opt").forEach(function(b){
-      b.classList.toggle("sel", b.getAttribute("onclick").indexOf("'"+LANG+"'")>=0);
-    });
-    modal.querySelectorAll(".currency-opt").forEach(function(b){
-      b.classList.toggle("sel", b.getAttribute("onclick").indexOf("'"+CURRENCY+"'")>=0);
-    });
+    modal.addEventListener("click", function(e){ if(e.target===modal) cerrarModal("mIdiomaMoneda"); });
   }
+
+  // Build inner HTML safely with current state
+  var langOpts = [
+    {code:"es", flag:"🇻🇪", name:"Español"},
+    {code:"en", flag:"🇺🇸", name:"English"},
+    {code:"pt", flag:"🇧🇷", name:"Português"}
+  ];
+  var curOpts = [
+    {code:"VES", sym:"Bs.",   name:"Bolívares"},
+    {code:"USD", sym:"$",     name:"Dólares"},
+    {code:"EUR", sym:"€",     name:"Euros"},
+    {code:"COP", sym:"COP$",  name:"Pesos Col."}
+  ];
+
+  var langHTML = langOpts.map(function(l){
+    return '<button class="lang-opt'+(LANG===l.code?" sel":"") +
+      '" data-lang="'+l.code+'" onclick="setLang(this.dataset.lang);actualizarLangUI()">'+
+      '<span style="font-size:1.6rem">'+l.flag+'</span>'+
+      '<span>'+l.name+'</span></button>';
+  }).join("");
+
+  var curHTML = curOpts.map(function(c){
+    return '<button class="currency-opt'+(CURRENCY===c.code?" sel":"")+
+      '" data-cur="'+c.code+'" onclick="setCurrency(this.dataset.cur);actualizarLangUI()">'+
+      '<span class="cur-symbol">'+c.sym+'</span>'+
+      '<span class="cur-name">'+c.name+'</span></button>';
+  }).join("");
+
+  modal.innerHTML =
+    '<div class="mdl" style="max-width:420px">'+
+      '<div class="mh">'+
+        '<h2>🌐 Idioma y Moneda</h2>'+
+        '<button class="bx" onclick="cerrarModal(\"mIdiomaMoneda\")">✕</button>'+
+      '</div>'+
+      '<div class="mb">'+
+        '<div class="fg">'+
+          '<label style="font-weight:800;font-size:.9rem;color:var(--gr2);margin-bottom:10px;display:block">🌍 Idioma</label>'+
+          '<div class="lang-grid" id="langGrid">'+langHTML+'</div>'+
+        '</div>'+
+        '<div class="fg" style="margin-top:18px">'+
+          '<label style="font-weight:800;font-size:.9rem;color:var(--gr2);margin-bottom:10px;display:block">💰 Moneda</label>'+
+          '<div class="currency-grid" id="curGrid">'+curHTML+'</div>'+
+        '</div>'+
+        '<p style="font-size:.75rem;color:var(--gr);text-align:center;margin-top:14px;padding-top:10px;border-top:1px solid #f0e8e0">'+
+          '💡 Las tasas de cambio son referenciales'+
+        '</p>'+
+      '</div>'+
+    '</div>';
+
   abrirModal("mIdiomaMoneda");
 }
 
 function actualizarLangUI(){
-  var modal=document.getElementById("mIdiomaMoneda");
-  if(!modal)return;
-  modal.querySelectorAll(".lang-opt").forEach(function(b){
-    var oc=b.getAttribute("onclick")||"";
-    b.classList.toggle("sel",oc.indexOf("'"+LANG+"'")>=0||oc.indexOf('"'+LANG+'"')>=0);
+  // Update lang buttons
+  document.querySelectorAll(".lang-opt").forEach(function(b){
+    b.classList.toggle("sel", b.dataset.lang===LANG);
   });
-  modal.querySelectorAll(".currency-opt").forEach(function(b){
-    var oc=b.getAttribute("onclick")||"";
-    b.classList.toggle("sel",oc.indexOf("'"+CURRENCY+"'")>=0||oc.indexOf('"'+CURRENCY+'"')>=0);
+  // Update currency buttons
+  document.querySelectorAll(".currency-opt").forEach(function(b){
+    b.classList.toggle("sel", b.dataset.cur===CURRENCY);
   });
 }
 
