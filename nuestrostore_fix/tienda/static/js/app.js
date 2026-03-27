@@ -51,7 +51,12 @@ function bs(n){
 function setLang(lang){
   LANG=lang;localStorage.setItem("ns_lang",lang);
   aplicarIdioma();
+  actualizarUI(); // rebuild nav buttons (Iniciar Sesión → Login etc)
   if(PRODS.length){renderInicio();if(paginaActual==="tienda"){cargarCats();renderProds();}}
+  // Rebuild panel if open
+  if(usuario && document.getElementById("mPanel") && document.getElementById("mPanel").classList.contains("show")){
+    abrirPanel();
+  }
 }
 function setCurrency(cur){
   CURRENCY=cur;localStorage.setItem("ns_currency",cur);
@@ -59,10 +64,78 @@ function setCurrency(cur){
   actualizarCarrito();
 }
 function aplicarIdioma(){
+  // ── Nav ────────────────────────────────────────
   var dn0=document.getElementById("dnav0");if(dn0)dn0.innerHTML="🏠 "+t("inicio");
   var dn1=document.getElementById("dnav1");if(dn1)dn1.innerHTML="🛍️ "+t("tienda");
   var dn2=document.getElementById("dnav2");if(dn2)dn2.innerHTML="📬 "+t("contacto");
   var sb=document.getElementById("sBusq");if(sb)sb.placeholder=t("buscarPlaceholder");
+
+  // ── Hero ───────────────────────────────────────
+  // Botones hero
+  document.querySelectorAll(".btn-hero").forEach(function(el){
+    if(el.textContent.indexOf("Tienda")>=0||el.textContent.indexOf("Shop")>=0||el.textContent.indexOf("Loja")>=0){
+      el.innerHTML="🛍️ "+t("tienda");
+    }
+  });
+  document.querySelectorAll(".btn-hero-2").forEach(function(el){
+    var txt=el.textContent.trim();
+    if(txt.indexOf("Valorados")>=0||txt.indexOf("Rated")>=0||txt.indexOf("Avaliados")>=0){
+      el.innerHTML="⭐ "+t("mejorValorados");
+    }
+  });
+
+  // ── Secciones Inicio ──────────────────────────
+  var secOf=document.querySelector(".sec-ofertas-flash .sec-t");
+  if(secOf)secOf.textContent=t("ofertaDelDia");
+  var secMV=document.querySelector("#sec-valorados .sec-t");
+  if(secMV)secMV.textContent=t("mejorValorados");
+
+  // Ver todas buttons
+  document.querySelectorAll(".ver-mas-btn").forEach(function(el){
+    if(el.textContent.indexOf("→")>=0){
+      el.textContent=t("verTodas");
+    }
+  });
+
+  // ── Features strip ─────────────────────────────
+  var feats=[
+    {q:".feat:nth-child(1) strong", k:"Envío Rápido"},
+    {q:".feat:nth-child(2) strong", k:"Pago Seguro"},
+    {q:".feat:nth-child(3) strong", k:"Devoluciones"},
+    {q:".feat:nth-child(4) strong", k:"Soporte 24/7"},
+  ];
+  // (features keep their names, no translation key needed for those)
+
+  // ── Tienda toolbar ─────────────────────────────
+  var th=document.querySelector(".tienda-hero h2");
+  if(th)th.textContent="🛍️ "+t("tienda");
+
+  // Sort options
+  var sortSel=document.getElementById("sortSel");
+  if(sortSel&&T[LANG]){
+    var sortLabels={
+      es:{def:"Por defecto",precioAsc:"Precio ↑",precioDesc:"Precio ↓",nombre:"A-Z",valorados:"Mejor valorados"},
+      en:{def:"Default",precioAsc:"Price ↑",precioDesc:"Price ↓",nombre:"A-Z",valorados:"Top rated"},
+      pt:{def:"Padrão",precioAsc:"Preço ↑",precioDesc:"Preço ↓",nombre:"A-Z",valorados:"Mais avaliados"}
+    };
+    var sl=sortLabels[LANG]||sortLabels.es;
+    Array.from(sortSel.options).forEach(function(opt){
+      if(sl[opt.value])opt.textContent=sl[opt.value];
+    });
+  }
+
+  // ── Footer links (keep in original lang) ───────
+
+  // ── Bottom nav ─────────────────────────────────
+  var bn0=document.getElementById("btnav0");if(bn0)bn0.textContent=t("inicio");
+  var bn1=document.getElementById("btnav1");if(bn1)bn1.textContent=t("tienda");
+  var bn2=document.getElementById("btnav2");if(bn2)bn2.textContent=t("carrito");
+  var bn3=document.getElementById("btnav3");if(bn3)bn3.textContent=t("cuenta");
+  var hb1=document.getElementById("heroBtn1");if(hb1)hb1.innerHTML="🛍️ "+t("tienda");
+  var hb2=document.getElementById("heroBtn2");if(hb2)hb2.innerHTML="⭐ "+t("mejorValorados");
+
+  // ── Update page title ──────────────────────────
+  document.title="NuestroStore — "+({es:"Tu Tienda de Confianza",en:"Your Trusted Store",pt:"Sua Loja de Confiança"}[LANG]||"Tu Tienda de Confianza");
 }
 
 // ── PÁGINAS ──────────────────────────────────
@@ -88,6 +161,16 @@ function irPagina(pg){
   if(pg==="inicio"&&PRODS.length)renderInicio();
   if(pg==="contacto"){setTimeout(autocompletarContacto,100);}
   window.scrollTo({top:0,behavior:"smooth"});
+  // ── Bottom nav ────────────────────────────────
+  var bn0=document.getElementById("btnav0");if(bn0)bn0.textContent=t("inicio");
+  var bn1=document.getElementById("btnav1");if(bn1)bn1.textContent=t("tienda");
+  var bn2=document.getElementById("btnav2");if(bn2)bn2.textContent=t("carrito");
+  var bn3=document.getElementById("btnav3");if(bn3)bn3.textContent=t("cuenta");
+  // ── Hero buttons ──────────────────────────────
+  var hb1=document.getElementById("heroBtn1");if(hb1)hb1.innerHTML="🛍️ "+t("tienda");
+  var hb2=document.getElementById("heroBtn2");if(hb2)hb2.innerHTML="⭐ "+t("mejorValorados");
+  // ── Page title ────────────────────────────────
+  document.title="NuestroStore — "+({es:"Tu Tienda de Confianza",en:"Your Trusted Store",pt:"Sua Loja de Confiança"}[LANG]||"Tu Tienda de Confianza");
 }
 
 // ── TOAST ──────────────────────────────────
@@ -104,6 +187,7 @@ function cerrarModal(id){
   if(!el) return;
   el.classList.remove("show");
 }
+function cerrarIdioma(){ cerrarModal("mIdiomaMoneda"); }
 function switchM(a,b){cerrarModal(a);abrirModal(b);}
 function bTab(tab,btn){if(tab==="cuenta"){if(usuario)abrirPanel();else abrirModal("mLogin");return;}irPagina(tab);}
 
@@ -968,7 +1052,7 @@ function abrirIdiomaMoneda(){
             '<p style="font-size:.72rem;opacity:.8;margin-top:1px">Tu preferencia se guarda automáticamente</p>'+
           '</div>'+
         '</div>'+
-        '<button class="bx" onclick="cerrarModal(\\"mIdiomaMoneda\\")">✕</button>'+
+        '<button class="bx" onclick="cerrarIdioma()">✕</button>'+
       '</div>'+
       '<div class="mb" style="padding:0">'+
 
