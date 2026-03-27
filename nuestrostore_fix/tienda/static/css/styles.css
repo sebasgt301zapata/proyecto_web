@@ -2132,8 +2132,8 @@ footer{
   background:#fdf8f4;cursor:pointer;font-size:.82rem;font-weight:700;
   color:var(--gr2);transition:all .15s;
 }
-.lang-opt:first-child{font-size:1.6rem;}
-.lang-opt span{font-size:.78rem;}
+.lang-opt span:first-child{font-size:1.6rem;display:block;}
+.lang-opt span:last-child{font-size:.78rem;}
 .lang-opt:hover{background:#fff0e0;border-color:var(--na);color:var(--na3);}
 .lang-opt.sel{background:linear-gradient(135deg,#fff8e1,#fff3e8);border-color:var(--na3);color:var(--na3);box-shadow:0 2px 10px rgba(230,81,0,.18);}
 
