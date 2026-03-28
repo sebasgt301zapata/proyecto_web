@@ -50,10 +50,9 @@ function bs(n){
 }
 function setLang(lang){
   LANG=lang;localStorage.setItem("ns_lang",lang);
-  aplicarIdioma();
-  actualizarUI(); // rebuild nav buttons (Iniciar Sesión → Login etc)
+  actualizarUI();    // rebuild nav structure first
+  aplicarIdioma();   // then translate all text (runs AFTER UI is built)
   if(PRODS.length){renderInicio();if(paginaActual==="tienda"){cargarCats();renderProds();}}
-  // Rebuild panel if open
   if(usuario && document.getElementById("mPanel") && document.getElementById("mPanel").classList.contains("show")){
     abrirPanel();
   }
@@ -78,8 +77,10 @@ function aplicarIdioma(){
   if(!usuario){
     var deskActs=document.getElementById("deskActs");
     if(deskActs){
-      var lo=deskActs.querySelector(".bdn-o"); if(lo) lo.textContent=t("iniciarSesion");
-      var lf=deskActs.querySelector(".bdn-f"); if(lf) lf.textContent=t("registrarse")+" →";
+      var lo=deskActs.querySelector(".bdn-o");
+      if(lo) lo.innerHTML=t("iniciarSesion");
+      var lf=deskActs.querySelector(".bdn-f");
+      if(lf) lf.innerHTML=t("registrarse")+" →";
     }
   }
 
@@ -679,12 +680,12 @@ function actualizarUI(){
   }else{
     navIcons.innerHTML=
       '<button class="nic" onclick="abrirIdiomaMoneda()" style="font-size:1rem">🌐</button>'+
-      '<button class="nic" onclick="abrirModal(\\"mLogin\\")">👤</button>'+
+      '<button class="nic" onclick="abrirLogin()">👤</button>'+
       '<button class="nic cart-btn" onclick="abrirCarrito()" style="position:relative">🛒<span class="bdot" id="cartBadgeMobile" style="display:none">0</span></button>';
     deskActs.innerHTML=
       '<button class="bdn bdn-lang" onclick="abrirIdiomaMoneda()" title="Idioma / Moneda">🌐</button>'+
-      '<button class="bdn bdn-o" onclick="abrirModal(\\"mLogin\\")">Iniciar sesión</button>'+
-      '<button class="bdn bdn-f" onclick="abrirModal(\\"mReg\\")">Registrarse →</button>';
+      '<button class="bdn bdn-o" onclick="abrirLogin()">'+t('iniciarSesion')+'</button>'+
+      '<button class="bdn bdn-f" onclick="abrirRegistro()">'+t('registrarse')+' →</button>';
     if(bt3ico)bt3ico.textContent="👤";
   }
   actualizarBadge();
@@ -807,9 +808,15 @@ function abrirRespRep(rid){
 function enviarRespuesta(){var rid=parseInt(document.getElementById("respRepId").value),resp=document.getElementById("respRepTxt").value.trim(),est=document.getElementById("respRepEst").value;if(!resp){toast("Escribe una respuesta","e");return;}var admin=usuario?usuario.n+" "+usuario.a:"Admin";api("/reportes/"+rid+"/responder","POST",{respuesta:resp,estado:est,admin:admin}).then(function(r){if(!r.ok){toast("Error","e");return;}cerrarModal("mRespRep");toast("Respuesta enviada ✅","s");renderAdminTab();if(usuario&&usuario.rol==="superadmin")renderSuperTab();});}
 
 // ── PANEL CLIENTE ────────────────────────────
-// ── PANEL HELPERS (avoid quote issues in onclick strings) ──
+// ── GLOBAL ONCLICK HELPERS (sin argumentos = sin problemas de comillas) ──
+function abrirLogin(){ abrirModal("mLogin"); }
+function abrirRegistro(){ abrirModal("mReg"); }
+function abrirCarritoBtn(){ abrirCarrito(); }
 function panelEditarPerfil(){ cerrarModal("mPanel"); setTimeout(abrirPerfil, 50); }
 function panelSalir(){ cerrarSesion(); cerrarModal("mPanel"); }
+function cerrarPanelBtn(){ cerrarModal("mPanel"); }
+function cerrarLoginBtn(){ cerrarModal("mLogin"); }
+function cerrarRegBtn(){ cerrarModal("mReg"); }
 
 function abrirCuentaCliente(){
   document.getElementById("panT").textContent="👤 Mi Cuenta";
@@ -1582,7 +1589,7 @@ function mpRenderLocked(){
     '  <div class="mp-locked-ico">🔒</div>',
     '  <div class="mp-locked-txt">Solo para usuarios registrados</div>',
     '  <div class="mp-locked-sub">Inicia sesión para agregar y reproducir tu música favorita</div>',
-    '  <button class="mp-locked-btn" onclick="mpHide();abrirModal(\"mLogin\")">🔐 Iniciar Sesión</button>',
+    '  <button class="mp-locked-btn" onclick="mpHide();abrirLogin()">🔐 Iniciar Sesión</button>',
     '</div>'
   ].join("");
 }
