@@ -37,9 +37,36 @@ var CURRENCIES = {
   COP:{name:"Pesos Col.",symbol:"COP$",rate:115,locale:"es-CO"}
 };
 var T={
-  es:{inicio:"Inicio",tienda:"Tienda",contacto:"Contacto",iniciarSesion:"Iniciar Sesión",registrarse:"Registrarse",buscar:"Buscar",buscarPlaceholder:"Buscar productos, categorías…",carrito:"Mi Carrito",cuenta:"Cuenta",bienvenido:"¡Bienvenido",cerrarSesion:"Cerrar sesión",editarPerfil:"Editar Perfil",misCompras:"Mis Compras",misReportes:"Mis Reportes",historial:"Historial",misResenias:"Mis Reseñas",agregarCarrito:"Agregar",sinPedidos:"Sin compras aún",verTienda:"Ver Tienda",pedido:"Pedido",productos:"Productos",articulos:"Artículos",gastado:"Gastado",subtotal:"Subtotal",total:"Total",procesado:"✅ Procesado",enviado:"🚚 En camino",entregado:"📦 Entregado",cancelado:"❌ Cancelado",ofertaDelDia:"🔥 Ofertas del Día",mejorValorados:"⭐ Mejor Valorados",verTodas:"Ver todas →",verTodos:"Ver todos →",agotado:"Agotado",enOferta:"OFERTA",sinResultados:"Sin resultados",cargando:"Cargando…",idioma:"Idioma",moneda:"Moneda"},
-  en:{inicio:"Home",tienda:"Shop",contacto:"Contact",iniciarSesion:"Login",registrarse:"Sign Up",buscar:"Search",buscarPlaceholder:"Search products, categories…",carrito:"My Cart",cuenta:"Account",bienvenido:"Welcome",cerrarSesion:"Log out",editarPerfil:"Edit Profile",misCompras:"My Orders",misReportes:"My Reports",historial:"History",misResenias:"My Reviews",agregarCarrito:"Add",sinPedidos:"No orders yet",verTienda:"Go to Shop",pedido:"Order",productos:"Products",articulos:"Items",gastado:"Spent",subtotal:"Subtotal",total:"Total",procesado:"✅ Processed",enviado:"🚚 Shipped",entregado:"📦 Delivered",cancelado:"❌ Cancelled",ofertaDelDia:"🔥 Today's Deals",mejorValorados:"⭐ Top Rated",verTodas:"See all →",verTodos:"See all →",agotado:"Out of stock",enOferta:"SALE",sinResultados:"No results",cargando:"Loading…",idioma:"Language",moneda:"Currency"},
-  pt:{inicio:"Início",tienda:"Loja",contacto:"Contato",iniciarSesion:"Entrar",registrarse:"Cadastrar",buscar:"Buscar",buscarPlaceholder:"Buscar produtos, categorias…",carrito:"Meu Carrinho",cuenta:"Conta",bienvenido:"Bem-vindo",cerrarSesion:"Sair",editarPerfil:"Editar Perfil",misCompras:"Minhas Compras",misReportes:"Meus Relatos",historial:"Histórico",misResenias:"Minhas Avaliações",agregarCarrito:"Adicionar",sinPedidos:"Sem compras ainda",verTienda:"Ver Loja",pedido:"Pedido",productos:"Produtos",articulos:"Itens",gastado:"Gasto",subtotal:"Subtotal",total:"Total",procesado:"✅ Processado",enviado:"🚚 Enviado",entregado:"📦 Entregado",cancelado:"❌ Cancelado",ofertaDelDia:"🔥 Ofertas do Dia",mejorValorados:"⭐ Mais Avaliados",verTodas:"Ver todas →",verTodos:"Ver todos →",agotado:"Esgotado",enOferta:"OFERTA",sinResultados:"Sem resultados",cargando:"Carregando…",idioma:"Idioma",moneda:"Moeda"}
+  es:{inicio:"Inicio",tienda:"Tienda",contacto:"Contacto",iniciarSesion:"Iniciar Sesión",registrarse:"Registrarse",buscar:"Buscar",buscarPlaceholder:"Buscar productos, categorías…",carrito:"Mi Carrito",cuenta:"Cuenta",bienvenido:"¡Bienvenido",cerrarSesion:"Cerrar sesión",editarPerfil:"Editar Perfil",misCompras:"Mis Compras",misReportes:"Mis Reportes",historial:"Historial",misResenias:"Mis Reseñas",agregarCarrito:"🛒 Agregar",sinPedidos:t("sinPedidos"),verTienda:"Ver Tienda",pedido:"Pedido",productos:"Productos",articulos:"Artículos",gastado:"Gastado",subtotal:t("subtotal"),total:"Total",procesado:"✅ Procesado",enviado:"🚚 En camino",entregado:"📦 Entregado",cancelado:"❌ Cancelado",ofertaDelDia:"🔥 Ofertas del Día",mejorValorados:"⭐ Mejor Valorados",verTodas:"Ver todas →",verTodos:"Ver todos →",agotado:"Agotado",enOferta:"OFERTA",sinResultados:"Sin resultados",cargando:"Cargando…",idioma:"Idioma",moneda:"Moneda",
+    salir:"Salir",enviarMensaje:"📨 Enviar Mensaje →",nombre:"Nombre",apellido:"Apellido",telefono:"Teléfono",correo:"Correo",asunto:"Asunto",mensaje:"Mensaje",prioridad:"Prioridad",normal:"Normal",urgente:"Urgente",informativo:"Informativo",
+    preguntasFrecuentes:"Preguntas Frecuentes",horarioAtencion:"Horario de Atención",nuestraUbicacion:"Nuestra Ubicación",siguenos:"Síguenos",
+    politicasTitle:"Nuestras Políticas",privacidad:"Privacidad",devoluciones:"Devoluciones",envios:"Envíos",pagos:"Pagos",
+    soporte:"Soporte 24/7",siempreDisponibles:"Siempre disponibles",
+    stock:"Stock",unidades:"unidades",sinDescripcion:"Sin descripción",
+    resenas:"Reseñas",sinResenias:"Sin reseñas aún",tuCalificacion:"Tu calificación",publicarResenia:"⭐ Publicar Reseña",
+    reportarProblema:"🚨 Reportar Problema",enviarReporte:"📨 Enviar Reporte →",
+    verFactura:"📄 Factura",pagar:"Pagar →",carritoVacio:"Carrito vacío",
+    editarPerfilBtn:"✏️ Editar Perfil",reproductorMusica:"Reproductor de música",mostrar:"Mostrar",ocultar:"Ocultar"},
+  en:{inicio:"Home",tienda:"Shop",contacto:"Contact",iniciarSesion:"Login",registrarse:"Sign Up",buscar:"Search",buscarPlaceholder:"Search products, categories…",carrito:"My Cart",cuenta:"Account",bienvenido:"Welcome",cerrarSesion:"Log out",editarPerfil:"Edit Profile",misCompras:"My Orders",misReportes:"My Reports",historial:"History",misResenias:"My Reviews",agregarCarrito:"🛒 Add",sinPedidos:"No orders yet",verTienda:"Go to Shop",pedido:"Order",productos:"Products",articulos:"Items",gastado:"Spent",subtotal:"Subtotal",total:"Total",procesado:"✅ Processed",enviado:"🚚 Shipped",entregado:"📦 Delivered",cancelado:"❌ Cancelled",ofertaDelDia:"🔥 Today's Deals",mejorValorados:"⭐ Top Rated",verTodas:"See all →",verTodos:"See all →",agotado:"Out of stock",enOferta:"SALE",sinResultados:"No results",cargando:"Loading…",idioma:"Language",moneda:"Currency",
+    salir:"Log out",enviarMensaje:"📨 Send Message →",nombre:"First Name",apellido:"Last Name",telefono:"Phone",correo:"Email",asunto:"Subject",mensaje:"Message",prioridad:"Priority",normal:"Normal",urgente:"Urgent",informativo:"Informational",
+    preguntasFrecuentes:"Frequently Asked Questions",horarioAtencion:"Business Hours",nuestraUbicacion:"Our Location",siguenos:"Follow Us",
+    politicasTitle:"Our Policies",privacidad:"Privacy",devoluciones:"Returns",envios:"Shipping",pagos:"Payments",
+    soporte:"Support 24/7",siempreDisponibles:"Always available",
+    stock:"Stock",unidades:"units",sinDescripcion:"No description",
+    resenas:"Reviews",sinResenias:"No reviews yet",tuCalificacion:"Your rating",publicarResenia:"⭐ Post Review",
+    reportarProblema:"🚨 Report Issue",enviarReporte:"📨 Send Report →",
+    verFactura:"📄 Invoice",pagar:"Pay →",carritoVacio:"Empty cart",
+    editarPerfilBtn:"✏️ Edit Profile",reproductorMusica:"Music Player",mostrar:"Show",ocultar:"Hide"},
+  pt:{inicio:"Início",tienda:"Loja",contacto:"Contato",iniciarSesion:"Entrar",registrarse:"Cadastrar",buscar:"Buscar",buscarPlaceholder:"Buscar produtos, categorias…",carrito:"Meu Carrinho",cuenta:"Conta",bienvenido:"Bem-vindo",cerrarSesion:"Sair",editarPerfil:"Editar Perfil",misCompras:"Minhas Compras",misReportes:"Meus Relatos",historial:"Histórico",misResenias:"Minhas Avaliações",agregarCarrito:"🛒 Adicionar",sinPedidos:"Sem compras ainda",verTienda:"Ver Loja",pedido:"Pedido",productos:"Produtos",articulos:"Itens",gastado:"Gasto",subtotal:"Subtotal",total:"Total",procesado:"✅ Processado",enviado:"🚚 Enviado",entregado:"📦 Entregado",cancelado:"❌ Cancelado",ofertaDelDia:"🔥 Ofertas do Dia",mejorValorados:"⭐ Mais Avaliados",verTodas:"Ver todas →",verTodos:"Ver todos →",agotado:"Esgotado",enOferta:"OFERTA",sinResultados:"Sem resultados",cargando:"Carregando…",idioma:"Idioma",moneda:"Moeda",
+    salir:"Sair",enviarMensaje:"📨 Enviar Mensagem →",nombre:"Nome",apellido:"Sobrenome",telefono:"Telefone",correo:"E-mail",asunto:"Assunto",mensaje:"Mensagem",prioridad:"Prioridade",normal:"Normal",urgente:"Urgente",informativo:"Informativo",
+    preguntasFrecuentes:"Perguntas Frequentes",horarioAtencion:"Horário de Atendimento",nuestraUbicacion:"Nossa Localização",siguenos:"Siga-nos",
+    politicasTitle:"Nossas Políticas",privacidad:"Privacidade",devoluciones:"Devoluções",envios:"Entregas",pagos:"Pagamentos",
+    soporte:"Suporte 24/7",siempreDisponibles:"Sempre disponível",
+    stock:"Estoque",unidades:"unidades",sinDescripcion:"Sem descrição",
+    resenas:"Avaliações",sinResenias:"Sem avaliações ainda",tuCalificacion:"Sua avaliação",publicarResenia:"⭐ Publicar Avaliação",
+    reportarProblema:"🚨 Reportar Problema",enviarReporte:"📨 Enviar Relato →",
+    verFactura:"📄 Fatura",pagar:"Pagar →",carritoVacio:"Carrinho vazio",
+    editarPerfilBtn:"✏️ Editar Perfil",reproductorMusica:"Reprodutor de música",mostrar:"Mostrar",ocultar:"Ocultar"}
 };
 function t(key){return(T[LANG]&&T[LANG][key])||T.es[key]||key;}
 function bs(n){
@@ -65,122 +92,101 @@ function setCurrency(cur){
 function aplicarIdioma(){
   var L = LANG;
 
-  // ── Desktop nav ──────────────────────────────────────────
+  // ── Desktop nav ──────────────────────────────────────────────
   var dn0=document.getElementById("dnav0"); if(dn0) dn0.innerHTML="🏠 "+t("inicio");
   var dn1=document.getElementById("dnav1"); if(dn1) dn1.innerHTML="🛍️ "+t("tienda");
   var dn2=document.getElementById("dnav2"); if(dn2) dn2.innerHTML="📬 "+t("contacto");
 
-  // ── Search ───────────────────────────────────────────────
+  // ── Búsqueda ─────────────────────────────────────────────────
   var sb=document.getElementById("sBusq"); if(sb) sb.placeholder=t("buscarPlaceholder");
 
-  // ── Desktop nav buttons (sin sesión) ────────────────────
+  // ── Nav sin sesión ───────────────────────────────────────────
   if(!usuario){
-    var deskActs=document.getElementById("deskActs");
-    if(deskActs){
-      var lo=deskActs.querySelector(".bdn-o");
-      if(lo) lo.innerHTML=t("iniciarSesion");
-      var lf=deskActs.querySelector(".bdn-f");
-      if(lf) lf.innerHTML=t("registrarse")+" →";
+    var da=document.getElementById("deskActs");
+    if(da){
+      var lo=da.querySelector(".bdn-o"); if(lo) lo.innerHTML=t("iniciarSesion");
+      var lf=da.querySelector(".bdn-f"); if(lf) lf.innerHTML=t("registrarse")+" →";
     }
   }
 
-  // ── Bottom nav ───────────────────────────────────────────
+  // ── Bottom nav ───────────────────────────────────────────────
   var bn0=document.getElementById("btnav0"); if(bn0) bn0.textContent=t("inicio");
   var bn1=document.getElementById("btnav1"); if(bn1) bn1.textContent=t("tienda");
   var bn2=document.getElementById("btnav2"); if(bn2) bn2.textContent=t("carrito");
   var bn3=document.getElementById("btnav3"); if(bn3) bn3.textContent=t("cuenta");
 
-  // ── Hero ─────────────────────────────────────────────────
-  var hb1=document.getElementById("heroBtn1");
-  if(hb1) hb1.innerHTML="🛍️ "+t("tienda");
-  var hb2=document.getElementById("heroBtn2");
-  if(hb2) hb2.innerHTML="⭐ "+t("mejorValorados");
-
-  // Hero badge
+  // ── Hero ─────────────────────────────────────────────────────
+  var hb1=document.getElementById("heroBtn1"); if(hb1) hb1.innerHTML="🛍️ "+t("tienda");
+  var hb2=document.getElementById("heroBtn2"); if(hb2) hb2.innerHTML="⭐ "+t("mejorValorados");
   var hbadge=document.querySelector(".hero-badge");
-  if(hbadge){
-    var badges={es:"✨ Bienvenidos a NuestroStore",en:"✨ Welcome to NuestroStore",pt:"✨ Bem-vindos à NuestroStore"};
-    hbadge.textContent=badges[L]||badges.es;
-  }
-  // Hero description
+  if(hbadge){var badges={es:"✨ Bienvenidos a NuestroStore",en:"✨ Welcome to NuestroStore",pt:"✨ Bem-vindos à NuestroStore"};hbadge.textContent=badges[L]||badges.es;}
   var hdesc=document.querySelector(".hero-desc");
-  if(hdesc){
-    var descs={
-      es:"Descubre miles de productos de calidad con envío rápido a toda Venezuela.",
-      en:"Discover thousands of quality products with fast shipping across Venezuela.",
-      pt:"Descubra milhares de produtos de qualidade com entrega rápida."
-    };
-    hdesc.textContent=descs[L]||descs.es;
-  }
-  // Hero stats
+  if(hdesc){var descs={es:"Descubre miles de productos de calidad con envío rápido a toda Venezuela.",en:"Discover thousands of quality products with fast shipping across Venezuela.",pt:"Descubra milhares de produtos de qualidade com entrega rápida."};hdesc.textContent=descs[L]||descs.es;}
   var hstats=document.querySelectorAll(".hstat span");
-  if(hstats.length>=3){
-    var statLabels={es:["Productos","Soporte","Garantía"],en:["Products","Support","Warranty"],pt:["Produtos","Suporte","Garantia"]};
-    var sl=statLabels[L]||statLabels.es;
-    hstats[0].textContent=sl[0]; hstats[1].textContent=sl[1]; hstats[2].textContent=sl[2];
-  }
+  if(hstats.length>=3){var sl={es:["Productos","Soporte","Garantía"],en:["Products","Support","Warranty"],pt:["Produtos","Suporte","Garantia"]}[L]||["Productos","Soporte","Garantía"];hstats[0].textContent=sl[0];hstats[1].textContent=sl[1];hstats[2].textContent=sl[2];}
 
-  // ── Features strip ───────────────────────────────────────
-  var featureData={
-    es:[["Envío Rápido","24-48 horas"],["Pago Seguro","100% protegido"],["Devoluciones","30 días libres"],["Soporte 24/7","Siempre disponibles"]],
-    en:[["Fast Shipping","24-48 hours"],["Secure Payment","100% protected"],["Returns","30 days free"],["24/7 Support","Always available"]],
-    pt:[["Entrega Rápida","24-48 horas"],["Pagamento Seguro","100% protegido"],["Devoluções","30 dias livres"],["Suporte 24/7","Sempre disponível"]]
-  };
-  var fdata=featureData[L]||featureData.es;
-  document.querySelectorAll(".feat").forEach(function(feat,i){
-    if(!fdata[i]) return;
-    var s=feat.querySelector("strong"); if(s) s.textContent=fdata[i][0];
-    var sm=feat.querySelector("small");  if(sm) sm.textContent=fdata[i][1];
-  });
+  // ── Features strip ───────────────────────────────────────────
+  var fd={es:[["🚚 Envío Rápido","24-48 horas"],["🔒 Pago Seguro","100% protegido"],["↩️ Devoluciones","30 días libres"],["💬 Soporte 24/7","Siempre disponibles"]],en:[["🚚 Fast Shipping","24-48 hours"],["🔒 Secure Payment","100% protected"],["↩️ Returns","30 days free"],["💬 24/7 Support","Always available"]],pt:[["🚚 Entrega Rápida","24-48 horas"],["🔒 Pagamento Seguro","100% protegido"],["↩️ Devoluções","30 dias livres"],["💬 Suporte 24/7","Sempre disponível"]]};
+  var fdata=fd[L]||fd.es;
+  document.querySelectorAll(".feat").forEach(function(f,i){if(!fdata[i])return;var s=f.querySelector("strong");if(s)s.textContent=fdata[i][0];var sm=f.querySelector("small");if(sm)sm.textContent=fdata[i][1];});
 
-  // ── Sección Ofertas ──────────────────────────────────────
-  var secOf=document.querySelector(".sec-ofertas-flash .sec-t");
-  if(secOf) secOf.textContent=t("ofertaDelDia");
+  // ── Ofertas del día ──────────────────────────────────────────
+  var secOf=document.querySelector(".sec-ofertas-flash .sec-t"); if(secOf) secOf.textContent=t("ofertaDelDia");
   var secOfSub=document.querySelector(".sec-ofertas-flash .sec-sub");
-  if(secOfSub){
-    var ofSubs={es:"Descuentos exclusivos · Tiempo limitado",en:"Exclusive discounts · Limited time",pt:"Descontos exclusivos · Tempo limitado"};
-    secOfSub.textContent=ofSubs[L]||ofSubs.es;
-  }
-  document.querySelectorAll(".sec-ofertas-flash .ver-mas-btn").forEach(function(el){ el.textContent=t("verTodas"); });
+  if(secOfSub){var ofSubs={es:"Descuentos exclusivos · Tiempo limitado",en:"Exclusive discounts · Limited time",pt:"Descontos exclusivos · Tempo limitado"};secOfSub.textContent=ofSubs[L]||ofSubs.es;}
+  document.querySelectorAll(".sec-ofertas-flash .ver-mas-btn").forEach(function(el){el.textContent=t("verTodas");});
+  document.querySelectorAll(".sec-ofertas-flash .carousel-btn").forEach(function(el){/* keep arrows */});
 
-  // ── Sección Mejor Valorados ──────────────────────────────
-  var secMV=document.querySelector("#sec-valorados .sec-t");
-  if(secMV) secMV.textContent=t("mejorValorados");
+  // ── Mejor Valorados ──────────────────────────────────────────
+  var secMV=document.querySelector("#sec-valorados .sec-t"); if(secMV) secMV.textContent=t("mejorValorados");
   var secMVSub=document.querySelector("#sec-valorados .sec-sub");
-  if(secMVSub){
-    var mvSubs={es:"Los favoritos de nuestros clientes",en:"Our customers' favorites",pt:"Os favoritos dos nossos clientes"};
-    secMVSub.textContent=mvSubs[L]||mvSubs.es;
-  }
-  document.querySelectorAll("#sec-valorados .ver-mas-btn").forEach(function(el){ el.textContent=t("verTodos"); });
+  if(secMVSub){var mvSubs={es:"Los favoritos de nuestros clientes",en:"Our customers' favorites",pt:"Os favoritos dos nossos clientes"};secMVSub.textContent=mvSubs[L]||mvSubs.es;}
+  document.querySelectorAll("#sec-valorados .ver-mas-btn").forEach(function(el){el.textContent=t("verTodos");});
 
-  // ── Tienda hero ──────────────────────────────────────────
+  // ── About section ────────────────────────────────────────────
+  var aboutTag=document.querySelector(".about-tag");
+  if(aboutTag){var atags={es:"🧡 Nuestra Historia",en:"🧡 Our Story",pt:"🧡 Nossa História"};aboutTag.textContent=atags[L]||atags.es;}
+  var aboutH=document.querySelector(".about-text h2");
+  if(aboutH){var ahs={es:"¿Por qué elegir <span>NuestroStore</span>?",en:"Why choose <span>NuestroStore</span>?",pt:"Por que escolher <span>NuestroStore</span>?"};aboutH.innerHTML=ahs[L]||ahs.es;}
+  var aboutBtn=document.querySelector(".about-text .btn-hero");
+  if(aboutBtn){aboutBtn.innerHTML="🛍️ "+{es:"Explorar Tienda →",en:"Explore Shop →",pt:"Explorar Loja →"}[L]||"Explorar Tienda →";}
+
+  // ── Tienda ───────────────────────────────────────────────────
   var th=document.querySelector(".tienda-hero h2");
-  if(th){
-    var thTxt={es:"🛍️ Catálogo Completo",en:"🛍️ Full Catalog",pt:"🛍️ Catálogo Completo"};
-    th.textContent=thTxt[L]||thTxt.es;
-  }
+  if(th){var thTxt={es:"🛍️ Catálogo Completo",en:"🛍️ Full Catalog",pt:"🛍️ Catálogo Completo"};th.textContent=thTxt[L]||thTxt.es;}
   var thp=document.querySelector(".tienda-hero p");
-  if(thp){
-    var thpTxt={es:"Encuentra lo que necesitas entre todos nuestros productos",en:"Find what you need among all our products",pt:"Encontre o que precisa entre todos os nossos produtos"};
-    thp.textContent=thpTxt[L]||thpTxt.es;
-  }
-
-  // ── Ordenamiento ─────────────────────────────────────────
+  if(thp){var thpTxt={es:"Encuentra lo que necesitas entre todos nuestros productos",en:"Find what you need among all our products",pt:"Encontre o que precisa entre todos os nossos produtos"};thp.textContent=thpTxt[L]||thpTxt.es;}
   var sortSel=document.getElementById("sortSel");
-  if(sortSel){
-    var sortL={
-      es:{def:"Por defecto",precioAsc:"Precio ↑",precioDesc:"Precio ↓",nombre:"A-Z",valorados:"Mejor valorados"},
-      en:{def:"Default",precioAsc:"Price ↑",precioDesc:"Price ↓",nombre:"A-Z",valorados:"Top rated"},
-      pt:{def:"Padrão",precioAsc:"Preço ↑",precioDesc:"Preço ↓",nombre:"A-Z",valorados:"Mais avaliados"}
-    };
-    var sl2=sortL[L]||sortL.es;
-    Array.from(sortSel.options).forEach(function(opt){ if(sl2[opt.value]) opt.textContent=sl2[opt.value]; });
-  }
+  if(sortSel){var sL={es:{def:"Por defecto",precioAsc:"Precio ↑",precioDesc:"Precio ↓",nombre:"A-Z",valorados:"Mejor valorados"},en:{def:"Default",precioAsc:"Price ↑",precioDesc:"Price ↓",nombre:"A-Z",valorados:"Top rated"},pt:{def:"Padrão",precioAsc:"Preço ↑",precioDesc:"Preço ↓",nombre:"A-Z",valorados:"Mais avaliados"}};var sl2=sL[L]||sL.es;Array.from(sortSel.options).forEach(function(opt){if(sl2[opt.value])opt.textContent=sl2[opt.value];});}
 
-  // ── Título de la página ──────────────────────────────────
+  // ── Footer ───────────────────────────────────────────────────
+  document.querySelectorAll(".footer-title").forEach(function(el){
+    var txt=el.textContent.trim();
+    var map={es:{Navegación:"Navegación","Mi Cuenta":"Mi Cuenta",Contacto:"Contacto"},en:{Navegación:"Navigation","Mi Cuenta":"My Account",Contacto:"Contact"},pt:{Navegación:"Navegação","Mi Cuenta":"Minha Conta",Contacto:"Contato"}};
+    var m=map[L]||map.es;
+    if(m[txt])el.textContent=m[txt];
+  });
+  document.querySelectorAll(".footer-pols-title").forEach(function(el){el.textContent=t("politicasTitle");});
+  var fpols=document.querySelectorAll(".fpol strong");
+  var polKeys=["privacidad","devoluciones","envios","pagos"];
+  fpols.forEach(function(el,i){if(polKeys[i])el.textContent=t(polKeys[i]);});
+
+  // ── Carrito ──────────────────────────────────────────────────
+  var chd=document.querySelector(".chd h3"); if(chd) chd.textContent="🛒 "+t("carrito");
+  var emptyCart=document.querySelector(".cits .empty h3"); if(emptyCart) emptyCart.textContent=t("carritoVacio");
+  var btnFact=document.querySelector(".btn-fact"); if(btnFact) btnFact.textContent=t("verFactura");
+  var btnPagar=document.querySelector(".btn-pagar"); if(btnPagar) btnPagar.textContent=t("pagar");
+
+  // ── Contacto page ────────────────────────────────────────────
+  var chero=document.querySelector(".contact-hero-in h2");
+  if(chero){var cherotxt={es:"¿Cómo podemos<br/><span>Ayudarte?</span>",en:"How can we<br/><span>Help You?</span>",pt:"Como podemos<br/><span>Ajudar Você?</span>"};chero.innerHTML=cherotxt[L]||cherotxt.es;}
+  var csendbtn=document.querySelector(".contact-send-btn"); if(csendbtn) csendbtn.textContent=t("enviarMensaje");
+  var cfaqTitle=document.querySelector(".contact-faq")&&document.querySelector(".contact-info-card .cic-title");
+
+  // ── Título de página ─────────────────────────────────────────
   document.title="NuestroStore — "+({es:"Tu Tienda de Confianza",en:"Your Trusted Store",pt:"Sua Loja de Confiança"}[L]||"Tu Tienda de Confianza");
 
-  // ── Actualizar modal idioma si está abierto ──────────────
+  // ── Actualizar modal idioma ──────────────────────────────────
   actualizarLangUI();
 }
 
@@ -827,8 +833,8 @@ function abrirCuentaCliente(){
     '<div><div style="font-weight:800;font-size:1.1rem">'+usuario.n+' '+usuario.a+'</div><div style="opacity:.85;font-size:.85rem">'+usuario.email+'</div>'+
     '<span style="background:var(--am);color:var(--na3);padding:2px 10px;border-radius:50px;font-size:.72rem;font-weight:900;margin-top:4px;display:inline-block">👤 Cliente</span></div></div>'+
     '<div style="display:flex;gap:8px;margin-bottom:12px">'+
-      '<button class="bp" style="flex:1;font-size:.85rem;padding:10px" onclick="cerrarModal(\"mPanel\");abrirPerfil()">✏️ Editar Perfil</button>'+
-      '<button class="bs" style="flex:1;font-size:.85rem;padding:10px;margin-top:0" onclick="panelSalir()"mPanel\")">🚪 Salir</button>'+
+      '<button class="bp" style="flex:1;font-size:.85rem;padding:10px" onclick="panelEditarPerfil()">"+t("editarPerfilBtn")+"</button>'+
+      '<button class="bs" style="flex:1;font-size:.85rem;padding:10px;margin-top:0" onclick="panelSalir()"mPanel\")">🚪 "+t("salir")+"</button>'+
     '</div>'+
     '<button onclick="mpPanelToggle()" id="mpPanelBtn" style="width:100%;margin-bottom:18px;padding:10px 14px;border-radius:10px;border:2px solid #e0d0c0;background:#fff8f0;font-weight:800;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;color:var(--na3)">'+mpPanelBtnLabel()+'</button>'+
     '<div class="tabs"><button class="tab on" onclick="cTabN(this,2)">🛍️ Mis Compras</button><button class="tab" onclick="cTabN(this,1)">🚨 Reportes</button><button class="tab" onclick="cTabN(this,3)">📋 Historial</button><button class="tab" onclick="cTabN(this,4)">⭐ Reseñas</button></div>'+
