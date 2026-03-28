@@ -64,78 +64,123 @@ function setCurrency(cur){
   actualizarCarrito();
 }
 function aplicarIdioma(){
-  // ── Nav ────────────────────────────────────────
-  var dn0=document.getElementById("dnav0");if(dn0)dn0.innerHTML="🏠 "+t("inicio");
-  var dn1=document.getElementById("dnav1");if(dn1)dn1.innerHTML="🛍️ "+t("tienda");
-  var dn2=document.getElementById("dnav2");if(dn2)dn2.innerHTML="📬 "+t("contacto");
-  var sb=document.getElementById("sBusq");if(sb)sb.placeholder=t("buscarPlaceholder");
+  var L = LANG;
 
-  // ── Hero ───────────────────────────────────────
-  // Botones hero
-  document.querySelectorAll(".btn-hero").forEach(function(el){
-    if(el.textContent.indexOf("Tienda")>=0||el.textContent.indexOf("Shop")>=0||el.textContent.indexOf("Loja")>=0){
-      el.innerHTML="🛍️ "+t("tienda");
+  // ── Desktop nav ──────────────────────────────────────────
+  var dn0=document.getElementById("dnav0"); if(dn0) dn0.innerHTML="🏠 "+t("inicio");
+  var dn1=document.getElementById("dnav1"); if(dn1) dn1.innerHTML="🛍️ "+t("tienda");
+  var dn2=document.getElementById("dnav2"); if(dn2) dn2.innerHTML="📬 "+t("contacto");
+
+  // ── Search ───────────────────────────────────────────────
+  var sb=document.getElementById("sBusq"); if(sb) sb.placeholder=t("buscarPlaceholder");
+
+  // ── Desktop nav buttons (sin sesión) ────────────────────
+  if(!usuario){
+    var deskActs=document.getElementById("deskActs");
+    if(deskActs){
+      var lo=deskActs.querySelector(".bdn-o"); if(lo) lo.textContent=t("iniciarSesion");
+      var lf=deskActs.querySelector(".bdn-f"); if(lf) lf.textContent=t("registrarse")+" →";
     }
-  });
-  document.querySelectorAll(".btn-hero-2").forEach(function(el){
-    var txt=el.textContent.trim();
-    if(txt.indexOf("Valorados")>=0||txt.indexOf("Rated")>=0||txt.indexOf("Avaliados")>=0){
-      el.innerHTML="⭐ "+t("mejorValorados");
-    }
+  }
+
+  // ── Bottom nav ───────────────────────────────────────────
+  var bn0=document.getElementById("btnav0"); if(bn0) bn0.textContent=t("inicio");
+  var bn1=document.getElementById("btnav1"); if(bn1) bn1.textContent=t("tienda");
+  var bn2=document.getElementById("btnav2"); if(bn2) bn2.textContent=t("carrito");
+  var bn3=document.getElementById("btnav3"); if(bn3) bn3.textContent=t("cuenta");
+
+  // ── Hero ─────────────────────────────────────────────────
+  var hb1=document.getElementById("heroBtn1");
+  if(hb1) hb1.innerHTML="🛍️ "+t("tienda");
+  var hb2=document.getElementById("heroBtn2");
+  if(hb2) hb2.innerHTML="⭐ "+t("mejorValorados");
+
+  // Hero badge
+  var hbadge=document.querySelector(".hero-badge");
+  if(hbadge){
+    var badges={es:"✨ Bienvenidos a NuestroStore",en:"✨ Welcome to NuestroStore",pt:"✨ Bem-vindos à NuestroStore"};
+    hbadge.textContent=badges[L]||badges.es;
+  }
+  // Hero description
+  var hdesc=document.querySelector(".hero-desc");
+  if(hdesc){
+    var descs={
+      es:"Descubre miles de productos de calidad con envío rápido a toda Venezuela.",
+      en:"Discover thousands of quality products with fast shipping across Venezuela.",
+      pt:"Descubra milhares de produtos de qualidade com entrega rápida."
+    };
+    hdesc.textContent=descs[L]||descs.es;
+  }
+  // Hero stats
+  var hstats=document.querySelectorAll(".hstat span");
+  if(hstats.length>=3){
+    var statLabels={es:["Productos","Soporte","Garantía"],en:["Products","Support","Warranty"],pt:["Produtos","Suporte","Garantia"]};
+    var sl=statLabels[L]||statLabels.es;
+    hstats[0].textContent=sl[0]; hstats[1].textContent=sl[1]; hstats[2].textContent=sl[2];
+  }
+
+  // ── Features strip ───────────────────────────────────────
+  var featureData={
+    es:[["Envío Rápido","24-48 horas"],["Pago Seguro","100% protegido"],["Devoluciones","30 días libres"],["Soporte 24/7","Siempre disponibles"]],
+    en:[["Fast Shipping","24-48 hours"],["Secure Payment","100% protected"],["Returns","30 days free"],["24/7 Support","Always available"]],
+    pt:[["Entrega Rápida","24-48 horas"],["Pagamento Seguro","100% protegido"],["Devoluções","30 dias livres"],["Suporte 24/7","Sempre disponível"]]
+  };
+  var fdata=featureData[L]||featureData.es;
+  document.querySelectorAll(".feat").forEach(function(feat,i){
+    if(!fdata[i]) return;
+    var s=feat.querySelector("strong"); if(s) s.textContent=fdata[i][0];
+    var sm=feat.querySelector("small");  if(sm) sm.textContent=fdata[i][1];
   });
 
-  // ── Secciones Inicio ──────────────────────────
+  // ── Sección Ofertas ──────────────────────────────────────
   var secOf=document.querySelector(".sec-ofertas-flash .sec-t");
-  if(secOf)secOf.textContent=t("ofertaDelDia");
+  if(secOf) secOf.textContent=t("ofertaDelDia");
+  var secOfSub=document.querySelector(".sec-ofertas-flash .sec-sub");
+  if(secOfSub){
+    var ofSubs={es:"Descuentos exclusivos · Tiempo limitado",en:"Exclusive discounts · Limited time",pt:"Descontos exclusivos · Tempo limitado"};
+    secOfSub.textContent=ofSubs[L]||ofSubs.es;
+  }
+  document.querySelectorAll(".sec-ofertas-flash .ver-mas-btn").forEach(function(el){ el.textContent=t("verTodas"); });
+
+  // ── Sección Mejor Valorados ──────────────────────────────
   var secMV=document.querySelector("#sec-valorados .sec-t");
-  if(secMV)secMV.textContent=t("mejorValorados");
+  if(secMV) secMV.textContent=t("mejorValorados");
+  var secMVSub=document.querySelector("#sec-valorados .sec-sub");
+  if(secMVSub){
+    var mvSubs={es:"Los favoritos de nuestros clientes",en:"Our customers' favorites",pt:"Os favoritos dos nossos clientes"};
+    secMVSub.textContent=mvSubs[L]||mvSubs.es;
+  }
+  document.querySelectorAll("#sec-valorados .ver-mas-btn").forEach(function(el){ el.textContent=t("verTodos"); });
 
-  // Ver todas buttons
-  document.querySelectorAll(".ver-mas-btn").forEach(function(el){
-    if(el.textContent.indexOf("→")>=0){
-      el.textContent=t("verTodas");
-    }
-  });
-
-  // ── Features strip ─────────────────────────────
-  var feats=[
-    {q:".feat:nth-child(1) strong", k:"Envío Rápido"},
-    {q:".feat:nth-child(2) strong", k:"Pago Seguro"},
-    {q:".feat:nth-child(3) strong", k:"Devoluciones"},
-    {q:".feat:nth-child(4) strong", k:"Soporte 24/7"},
-  ];
-  // (features keep their names, no translation key needed for those)
-
-  // ── Tienda toolbar ─────────────────────────────
+  // ── Tienda hero ──────────────────────────────────────────
   var th=document.querySelector(".tienda-hero h2");
-  if(th)th.textContent="🛍️ "+t("tienda");
+  if(th){
+    var thTxt={es:"🛍️ Catálogo Completo",en:"🛍️ Full Catalog",pt:"🛍️ Catálogo Completo"};
+    th.textContent=thTxt[L]||thTxt.es;
+  }
+  var thp=document.querySelector(".tienda-hero p");
+  if(thp){
+    var thpTxt={es:"Encuentra lo que necesitas entre todos nuestros productos",en:"Find what you need among all our products",pt:"Encontre o que precisa entre todos os nossos produtos"};
+    thp.textContent=thpTxt[L]||thpTxt.es;
+  }
 
-  // Sort options
+  // ── Ordenamiento ─────────────────────────────────────────
   var sortSel=document.getElementById("sortSel");
-  if(sortSel&&T[LANG]){
-    var sortLabels={
+  if(sortSel){
+    var sortL={
       es:{def:"Por defecto",precioAsc:"Precio ↑",precioDesc:"Precio ↓",nombre:"A-Z",valorados:"Mejor valorados"},
       en:{def:"Default",precioAsc:"Price ↑",precioDesc:"Price ↓",nombre:"A-Z",valorados:"Top rated"},
       pt:{def:"Padrão",precioAsc:"Preço ↑",precioDesc:"Preço ↓",nombre:"A-Z",valorados:"Mais avaliados"}
     };
-    var sl=sortLabels[LANG]||sortLabels.es;
-    Array.from(sortSel.options).forEach(function(opt){
-      if(sl[opt.value])opt.textContent=sl[opt.value];
-    });
+    var sl2=sortL[L]||sortL.es;
+    Array.from(sortSel.options).forEach(function(opt){ if(sl2[opt.value]) opt.textContent=sl2[opt.value]; });
   }
 
-  // ── Footer links (keep in original lang) ───────
+  // ── Título de la página ──────────────────────────────────
+  document.title="NuestroStore — "+({es:"Tu Tienda de Confianza",en:"Your Trusted Store",pt:"Sua Loja de Confiança"}[L]||"Tu Tienda de Confianza");
 
-  // ── Bottom nav ─────────────────────────────────
-  var bn0=document.getElementById("btnav0");if(bn0)bn0.textContent=t("inicio");
-  var bn1=document.getElementById("btnav1");if(bn1)bn1.textContent=t("tienda");
-  var bn2=document.getElementById("btnav2");if(bn2)bn2.textContent=t("carrito");
-  var bn3=document.getElementById("btnav3");if(bn3)bn3.textContent=t("cuenta");
-  var hb1=document.getElementById("heroBtn1");if(hb1)hb1.innerHTML="🛍️ "+t("tienda");
-  var hb2=document.getElementById("heroBtn2");if(hb2)hb2.innerHTML="⭐ "+t("mejorValorados");
-
-  // ── Update page title ──────────────────────────
-  document.title="NuestroStore — "+({es:"Tu Tienda de Confianza",en:"Your Trusted Store",pt:"Sua Loja de Confiança"}[LANG]||"Tu Tienda de Confianza");
+  // ── Actualizar modal idioma si está abierto ──────────────
+  actualizarLangUI();
 }
 
 // ── PÁGINAS ──────────────────────────────────
@@ -762,6 +807,10 @@ function abrirRespRep(rid){
 function enviarRespuesta(){var rid=parseInt(document.getElementById("respRepId").value),resp=document.getElementById("respRepTxt").value.trim(),est=document.getElementById("respRepEst").value;if(!resp){toast("Escribe una respuesta","e");return;}var admin=usuario?usuario.n+" "+usuario.a:"Admin";api("/reportes/"+rid+"/responder","POST",{respuesta:resp,estado:est,admin:admin}).then(function(r){if(!r.ok){toast("Error","e");return;}cerrarModal("mRespRep");toast("Respuesta enviada ✅","s");renderAdminTab();if(usuario&&usuario.rol==="superadmin")renderSuperTab();});}
 
 // ── PANEL CLIENTE ────────────────────────────
+// ── PANEL HELPERS (avoid quote issues in onclick strings) ──
+function panelEditarPerfil(){ cerrarModal("mPanel"); setTimeout(abrirPerfil, 50); }
+function panelSalir(){ cerrarSesion(); cerrarModal("mPanel"); }
+
 function abrirCuentaCliente(){
   document.getElementById("panT").textContent="👤 Mi Cuenta";
   var pb=document.getElementById("panB");
@@ -772,7 +821,7 @@ function abrirCuentaCliente(){
     '<span style="background:var(--am);color:var(--na3);padding:2px 10px;border-radius:50px;font-size:.72rem;font-weight:900;margin-top:4px;display:inline-block">👤 Cliente</span></div></div>'+
     '<div style="display:flex;gap:8px;margin-bottom:12px">'+
       '<button class="bp" style="flex:1;font-size:.85rem;padding:10px" onclick="cerrarModal(\"mPanel\");abrirPerfil()">✏️ Editar Perfil</button>'+
-      '<button class="bs" style="flex:1;font-size:.85rem;padding:10px;margin-top:0" onclick="cerrarSesion();cerrarModal(\"mPanel\")">🚪 Salir</button>'+
+      '<button class="bs" style="flex:1;font-size:.85rem;padding:10px;margin-top:0" onclick="panelSalir()"mPanel\")">🚪 Salir</button>'+
     '</div>'+
     '<button onclick="mpPanelToggle()" id="mpPanelBtn" style="width:100%;margin-bottom:18px;padding:10px 14px;border-radius:10px;border:2px solid #e0d0c0;background:#fff8f0;font-weight:800;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;color:var(--na3)">'+mpPanelBtnLabel()+'</button>'+
     '<div class="tabs"><button class="tab on" onclick="cTabN(this,2)">🛍️ Mis Compras</button><button class="tab" onclick="cTabN(this,1)">🚨 Reportes</button><button class="tab" onclick="cTabN(this,3)">📋 Historial</button><button class="tab" onclick="cTabN(this,4)">⭐ Reseñas</button></div>'+
