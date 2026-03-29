@@ -462,12 +462,16 @@ button,input,select,textarea{font-family:'Inter',sans-serif;}
 .feat small{color:var(--gr);font-size:.77rem;margin-top:2px;font-weight:600;}
 
 /* ═══ SECTIONS ═══ */
-.sec{max-width:1400px;margin:0 auto;padding:40px 20px;}
+.sec{max-width:1400px;margin:0 auto;padding:28px 16px;}
+@media(min-width:480px){.sec{padding:32px 20px;}}
+@media(min-width:768px){.sec{padding:40px 24px;}}
 .sec-ofertas-flash{
   background:linear-gradient(135deg,#020617 0%,#0C1445 40%,#1E3A8A 100%);
-  max-width:100%;padding:40px 20px;
+  max-width:100%;padding:28px 16px;
   position:relative;overflow:hidden;
 }
+@media(min-width:480px){.sec-ofertas-flash{padding:32px 20px;}}
+@media(min-width:768px){.sec-ofertas-flash{padding:40px 28px;}}
 .sec-ofertas-flash::before{
   content:'';position:absolute;inset:0;
   background-image:radial-gradient(circle,rgba(255,255,255,.06) 1px,transparent 1px);
@@ -497,17 +501,12 @@ button,input,select,textarea{font-family:'Inter',sans-serif;}
 .carousel-outer{
   overflow:hidden;border-radius:16px;
   cursor:grab;user-select:none;-webkit-user-select:none;
-  /* fade edges on desktop */
-  -webkit-mask-image:linear-gradient(to right,transparent 0%,black 3%,black 97%,transparent 100%);
-  mask-image:linear-gradient(to right,transparent 0%,black 3%,black 97%,transparent 100%);
 }
-@media(max-width:767px){
-  .carousel-outer{
-    -webkit-mask-image:none;mask-image:none;border-radius:0;
-  }
+@media(max-width:479px){
+  .carousel-outer{border-radius:0;}
 }
 .carousel-outer:active{cursor:grabbing;}
-.carousel-track{display:flex;gap:14px;will-change:transform;}
+.carousel-track{display:flex;gap:14px;will-change:transform;padding:4px 2px;}
 @media(min-width:768px){.carousel-track{gap:18px;}}
 .carousel-track .pc{flex-shrink:0;}
 /* ── Botones nav carrusel ── */
@@ -1018,12 +1017,6 @@ footer{background:var(--bk);color:rgba(255,255,255,.65);}  /* fallback, override
   position:relative;overflow:hidden;
 }
 
-/* Sección de ofertas */
-.sec-ofertas-flash{
-  background:linear-gradient(135deg,#020617 0%,#0C1445 40%,#1E3A8A 100%);
-  max-width:100%;padding:40px 20px;
-  position:relative;overflow:hidden;
-}
 .sec-ofertas-flash::before{
   content:'';position:absolute;inset:0;
   background-image:radial-gradient(circle,rgba(255,255,255,.06) 1px,transparent 1px);
@@ -1479,7 +1472,6 @@ footer::before{
 
   /* ── SECTIONS ── */
   .sec{padding:28px 16px;}
-  .sec-ofertas-flash{padding:28px 16px;}
   .sec-t{font-size:1.7rem;}
   .sec-header{gap:8px;}
   .ver-mas-btn{padding:7px 14px;font-size:.78rem;}
@@ -2355,27 +2347,14 @@ footer a,.footer-links a{transition:color .15s,padding-left .15s;}
    ══════════════════════════════════════════ */
 
 /* Sección ofertas — más padding lateral en mobile */
-.sec-ofertas-flash{padding:32px 12px;}
-@media(min-width:480px){.sec-ofertas-flash{padding:36px 16px;}}
-@media(min-width:768px){.sec-ofertas-flash{padding:40px 24px;}}
 
 /* Sección valorados */
-.sec{padding:28px 12px;}
-@media(min-width:480px){.sec{padding:32px 16px;}}
-@media(min-width:768px){.sec{padding:40px 20px;}}
 
 /* Carrusel outer — en mobile sin radius para que llegue al borde */
 @media(max-width:479px){
-  .carousel-outer{border-radius:0;margin:0 -12px;}
-  .carousel-track{padding:0 12px;}
 }
 
 /* Sec-header — más compacto en mobile */
-.sec-header{
-  display:flex;justify-content:space-between;align-items:flex-start;
-  margin-bottom:16px;gap:10px;flex-wrap:wrap;
-}
-@media(min-width:480px){.sec-header{margin-bottom:20px;align-items:center;}}
 
 /* Dots más grandes para touch */
 .cdot{min-width:6px;min-height:6px;}
@@ -2397,24 +2376,6 @@ footer a,.footer-links a{transition:color .15s,padding-left .15s;}
 }
 
 /* Botón ver más — más compacto en mobile */
-.ver-mas-btn{
-  padding:7px 14px;border-radius:50px;
-  background:rgba(255,255,255,.18);
-  border:1.5px solid rgba(255,255,255,.35);
-  color:#fff;font-weight:700;font-size:.75rem;
-  cursor:pointer;white-space:nowrap;
-  transition:background .15s;flex-shrink:0;
-}
-.ver-mas-btn:hover{background:rgba(255,255,255,.3);}
-.ver-mas-light{
-  background:rgba(255,255,255,.12);
-  border-color:rgba(255,255,255,.25);
-}
-@media(max-width:479px){
-  .ver-mas-btn{font-size:.7rem;padding:6px 10px;}
-  .sec-t{font-size:1.15rem !important;}
-  .sec-sub{font-size:.78rem !important;}
-}
 
 /* ══════════════════════════════════════════
    CONTACTO — mejoras mobile adicionales
