@@ -8,14 +8,7 @@ button,input,select,textarea{font-family:'Nunito',sans-serif;}
 /* ═══ HEADER ═══ */
 :root{--nav-h:62px;}
 
-#hdr{
-  background:linear-gradient(120deg,var(--am) 0%,var(--na2) 50%,var(--na) 100%);
-  position:sticky;top:0;z-index:900;
-  height:var(--nav-h);
-  border-bottom:1px solid rgba(0,0,0,.08);
-  box-shadow:0 2px 0 rgba(0,0,0,.06),0 4px 24px rgba(255,109,0,.28);
-  transition:box-shadow .3s;
-}
+#hdr{background:linear-gradient(135deg,var(--na3) 0%,var(--na) 55%,var(--na2) 100%);position:sticky;top:0;z-index:900;height:var(--nav-h);box-shadow:0 4px 24px rgba(230,81,0,.4);}
 #hdr.scrolled{box-shadow:0 2px 0 rgba(0,0,0,.1),0 8px 32px rgba(255,109,0,.38);}
 
 .nav-row{
@@ -27,17 +20,11 @@ button,input,select,textarea{font-family:'Nunito',sans-serif;}
 @media(min-width:768px){.nav-row{padding:0 24px;gap:16px;}}
 
 /* ── Logo ── */
-.logo{
-  font-family:'Bebas Neue',cursive;
-  font-size:1.45rem;letter-spacing:2px;
-  flex-shrink:0;white-space:nowrap;cursor:pointer;
-  display:flex;align-items:center;
-  transition:opacity .2s;
-}
+.logo{font-family:'Bebas Neue',cursive;font-size:1.9rem;letter-spacing:2px;flex-shrink:0;white-space:nowrap;cursor:pointer;color:var(--am);text-shadow:2px 2px 0 rgba(0,0,0,.2);}
 @media(min-width:380px){.logo{font-size:1.6rem;letter-spacing:2.5px;}}
 @media(min-width:768px){.logo{font-size:1.85rem;letter-spacing:3px;}}
 .logo:hover{opacity:.82;}
-.logo b{color:#fff;font-family:'Bebas Neue',cursive;text-shadow:0 1px 3px rgba(0,0,0,.2);}
+.logo b{color:#fff;}
 .logo-store{color:#fff;-webkit-text-fill-color:#fff;background:none;text-shadow:0 1px 3px rgba(0,0,0,.15);}
 .logo-dot{
   width:5px;height:5px;border-radius:50%;
@@ -54,31 +41,15 @@ button,input,select,textarea{font-family:'Nunito',sans-serif;}
 }
 @media(min-width:768px){.search-wrap{max-width:520px;}}
 
-.sw{
-  display:flex;align-items:center;
-  background:rgba(255,255,255,.22);
-  border:1.5px solid rgba(255,255,255,.4);
-  border-radius:50px;overflow:hidden;
-  transition:border-color .2s,box-shadow .2s,background .2s;
-  height:36px;
-}
+.sw{display:flex;align-items:center;background:rgba(255,255,255,.18);border:2px solid rgba(255,255,255,.32);border-radius:50px;overflow:hidden;transition:border-color .2s,box-shadow .2s,background .2s;}
 @media(min-width:768px){.sw{height:40px;background:rgba(255,255,255,.32);border-color:rgba(255,255,255,.52);}}
-.sw.focused{
-  border-color:rgba(255,255,255,.9);background:rgba(255,255,255,.45);
-  box-shadow:0 0 0 3px rgba(255,255,255,.2);
-}
-.sw-ico{
-  padding:0 4px 0 10px;font-size:.78rem;
-  color:rgba(255,255,255,.8);flex-shrink:0;pointer-events:none;
-}
+.sw.focused{border-color:var(--am);background:rgba(255,255,255,.28);box-shadow:0 0 0 4px rgba(255,214,0,.25);}
+.sw-ico{padding:0 8px 0 16px;font-size:1rem;color:rgba(255,255,255,.8);flex-shrink:0;pointer-events:none;}
 @media(min-width:768px){.sw-ico{padding:0 8px 0 14px;font-size:.88rem;}}
 .sw.focused .sw-ico{color:#fff;}
-.sw input{
-  flex:1;padding:0;background:none;border:none;outline:none;
-  color:#fff;font-size:.76rem;min-width:0;font-weight:600;height:100%;
-}
+.sw input{flex:1;padding:11px 4px;background:none;border:none;outline:none;color:#fff;font-size:.93rem;min-width:0;font-weight:600;}
 @media(min-width:768px){.sw input{font-size:.87rem;padding:0 4px;font-weight:700;}}
-.sw input::placeholder{color:rgba(255,255,255,.55);font-weight:400;}
+.sw input::placeholder{color:rgba(255,255,255,.65);}
 
 /* "Buscar": solo ícono en móvil, texto en ≥480px */
 .sw-btn{
@@ -138,12 +109,7 @@ button,input,select,textarea{font-family:'Nunito',sans-serif;}
 /* ── Nav desktop ── */
 .desk-nav{display:none;align-items:center;gap:2px;flex-shrink:0;}
 @media(min-width:768px){.desk-nav{display:flex;}}
-.dnav-btn{
-  padding:8px 14px;border-radius:10px;background:transparent;border:none;
-  color:rgba(255,255,255,.82);font-weight:700;font-size:.83rem;
-  cursor:pointer;white-space:nowrap;transition:background .15s,color .15s;
-  position:relative;display:flex;align-items:center;gap:5px;
-}
+.dnav-btn{padding:8px 14px;border-radius:50px;background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.2);color:#fff;font-weight:700;font-size:.83rem;cursor:pointer;white-space:nowrap;transition:all .15s;}
 .dnav-btn:hover{background:rgba(0,0,0,.1);color:#fff;}
 .dnav-btn.active{color:#fff;background:rgba(0,0,0,.12);}
 .dnav-btn::after{
@@ -156,13 +122,7 @@ button,input,select,textarea{font-family:'Nunito',sans-serif;}
 /* ── Íconos móvil — ocultos, el bottom nav los reemplaza ── */
 .nav-icons{display:none;}
 @media(min-width:768px){.nav-icons{display:none;}} /* siempre ocultos, acciones en desk-acts */
-.nic{
-  background:rgba(0,0,0,.14);border:1.5px solid rgba(0,0,0,.1);
-  border-radius:50%;width:36px;height:36px;
-  display:flex;align-items:center;justify-content:center;
-  color:#fff;font-size:.95rem;cursor:pointer;position:relative;
-  flex-shrink:0;overflow:hidden;transition:background .15s;
-}
+.nic{background:rgba(255,255,255,.18);border:2px solid rgba(255,255,255,.28);border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1rem;cursor:pointer;position:relative;transition:background .15s,border-color .15s,transform .1s;}
 .nic:active{background:rgba(0,0,0,.28);}
 .bdot{
   position:absolute;top:-3px;right:-3px;
@@ -184,17 +144,10 @@ button,input,select,textarea{font-family:'Nunito',sans-serif;}
   transition:all .18s;letter-spacing:.2px;
   height:38px;display:flex;align-items:center;gap:5px;
 }
-.bdn-o{
-  background:rgba(255,255,255,.2);
-  border:1.5px solid rgba(255,255,255,.5);color:#fff;
-}
-.bdn-o:hover{background:rgba(255,255,255,.32);border-color:rgba(255,255,255,.8);}
-.bdn-f{
-  background:rgba(0,0,0,.2);
-  color:#fff;border:1.5px solid rgba(0,0,0,.12);
-  box-shadow:0 2px 8px rgba(0,0,0,.15);
-}
-.bdn-f:hover{background:rgba(0,0,0,.3);transform:translateY(-1px);}
+.bdn-o{background:transparent;border:2px solid var(--am);color:var(--am);}
+.bdn-o:hover{background:rgba(255,214,0,.18);}
+.bdn-f{background:var(--am);color:var(--na3);border:none;font-weight:900;box-shadow:0 2px 10px rgba(0,0,0,.2);}
+.bdn-f:hover{background:#ffc800;transform:translateY(-1px);}
 .bdn-g{
   background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.35);color:#fff;
 }
@@ -223,29 +176,9 @@ button,input,select,textarea{font-family:'Nunito',sans-serif;}
 }
 @keyframes badgePop{from{transform:scale(0);}to{transform:scale(1);}}
 
-.uchip{
-  display:flex;align-items:center;gap:0;
-  cursor:pointer;
-  border-radius:50px;
-  border:1.5px solid rgba(255,255,255,.4);
-  background:rgba(255,255,255,.18);
-  overflow:hidden;
-  transition:border-color .18s,box-shadow .18s,background .18s;
-  height:40px;
-  max-width:220px;
-}
-.uchip:hover{
-  border-color:rgba(255,255,255,.75);
-  background:rgba(255,255,255,.28);
-  box-shadow:0 3px 14px rgba(0,0,0,.15);
-}
-.ava{
-  width:38px;height:38px;border-radius:50px 0 0 50px;
-  background:rgba(0,0,0,.2);
-  color:#fff;display:flex;align-items:center;justify-content:center;
-  font-weight:900;font-size:.88rem;flex-shrink:0;overflow:hidden;
-  border-right:1px solid rgba(255,255,255,.2);
-}
+.uchip{background:rgba(255,255,255,.18);border:2px solid rgba(255,255,255,.32);color:#fff;border-radius:50px;padding:5px 12px 5px 5px;display:flex;align-items:center;gap:8px;font-size:.83rem;font-weight:700;white-space:nowrap;max-width:200px;overflow:hidden;cursor:pointer;transition:all .15s;}
+.uchip:hover{background:rgba(255,255,255,.28);border-color:var(--am);}
+.ava{width:28px;height:28px;border-radius:50%;background:var(--am);color:var(--na3);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.82rem;flex-shrink:0;overflow:hidden;}
 .ava img{width:100%;height:100%;object-fit:cover;}
 .uchip-body{
   padding:0 12px 0 10px;
@@ -269,7 +202,7 @@ button,input,select,textarea{font-family:'Nunito',sans-serif;}
 }
 .uchip:hover .uchip-arrow{transform:translateY(2px);color:rgba(255,255,255,.9);}
 
-.rtag{display:none;}
+.rtag{background:rgba(0,0,0,.2);color:rgba(255,255,255,.9);padding:2px 8px;border-radius:50px;font-size:.66rem;font-weight:700;}
 
 .hdr-panel-btn{
   height:38px;padding:0 14px;
@@ -2118,12 +2051,8 @@ footer{
 .historial-btn-fact:hover{background:#bbdefb;}
 
 /* ── IDIOMA / MONEDA ────────────────────── */
-.bdn-lang{
-  background:#f7f3ee;border:2px solid #ede0d0;color:var(--gr2);
-  padding:7px 13px;border-radius:10px;font-size:1rem;
-  cursor:pointer;transition:all .15s;font-weight:700;
-}
-.bdn-lang:hover{background:#fff0e0;border-color:var(--na);color:var(--na3);}
+.bdn-lang{background:rgba(255,255,255,.18);border:2px solid rgba(255,255,255,.28);color:#fff;padding:7px 11px;border-radius:50px;font-size:1rem;cursor:pointer;transition:all .15s;line-height:1;}
+.bdn-lang:hover{background:rgba(255,255,255,.32);border-color:var(--am);}
 
 
 
