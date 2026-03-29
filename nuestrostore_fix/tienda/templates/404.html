@@ -3,36 +3,124 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0"/>
+<meta name="theme-color" content="#1E3A8A"/>
 <title>404 — Página no encontrada · NuestroStore</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="{% static 'css/styles.css' %}">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
 <style>
-  body{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;text-align:center;padding-bottom:0;}
-  .e404-wrap{max-width:480px;margin:0 auto;}
-  .e404-code{font-family:'Bebas Neue',cursive;font-size:clamp(6rem,20vw,10rem);line-height:1;background:linear-gradient(135deg,var(--na3),var(--am));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-  .e404-ico{font-size:4rem;margin-bottom:8px;animation:float404 3s ease-in-out infinite;}
-  @keyframes float404{0%,100%{transform:translateY(0);}50%{transform:translateY(-14px);}}
-  .e404-title{font-family:'Bebas Neue',cursive;font-size:2rem;letter-spacing:2px;color:var(--bk);margin-bottom:10px;}
-  .e404-sub{color:var(--gr);font-size:.95rem;font-weight:600;line-height:1.55;margin-bottom:28px;}
-  .e404-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
-  .e404-btn{padding:13px 28px;border-radius:12px;font-weight:900;font-size:.9rem;text-decoration:none;transition:transform .18s,box-shadow .18s;display:inline-flex;align-items:center;gap:7px;}
-  .e404-btn-p{background:linear-gradient(135deg,var(--na3),var(--na2));color:#fff;box-shadow:0 4px 14px rgba(255,109,0,.3);}
-  .e404-btn-p:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(255,109,0,.4);}
-  .e404-btn-s{background:#fff;color:var(--na3);border:2px solid var(--na2);}
-  .e404-btn-s:hover{background:#fff8e1;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  :root{--navy:#0F172A;--blue:#1E3A8A;--mid:#2563EB;--cyan:#06B6D4;--light:#EFF6FF;--gray:#64748B;}
+  body{font-family:'Inter',sans-serif;background:var(--navy);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;overflow:hidden;-webkit-font-smoothing:antialiased;}
+
+  .bg-layer{position:fixed;inset:0;z-index:0;pointer-events:none;}
+  .bg-gradient{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 20% 80%,rgba(37,99,235,.25) 0%,transparent 60%),radial-gradient(ellipse 60% 50% at 80% 10%,rgba(6,182,212,.15) 0%,transparent 55%),linear-gradient(180deg,#020617 0%,#0F172A 50%,#1E3A8A 100%);}
+  .bg-grid{position:absolute;inset:0;background-image:radial-gradient(circle,rgba(255,255,255,.04) 1px,transparent 1px);background-size:28px 28px;}
+  .particle{position:absolute;border-radius:50%;background:rgba(255,255,255,.06);animation:floatP ease-in-out infinite;}
+  .particle:nth-child(1){width:120px;height:120px;top:8%;left:6%;animation-duration:8s;}
+  .particle:nth-child(2){width:60px;height:60px;top:15%;right:12%;animation-duration:6s;animation-delay:1s;}
+  .particle:nth-child(3){width:90px;height:90px;bottom:20%;left:10%;animation-duration:7s;animation-delay:2s;}
+  .particle:nth-child(4){width:40px;height:40px;bottom:35%;right:8%;animation-duration:5s;animation-delay:.5s;}
+  .particle:nth-child(5){width:70px;height:70px;top:50%;left:2%;animation-duration:9s;animation-delay:3s;}
+  .particle:nth-child(6){width:30px;height:30px;top:25%;left:40%;animation-duration:6.5s;animation-delay:1.5s;}
+  @keyframes floatP{0%,100%{transform:translateY(0) scale(1);opacity:.06;}50%{transform:translateY(-24px) scale(1.1);opacity:.12;}}
+
+  .wrap{position:relative;z-index:1;max-width:520px;width:100%;text-align:center;animation:wrapIn .7s cubic-bezier(.4,0,.2,1) both;}
+  @keyframes wrapIn{from{transform:translateY(32px);opacity:0;}to{transform:none;opacity:1;}}
+
+  .icon-wrap{position:relative;display:inline-flex;align-items:center;justify-content:center;width:110px;height:110px;margin-bottom:12px;animation:iconBounce 3s ease-in-out infinite;}
+  @keyframes iconBounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-12px);}}
+  .icon-ring{position:absolute;inset:0;border-radius:50%;border:2px solid rgba(96,165,250,.25);animation:ringPulse 2.5s ease-in-out infinite;}
+  .icon-ring:nth-child(2){inset:-12px;border-color:rgba(6,182,212,.15);animation-delay:.4s;}
+  @keyframes ringPulse{0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.06);opacity:.5;}}
+  .icon-circle{width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,#1E3A8A,#2563EB);display:flex;align-items:center;justify-content:center;font-size:2.6rem;box-shadow:0 8px 32px rgba(37,99,235,.4),0 0 0 1px rgba(255,255,255,.08);position:relative;z-index:1;}
+
+  .code-row{display:flex;align-items:center;justify-content:center;margin-bottom:8px;}
+  .code-num{font-family:'Bebas Neue',cursive;font-size:clamp(5.5rem,20vw,9rem);line-height:.9;background:linear-gradient(135deg,#fff 0%,#93C5FD 50%,#67E8F9 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 4px 16px rgba(37,99,235,.4));animation:wrapIn .7s .1s both;}
+  .code-dot{width:12px;height:12px;border-radius:50%;background:linear-gradient(135deg,#06B6D4,#2563EB);margin:0 8px 8px;box-shadow:0 0 12px rgba(6,182,212,.6);flex-shrink:0;align-self:flex-end;}
+
+  .title{font-family:'Bebas Neue',cursive;font-size:clamp(1.6rem,5vw,2.2rem);color:#fff;letter-spacing:2px;margin-bottom:12px;animation:wrapIn .7s .15s both;}
+  .subtitle{color:rgba(255,255,255,.55);font-size:clamp(.85rem,2.5vw,.96rem);font-weight:500;line-height:1.75;margin-bottom:28px;max-width:380px;margin-left:auto;margin-right:auto;animation:wrapIn .7s .2s both;}
+  .subtitle em{color:#67E8F9;font-style:normal;font-weight:700;}
+
+  .tags{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:28px;animation:wrapIn .7s .25s both;}
+  .tag{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.55);padding:5px 14px;border-radius:50px;font-size:.75rem;font-weight:600;cursor:default;transition:all .2s;}
+  .tag:hover{background:rgba(37,99,235,.2);border-color:rgba(96,165,250,.35);color:#93C5FD;}
+
+  .btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;animation:wrapIn .7s .3s both;}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:13px 28px;border-radius:14px;font-weight:700;font-size:.9rem;text-decoration:none;cursor:pointer;transition:all .2s cubic-bezier(.4,0,.2,1);border:none;font-family:'Inter',sans-serif;letter-spacing:.1px;}
+  .btn-primary{background:linear-gradient(135deg,#1E3A8A,#2563EB);color:#fff;box-shadow:0 4px 20px rgba(37,99,235,.4),inset 0 1px 0 rgba(255,255,255,.1);}
+  .btn-primary:hover{transform:translateY(-3px);box-shadow:0 8px 32px rgba(37,99,235,.55);}
+  .btn-secondary{background:rgba(255,255,255,.07);color:rgba(255,255,255,.8);border:1.5px solid rgba(255,255,255,.15);backdrop-filter:blur(8px);}
+  .btn-secondary:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.3);color:#fff;transform:translateY(-2px);}
+  .btn:active{transform:scale(.97);}
+
+  .divider{width:60px;height:3px;background:linear-gradient(90deg,#06B6D4,#2563EB);border-radius:2px;margin:32px auto 18px;animation:wrapIn .7s .35s both;}
+  .footer-note{color:rgba(255,255,255,.22);font-size:.72rem;font-weight:500;letter-spacing:.3px;animation:wrapIn .7s .4s both;}
+  .footer-note a{color:rgba(96,165,250,.55);text-decoration:none;transition:color .15s;}
+  .footer-note a:hover{color:#60A5FA;}
+
+  @media(max-width:480px){
+    body{padding:20px 16px;}
+    .icon-wrap{width:90px;height:90px;}
+    .icon-circle{width:74px;height:74px;font-size:2.1rem;}
+    .btns{flex-direction:column;align-items:center;}
+    .btn{width:100%;max-width:280px;justify-content:center;}
+  }
 </style>
 </head>
 <body>
-  <div class="e404-wrap">
-    <div class="e404-ico">🛒</div>
-    <div class="e404-code">404</div>
-    <div class="e404-title">Página No Encontrada</div>
-    <p class="e404-sub">Ups, parece que este producto voló del carrito.<br/>La página que buscas no existe o fue movida.</p>
-    <div class="e404-btns">
-      <a class="e404-btn e404-btn-p" href="/">🏠 Ir al Inicio</a>
-      <a class="e404-btn e404-btn-s" href="javascript:history.back()">← Volver</a>
-    </div>
+
+<div class="bg-layer">
+  <div class="bg-gradient"></div>
+  <div class="bg-grid"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+</div>
+
+<div class="wrap">
+  <div class="icon-wrap">
+    <div class="icon-ring"></div>
+    <div class="icon-ring"></div>
+    <div class="icon-circle">🛒</div>
   </div>
+
+  <div class="code-row">
+    <span class="code-num">4</span>
+    <div class="code-dot"></div>
+    <span class="code-num">4</span>
+  </div>
+
+  <div class="title">Página No Encontrada</div>
+
+  <p class="subtitle">
+    Este producto voló del carrito.<br/>
+    La página que buscas <em>no existe</em> o fue movida.<br/>
+    ¡Pero tenemos miles de productos esperándote en Colombia!
+  </p>
+
+  <div class="tags">
+    <span class="tag">📦 Productos</span>
+    <span class="tag">⭐ Mejor valorados</span>
+    <span class="tag">🔥 Ofertas del día</span>
+    <span class="tag">🇨🇴 Envíos Colombia</span>
+  </div>
+
+  <div class="btns">
+    <a class="btn btn-primary" href="/">🏠 Ir al Inicio</a>
+    <a class="btn btn-secondary" href="javascript:history.back()">← Volver</a>
+  </div>
+
+  <div class="divider"></div>
+  <p class="footer-note">
+    NuestroStore Colombia &nbsp;·&nbsp;
+    <a href="/">nuestrostore.com</a>
+    &nbsp;·&nbsp; Hecho con 🧡 en Colombia
+  </p>
+</div>
+
 </body>
 </html>
