@@ -29,7 +29,7 @@ async function api(path,method,body){
 }
 // ── MONEDA E IDIOMA ──────────────────────────
 var LANG = "es";
-var CURRENCY = localStorage.getItem("ns_currency") || "VES";
+var CURRENCY = localStorage.getItem("ns_currency") || "COP";
 var CURRENCIES = {
   VES:{name:"Bolívares",symbol:"Bs.",rate:1,locale:"es-VE"},
   USD:{name:"Dólares",symbol:"$",rate:0.000028,locale:"en-US"},
@@ -648,8 +648,8 @@ function pedido(){
   if(!carrito.length){toast("Carrito vacío","e");return;}
   var total=carrito.reduce(function(s,x){return s+x.p*x.qty;},0);
   var resumen=carrito.map(function(it){return "• "+it.n+" × "+it.qty+" = "+bs(it.p*it.qty);}).join("\n");
-  var iva=total*0.16;
-  if(!confirm("📋 CONFIRMAR PEDIDO\n\n"+resumen+"\n\n─────────────────\nSubtotal: "+bs(total)+"\nIVA (16%): "+bs(iva)+"\nTOTAL: "+bs(total+iva)+"\n\n¿Confirmas la compra?")){return;}
+  var iva=total*0.19;
+  if(!confirm("📋 CONFIRMAR PEDIDO\n\n"+resumen+"\n\n─────────────────\nSubtotal: "+bs(total)+"\nIVA (19%): "+bs(iva)+"\nTOTAL: "+bs(total+iva)+"\n\n¿Confirmas la compra?")){return;}
   var btn=document.querySelector(".btn-pagar");
   if(btn){btn.disabled=true;btn.textContent="Procesando…";}
   api("/pedidos","POST",{uid:usuario.id,items:JSON.parse(JSON.stringify(carrito)),total:total}).then(function(r){
@@ -670,9 +670,9 @@ function generarFactura(){
   if(!carrito.length){toast("Carrito vacío","e");return;}
   var total=carrito.reduce(function(s,x){return s+x.p*x.qty;},0),iva=total*.16;
   var numFact="NST-"+new Date().getFullYear()+"-"+String(contFact++).padStart(5,"0");
-  var fecha=new Date().toLocaleDateString("es-VE",{year:"numeric",month:"long",day:"numeric"});
+  var fecha=new Date().toLocaleDateString("es-CO",{year:"numeric",month:"long",day:"numeric"});
   var rows=carrito.map(function(it){return '<tr><td>'+(it.e||"📦")+' '+it.n+'</td><td style="text-align:center">'+it.qty+'</td><td style="text-align:right">'+bs(it.p)+'</td><td style="text-align:right;font-weight:700">'+bs(it.p*it.qty)+'</td></tr>';}).join("");
-  document.getElementById("factBody").innerHTML='<div class="fact-logo"><span>Nuestro</span>Store</div><div class="fact-sub">RIF: J-123456789 · Caracas, Venezuela<br>Teléfono: +58 212 000 0000</div><hr style="border:1px solid #f0f0f0;margin-bottom:16px"/><div class="fact-info"><p><strong>N° Factura:</strong> '+numFact+'</p><p><strong>Fecha:</strong> '+fecha+'</p><p><strong>Cliente:</strong> '+usuario.n+' '+usuario.a+'</p><p><strong>Correo:</strong> '+usuario.email+'</p></div><table class="fact-table"><thead><tr><th>Producto</th><th style="text-align:center">Cant.</th><th style="text-align:right">Precio</th><th style="text-align:right">Total</th></tr></thead><tbody>'+rows+'</tbody></table><div style="text-align:right;font-size:.85rem;color:#555;margin-bottom:4px">Subtotal: '+bs(total)+'</div><div style="text-align:right;font-size:.85rem;color:#555;margin-bottom:4px">IVA (16%): '+bs(iva)+'</div><div class="fact-total">TOTAL A PAGAR: '+bs(total+iva)+'</div><div class="fact-footer">Gracias por su compra · NuestroStore</div>';
+  document.getElementById("factBody").innerHTML='<div class="fact-logo"><span>Nuestro</span>Store</div><div class="fact-sub">NIT: 900.123.456-7 · Bogotá, Colombia<br>Teléfono: +57 601 000 0000</div><hr style="border:1px solid #f0f0f0;margin-bottom:16px"/><div class="fact-info"><p><strong>N° Factura:</strong> '+numFact+'</p><p><strong>Fecha:</strong> '+fecha+'</p><p><strong>Cliente:</strong> '+usuario.n+' '+usuario.a+'</p><p><strong>Correo:</strong> '+usuario.email+'</p></div><table class="fact-table"><thead><tr><th>Producto</th><th style="text-align:center">Cant.</th><th style="text-align:right">Precio</th><th style="text-align:right">Total</th></tr></thead><tbody>'+rows+'</tbody></table><div style="text-align:right;font-size:.85rem;color:#555;margin-bottom:4px">Subtotal: '+bs(total)+'</div><div style="text-align:right;font-size:.85rem;color:#555;margin-bottom:4px">IVA (19%): '+bs(iva)+'</div><div class="fact-total">TOTAL A PAGAR: '+bs(total+iva)+'</div><div class="fact-footer">Gracias por su compra · NuestroStore</div>';
   document.getElementById("factOverlay").classList.add("show");document.body.style.overflow="hidden";
 }
 function cerrarFactura(){document.getElementById("factOverlay").classList.remove("show");document.body.style.overflow="";}
@@ -965,7 +965,7 @@ function abrirIdiomaMoneda(){
   }
 
   var curOpts = [
-    {code:"VES", sym:"Bs.",   name:"Bolívar Venezolano", flag:"🇻🇪", sub:"Venezuela"},
+    {code:"COP", sym:"COP$",  name:"Peso Colombiano",    flag:"🇨🇴", sub:"Colombia"},
     {code:"USD", sym:"$",     name:"Dólar",              flag:"🇺🇸", sub:"Estados Unidos"},
     {code:"COP", sym:"COP$",  name:"Peso Colombiano",    flag:"🇨🇴", sub:"Colombia"},
     {code:"MXN", sym:"MX$",   name:"Peso Mexicano",      flag:"🇲🇽", sub:"México"},
