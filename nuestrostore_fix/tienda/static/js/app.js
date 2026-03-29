@@ -147,7 +147,7 @@ async function cargarDatos(){
   var rr=await api("/resenias");
   if(rr.ok){RESENIAS={};rr.resenias.forEach(function(res){if(!RESENIAS[res.pid])RESENIAS[res.pid]=[];RESENIAS[res.pid].push(res);});}
   // Always re-render current page after data loads
-  if(paginaActual==="inicio") renderInicio();
+  if(paginaActual==="inicio") setTimeout(renderInicio, 60);
   if(paginaActual==="tienda"){cargarCats();renderProds();actualizarEstadsTienda();}
 }
 function actualizarStatsHero(){
@@ -204,7 +204,7 @@ function buscar(){busqueda=(document.getElementById("sBusq")||{}).value||"";busq
 // ── CARRUSEL (arreglado, sin dejar de girar) ─
 var CR={ofertas:{idx:0,total:0,perPage:1,timer:null,items:[]},valorados:{idx:0,total:0,perPage:1,timer:null,items:[]}};
 
-function carouselPerPage(){var w=window.innerWidth;return w<480?2:w<768?3:w<1100?4:5;}
+function carouselPerPage(){var w=window.innerWidth;return w<480?1:w<640?2:w<900?3:w<1200?4:5;}
 
 function carouselInit(name,items,delay){
   var c=CR[name];c.items=items;c.idx=0;c.total=items.length;c.perPage=carouselPerPage();
@@ -215,7 +215,7 @@ function carouselInit(name,items,delay){
   track.innerHTML=items.map(function(html){return '<div class="pc" style="flex-shrink:0;width:var(--cw)">'+html+'</div>';}).join("");
   // Set CSS var for card width
   var outer=document.getElementById("outer"+cap(name));
-  if(outer){var gap=16,pp=c.perPage,ow=outer.offsetWidth;var cw=Math.floor((ow-(gap*(pp-1)))/pp);outer.style.setProperty("--cw",cw+"px");}
+  if(outer){var gap=14,pp=c.perPage,ow=outer.offsetWidth;var peekOffset=(pp===1&&ow<480)?Math.floor(ow*0.15):0;var cw=Math.floor((ow-peekOffset-(gap*(pp-1)))/pp);outer.style.setProperty("--cw",cw+"px");outer.style.setProperty("--cgap",gap+"px");}
   // Dots
   var maxDots=Math.max(1,c.total-c.perPage+1);
   var isDark=name==="valorados";
@@ -229,9 +229,8 @@ function carouselInit(name,items,delay){
 function carouselRender(name){
   var c=CR[name];var track=document.getElementById("track"+cap(name));if(!track)return;
   var outer=document.getElementById("outer"+cap(name));if(!outer)return;
-  var gap=16,pp=c.perPage,ow=outer.offsetWidth;var cw=Math.floor((ow-(gap*(pp-1)))/pp);
-  // Update --cw
-  outer.style.setProperty("--cw",cw+"px");
+  var gap=14,pp=c.perPage,ow=outer.offsetWidth;var peekOffset=(pp===1&&ow<480)?Math.floor(ow*0.15):0;var cw=Math.floor((ow-peekOffset-(gap*(pp-1)))/pp);
+  outer.style.setProperty("--cw",cw+"px");outer.style.setProperty("--cgap",gap+"px");
   // Clamp idx
   var maxIdx=Math.max(0,c.total-pp);c.idx=Math.min(c.idx,maxIdx);
   var offset=c.idx*(cw+gap);
