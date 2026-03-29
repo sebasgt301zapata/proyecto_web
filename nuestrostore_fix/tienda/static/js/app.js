@@ -52,7 +52,7 @@ var T={
     verFactura:"📄 Factura",pagar:"Pagar →",carritoVacio:"Carrito vacío",
     editarPerfilBtn:"✏️ Editar Perfil",reproductorMusica:"Reproductor de música",mostrar:"Mostrar",ocultar:"Ocultar"}
 };
-function t(function t(key){return(T[LANG]&&T[LANG][key])||T.es[key]||key;}
+function t(key){return(T[LANG]&&T[LANG][key])||T.es[key]||key;}
 function sanitize(str){
   if(!str) return "";
   return String(str)
