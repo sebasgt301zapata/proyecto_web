@@ -28,16 +28,20 @@ async function api(path,method,body){
   }catch(e){return{ok:false,error:"Error de conexión."};}
 }
 // ── MONEDA E IDIOMA ──────────────────────────
-var LANG = localStorage.getItem("ns_lang") || "es";
+var LANG = "es";
 var CURRENCY = localStorage.getItem("ns_currency") || "VES";
 var CURRENCIES = {
   VES:{name:"Bolívares",symbol:"Bs.",rate:1,locale:"es-VE"},
   USD:{name:"Dólares",symbol:"$",rate:0.000028,locale:"en-US"},
-  EUR:{name:"Euros",symbol:"€",rate:0.000026,locale:"de-DE"},
-  COP:{name:"Pesos Col.",symbol:"COP$",rate:115,locale:"es-CO"}
+  COP:{name:"Pesos Col.",symbol:"COP$",rate:115,locale:"es-CO"},
+  PEN:{name:"Soles",symbol:"S/.",rate:0.000104,locale:"es-PE"},
+  MXN:{name:"Pesos Mex.",symbol:"MX$",rate:0.00048,locale:"es-MX"},
+  ARS:{name:"Pesos Arg.",symbol:"AR$",rate:0.028,locale:"es-AR"},
+  CLP:{name:"Pesos Chil.",symbol:"CL$",rate:0.026,locale:"es-CL"},
+  BRL:{name:"Reales",symbol:"R$",rate:0.000145,locale:"pt-BR"}
 };
 var T={
-  es:{inicio:"Inicio",tienda:"Tienda",contacto:"Contacto",iniciarSesion:"Iniciar Sesión",registrarse:"Registrarse",buscar:"Buscar",buscarPlaceholder:"Buscar productos, categorías…",carrito:"Mi Carrito",cuenta:"Cuenta",bienvenido:"¡Bienvenido",cerrarSesion:"Cerrar sesión",editarPerfil:"Editar Perfil",misCompras:"Mis Compras",misReportes:"Mis Reportes",historial:"Historial",misResenias:"Mis Reseñas",agregarCarrito:"🛒 Agregar",sinPedidos:t("sinPedidos"),verTienda:"Ver Tienda",pedido:"Pedido",productos:"Productos",articulos:"Artículos",gastado:"Gastado",subtotal:t("subtotal"),total:"Total",procesado:"✅ Procesado",enviado:"🚚 En camino",entregado:"📦 Entregado",cancelado:"❌ Cancelado",ofertaDelDia:"🔥 Ofertas del Día",mejorValorados:"⭐ Mejor Valorados",verTodas:"Ver todas →",verTodos:"Ver todos →",agotado:"Agotado",enOferta:"OFERTA",sinResultados:"Sin resultados",cargando:"Cargando…",idioma:"Idioma",moneda:"Moneda",
+  es:{inicio:"Inicio",tienda:"Tienda",contacto:"Contacto",iniciarSesion:"Iniciar Sesión",registrarse:"Registrarse",buscar:"Buscar",buscarPlaceholder:"Buscar productos, categorías…",carrito:"Mi Carrito",cuenta:"Cuenta",bienvenido:"¡Bienvenido",cerrarSesion:"Cerrar sesión",editarPerfil:"Editar Perfil",misCompras:"Mis Compras",misReportes:"Mis Reportes",historial:"Historial",misResenias:"Mis Reseñas",agregarCarrito:"🛒 Agregar",sinPedidos:"Sin compras aún",verTienda:"Ver Tienda",pedido:"Pedido",productos:"Productos",articulos:"Artículos",gastado:"Gastado",subtotal:"Subtotal",total:"Total",procesado:"✅ Procesado",enviado:"🚚 En camino",entregado:"📦 Entregado",cancelado:"❌ Cancelado",ofertaDelDia:"🔥 Ofertas del Día",mejorValorados:"⭐ Mejor Valorados",verTodas:"Ver todas →",verTodos:"Ver todos →",agotado:"Agotado",enOferta:"OFERTA",sinResultados:"Sin resultados",cargando:"Cargando…",moneda:"Moneda",
     salir:"Salir",enviarMensaje:"📨 Enviar Mensaje →",nombre:"Nombre",apellido:"Apellido",telefono:"Teléfono",correo:"Correo",asunto:"Asunto",mensaje:"Mensaje",prioridad:"Prioridad",normal:"Normal",urgente:"Urgente",informativo:"Informativo",
     preguntasFrecuentes:"Preguntas Frecuentes",horarioAtencion:"Horario de Atención",nuestraUbicacion:"Nuestra Ubicación",siguenos:"Síguenos",
     politicasTitle:"Nuestras Políticas",privacidad:"Privacidad",devoluciones:"Devoluciones",envios:"Envíos",pagos:"Pagos",
@@ -46,29 +50,9 @@ var T={
     resenas:"Reseñas",sinResenias:"Sin reseñas aún",tuCalificacion:"Tu calificación",publicarResenia:"⭐ Publicar Reseña",
     reportarProblema:"🚨 Reportar Problema",enviarReporte:"📨 Enviar Reporte →",
     verFactura:"📄 Factura",pagar:"Pagar →",carritoVacio:"Carrito vacío",
-    editarPerfilBtn:"✏️ Editar Perfil",reproductorMusica:"Reproductor de música",mostrar:"Mostrar",ocultar:"Ocultar"},
-  en:{inicio:"Home",tienda:"Shop",contacto:"Contact",iniciarSesion:"Login",registrarse:"Sign Up",buscar:"Search",buscarPlaceholder:"Search products, categories…",carrito:"My Cart",cuenta:"Account",bienvenido:"Welcome",cerrarSesion:"Log out",editarPerfil:"Edit Profile",misCompras:"My Orders",misReportes:"My Reports",historial:"History",misResenias:"My Reviews",agregarCarrito:"🛒 Add",sinPedidos:"No orders yet",verTienda:"Go to Shop",pedido:"Order",productos:"Products",articulos:"Items",gastado:"Spent",subtotal:"Subtotal",total:"Total",procesado:"✅ Processed",enviado:"🚚 Shipped",entregado:"📦 Delivered",cancelado:"❌ Cancelled",ofertaDelDia:"🔥 Today's Deals",mejorValorados:"⭐ Top Rated",verTodas:"See all →",verTodos:"See all →",agotado:"Out of stock",enOferta:"SALE",sinResultados:"No results",cargando:"Loading…",idioma:"Language",moneda:"Currency",
-    salir:"Log out",enviarMensaje:"📨 Send Message →",nombre:"First Name",apellido:"Last Name",telefono:"Phone",correo:"Email",asunto:"Subject",mensaje:"Message",prioridad:"Priority",normal:"Normal",urgente:"Urgent",informativo:"Informational",
-    preguntasFrecuentes:"Frequently Asked Questions",horarioAtencion:"Business Hours",nuestraUbicacion:"Our Location",siguenos:"Follow Us",
-    politicasTitle:"Our Policies",privacidad:"Privacy",devoluciones:"Returns",envios:"Shipping",pagos:"Payments",
-    soporte:"Support 24/7",siempreDisponibles:"Always available",
-    stock:"Stock",unidades:"units",sinDescripcion:"No description",
-    resenas:"Reviews",sinResenias:"No reviews yet",tuCalificacion:"Your rating",publicarResenia:"⭐ Post Review",
-    reportarProblema:"🚨 Report Issue",enviarReporte:"📨 Send Report →",
-    verFactura:"📄 Invoice",pagar:"Pay →",carritoVacio:"Empty cart",
-    editarPerfilBtn:"✏️ Edit Profile",reproductorMusica:"Music Player",mostrar:"Show",ocultar:"Hide"},
-  pt:{inicio:"Início",tienda:"Loja",contacto:"Contato",iniciarSesion:"Entrar",registrarse:"Cadastrar",buscar:"Buscar",buscarPlaceholder:"Buscar produtos, categorias…",carrito:"Meu Carrinho",cuenta:"Conta",bienvenido:"Bem-vindo",cerrarSesion:"Sair",editarPerfil:"Editar Perfil",misCompras:"Minhas Compras",misReportes:"Meus Relatos",historial:"Histórico",misResenias:"Minhas Avaliações",agregarCarrito:"🛒 Adicionar",sinPedidos:"Sem compras ainda",verTienda:"Ver Loja",pedido:"Pedido",productos:"Produtos",articulos:"Itens",gastado:"Gasto",subtotal:"Subtotal",total:"Total",procesado:"✅ Processado",enviado:"🚚 Enviado",entregado:"📦 Entregado",cancelado:"❌ Cancelado",ofertaDelDia:"🔥 Ofertas do Dia",mejorValorados:"⭐ Mais Avaliados",verTodas:"Ver todas →",verTodos:"Ver todos →",agotado:"Esgotado",enOferta:"OFERTA",sinResultados:"Sem resultados",cargando:"Carregando…",idioma:"Idioma",moneda:"Moeda",
-    salir:"Sair",enviarMensaje:"📨 Enviar Mensagem →",nombre:"Nome",apellido:"Sobrenome",telefono:"Telefone",correo:"E-mail",asunto:"Assunto",mensaje:"Mensagem",prioridad:"Prioridade",normal:"Normal",urgente:"Urgente",informativo:"Informativo",
-    preguntasFrecuentes:"Perguntas Frequentes",horarioAtencion:"Horário de Atendimento",nuestraUbicacion:"Nossa Localização",siguenos:"Siga-nos",
-    politicasTitle:"Nossas Políticas",privacidad:"Privacidade",devoluciones:"Devoluções",envios:"Entregas",pagos:"Pagamentos",
-    soporte:"Suporte 24/7",siempreDisponibles:"Sempre disponível",
-    stock:"Estoque",unidades:"unidades",sinDescripcion:"Sem descrição",
-    resenas:"Avaliações",sinResenias:"Sem avaliações ainda",tuCalificacion:"Sua avaliação",publicarResenia:"⭐ Publicar Avaliação",
-    reportarProblema:"🚨 Reportar Problema",enviarReporte:"📨 Enviar Relato →",
-    verFactura:"📄 Fatura",pagar:"Pagar →",carritoVacio:"Carrinho vazio",
-    editarPerfilBtn:"✏️ Editar Perfil",reproductorMusica:"Reprodutor de música",mostrar:"Mostrar",ocultar:"Ocultar"}
+    editarPerfilBtn:"✏️ Editar Perfil",reproductorMusica:"Reproductor de música",mostrar:"Mostrar",ocultar:"Ocultar"}
 };
-function t(key){return(T[LANG]&&T[LANG][key])||T.es[key]||key;}
+function t(function t(key){return(T[LANG]&&T[LANG][key])||T.es[key]||key;}
 function sanitize(str){
   if(!str) return "";
   return String(str)
@@ -84,118 +68,14 @@ function bs(n){
   if(CURRENCY==="VES") return cur.symbol+" "+conv.toLocaleString("es-VE",{minimumFractionDigits:2,maximumFractionDigits:2});
   return cur.symbol+" "+conv.toLocaleString(cur.locale,{minimumFractionDigits:2,maximumFractionDigits:2});
 }
-function setLang(lang){
-  LANG=lang;localStorage.setItem("ns_lang",lang);
-  actualizarUI();    // rebuild nav structure first
-  aplicarIdioma();   // then translate all text (runs AFTER UI is built)
-  if(PRODS.length){renderInicio();if(paginaActual==="tienda"){cargarCats();renderProds();}}
-  if(usuario && document.getElementById("mPanel") && document.getElementById("mPanel").classList.contains("show")){
-    abrirPanel();
-  }
-}
+// setLang eliminado — idioma fijo en español
 function setCurrency(cur){
   CURRENCY=cur;localStorage.setItem("ns_currency",cur);
   if(PRODS.length){renderInicio();if(paginaActual==="tienda")renderProds();}
   actualizarCarrito();
 }
 function aplicarIdioma(){
-  var L = LANG;
-
-  // ── Desktop nav ──────────────────────────────────────────────
-  var dn0=document.getElementById("dnav0"); if(dn0) dn0.innerHTML="🏠 "+t("inicio");
-  var dn1=document.getElementById("dnav1"); if(dn1) dn1.innerHTML="🛍️ "+t("tienda");
-  var dn2=document.getElementById("dnav2"); if(dn2) dn2.innerHTML="📬 "+t("contacto");
-
-  // ── Búsqueda ─────────────────────────────────────────────────
-  var sb=document.getElementById("sBusq"); if(sb) sb.placeholder=t("buscarPlaceholder");
-
-  // ── Nav sin sesión ───────────────────────────────────────────
-  if(!usuario){
-    var da=document.getElementById("deskActs");
-    if(da){
-      var lo=da.querySelector(".bdn-o"); if(lo) lo.innerHTML=t("iniciarSesion");
-      var lf=da.querySelector(".bdn-f"); if(lf) lf.innerHTML=t("registrarse")+" →";
-    }
-  }
-
-  // ── Bottom nav ───────────────────────────────────────────────
-  var bn0=document.getElementById("btnav0"); if(bn0) bn0.textContent=t("inicio");
-  var bn1=document.getElementById("btnav1"); if(bn1) bn1.textContent=t("tienda");
-  var bn2=document.getElementById("btnav2"); if(bn2) bn2.textContent=t("carrito");
-  var bn3=document.getElementById("btnav3"); if(bn3) bn3.textContent=t("cuenta");
-
-  // ── Hero ─────────────────────────────────────────────────────
-  var hb1=document.getElementById("heroBtn1"); if(hb1) hb1.innerHTML="🛍️ "+t("tienda");
-  var hb2=document.getElementById("heroBtn2"); if(hb2) hb2.innerHTML="⭐ "+t("mejorValorados");
-  var hbadge=document.querySelector(".hero-badge");
-  if(hbadge){var badges={es:"✨ Bienvenidos a NuestroStore",en:"✨ Welcome to NuestroStore",pt:"✨ Bem-vindos à NuestroStore"};hbadge.textContent=badges[L]||badges.es;}
-  var hdesc=document.querySelector(".hero-desc");
-  if(hdesc){var descs={es:"Descubre miles de productos de calidad con envío rápido a toda Venezuela.",en:"Discover thousands of quality products with fast shipping across Venezuela.",pt:"Descubra milhares de produtos de qualidade com entrega rápida."};hdesc.textContent=descs[L]||descs.es;}
-  var hstats=document.querySelectorAll(".hstat span");
-  if(hstats.length>=3){var sl={es:["Productos","Soporte","Garantía"],en:["Products","Support","Warranty"],pt:["Produtos","Suporte","Garantia"]}[L]||["Productos","Soporte","Garantía"];hstats[0].textContent=sl[0];hstats[1].textContent=sl[1];hstats[2].textContent=sl[2];}
-
-  // ── Features strip ───────────────────────────────────────────
-  var fd={es:[["🚚 Envío Rápido","24-48 horas"],["🔒 Pago Seguro","100% protegido"],["↩️ Devoluciones","30 días libres"],["💬 Soporte 24/7","Siempre disponibles"]],en:[["🚚 Fast Shipping","24-48 hours"],["🔒 Secure Payment","100% protected"],["↩️ Returns","30 days free"],["💬 24/7 Support","Always available"]],pt:[["🚚 Entrega Rápida","24-48 horas"],["🔒 Pagamento Seguro","100% protegido"],["↩️ Devoluções","30 dias livres"],["💬 Suporte 24/7","Sempre disponível"]]};
-  var fdata=fd[L]||fd.es;
-  document.querySelectorAll(".feat").forEach(function(f,i){if(!fdata[i])return;var s=f.querySelector("strong");if(s)s.textContent=fdata[i][0];var sm=f.querySelector("small");if(sm)sm.textContent=fdata[i][1];});
-
-  // ── Ofertas del día ──────────────────────────────────────────
-  var secOf=document.querySelector(".sec-ofertas-flash .sec-t"); if(secOf) secOf.textContent=t("ofertaDelDia");
-  var secOfSub=document.querySelector(".sec-ofertas-flash .sec-sub");
-  if(secOfSub){var ofSubs={es:"Descuentos exclusivos · Tiempo limitado",en:"Exclusive discounts · Limited time",pt:"Descontos exclusivos · Tempo limitado"};secOfSub.textContent=ofSubs[L]||ofSubs.es;}
-  document.querySelectorAll(".sec-ofertas-flash .ver-mas-btn").forEach(function(el){el.textContent=t("verTodas");});
-  document.querySelectorAll(".sec-ofertas-flash .carousel-btn").forEach(function(el){/* keep arrows */});
-
-  // ── Mejor Valorados ──────────────────────────────────────────
-  var secMV=document.querySelector("#sec-valorados .sec-t"); if(secMV) secMV.textContent=t("mejorValorados");
-  var secMVSub=document.querySelector("#sec-valorados .sec-sub");
-  if(secMVSub){var mvSubs={es:"Los favoritos de nuestros clientes",en:"Our customers' favorites",pt:"Os favoritos dos nossos clientes"};secMVSub.textContent=mvSubs[L]||mvSubs.es;}
-  document.querySelectorAll("#sec-valorados .ver-mas-btn").forEach(function(el){el.textContent=t("verTodos");});
-
-  // ── About section ────────────────────────────────────────────
-  var aboutTag=document.querySelector(".about-tag");
-  if(aboutTag){var atags={es:"🧡 Nuestra Historia",en:"🧡 Our Story",pt:"🧡 Nossa História"};aboutTag.textContent=atags[L]||atags.es;}
-  var aboutH=document.querySelector(".about-text h2");
-  if(aboutH){var ahs={es:"¿Por qué elegir <span>NuestroStore</span>?",en:"Why choose <span>NuestroStore</span>?",pt:"Por que escolher <span>NuestroStore</span>?"};aboutH.innerHTML=ahs[L]||ahs.es;}
-  var aboutBtn=document.querySelector(".about-text .btn-hero");
-  if(aboutBtn){aboutBtn.innerHTML="🛍️ "+{es:"Explorar Tienda →",en:"Explore Shop →",pt:"Explorar Loja →"}[L]||"Explorar Tienda →";}
-
-  // ── Tienda ───────────────────────────────────────────────────
-  var th=document.querySelector(".tienda-hero h2");
-  if(th){var thTxt={es:"🛍️ Catálogo Completo",en:"🛍️ Full Catalog",pt:"🛍️ Catálogo Completo"};th.textContent=thTxt[L]||thTxt.es;}
-  var thp=document.querySelector(".tienda-hero p");
-  if(thp){var thpTxt={es:"Encuentra lo que necesitas entre todos nuestros productos",en:"Find what you need among all our products",pt:"Encontre o que precisa entre todos os nossos produtos"};thp.textContent=thpTxt[L]||thpTxt.es;}
-  var sortSel=document.getElementById("sortSel");
-  if(sortSel){var sL={es:{def:"Por defecto",precioAsc:"Precio ↑",precioDesc:"Precio ↓",nombre:"A-Z",valorados:"Mejor valorados"},en:{def:"Default",precioAsc:"Price ↑",precioDesc:"Price ↓",nombre:"A-Z",valorados:"Top rated"},pt:{def:"Padrão",precioAsc:"Preço ↑",precioDesc:"Preço ↓",nombre:"A-Z",valorados:"Mais avaliados"}};var sl2=sL[L]||sL.es;Array.from(sortSel.options).forEach(function(opt){if(sl2[opt.value])opt.textContent=sl2[opt.value];});}
-
-  // ── Footer ───────────────────────────────────────────────────
-  document.querySelectorAll(".footer-title").forEach(function(el){
-    var txt=el.textContent.trim();
-    var map={es:{Navegación:"Navegación","Mi Cuenta":"Mi Cuenta",Contacto:"Contacto"},en:{Navegación:"Navigation","Mi Cuenta":"My Account",Contacto:"Contact"},pt:{Navegación:"Navegação","Mi Cuenta":"Minha Conta",Contacto:"Contato"}};
-    var m=map[L]||map.es;
-    if(m[txt])el.textContent=m[txt];
-  });
-  document.querySelectorAll(".footer-pols-title").forEach(function(el){el.textContent=t("politicasTitle");});
-  var fpols=document.querySelectorAll(".fpol strong");
-  var polKeys=["privacidad","devoluciones","envios","pagos"];
-  fpols.forEach(function(el,i){if(polKeys[i])el.textContent=t(polKeys[i]);});
-
-  // ── Carrito ──────────────────────────────────────────────────
-  var chd=document.querySelector(".chd h3"); if(chd) chd.textContent="🛒 "+t("carrito");
-  var emptyCart=document.querySelector(".cits .empty h3"); if(emptyCart) emptyCart.textContent=t("carritoVacio");
-  var btnFact=document.querySelector(".btn-fact"); if(btnFact) btnFact.textContent=t("verFactura");
-  var btnPagar=document.querySelector(".btn-pagar"); if(btnPagar) btnPagar.textContent=t("pagar");
-
-  // ── Contacto page ────────────────────────────────────────────
-  var chero=document.querySelector(".contact-hero-in h2");
-  if(chero){var cherotxt={es:"¿Cómo podemos<br/><span>Ayudarte?</span>",en:"How can we<br/><span>Help You?</span>",pt:"Como podemos<br/><span>Ajudar Você?</span>"};chero.innerHTML=cherotxt[L]||cherotxt.es;}
-  var csendbtn=document.querySelector(".contact-send-btn"); if(csendbtn) csendbtn.textContent=t("enviarMensaje");
-  var cfaqTitle=document.querySelector(".contact-faq")&&document.querySelector(".contact-info-card .cic-title");
-
-  // ── Título de página ─────────────────────────────────────────
-  document.title="NuestroStore — "+({es:"Tu Tienda de Confianza",en:"Your Trusted Store",pt:"Sua Loja de Confiança"}[L]||"Tu Tienda de Confianza");
-
-  // ── Actualizar modal idioma ──────────────────────────────────
+  // Idioma fijo en español — solo actualiza UI estática si hace falta
   actualizarLangUI();
 }
 
@@ -231,7 +111,7 @@ function irPagina(pg){
   var hb1=document.getElementById("heroBtn1");if(hb1)hb1.innerHTML="🛍️ "+t("tienda");
   var hb2=document.getElementById("heroBtn2");if(hb2)hb2.innerHTML="⭐ "+t("mejorValorados");
   // ── Page title ────────────────────────────────
-  document.title="NuestroStore — "+({es:"Tu Tienda de Confianza",en:"Your Trusted Store",pt:"Sua Loja de Confiança"}[LANG]||"Tu Tienda de Confianza");
+  document.title="NuestroStore — Tu Tienda de Confianza";
 }
 
 // ── TOAST ──────────────────────────────────
@@ -678,11 +558,11 @@ function actualizarUI(){
     // Nombre truncado
     var nombre=usuario.n.split(" ")[0];
     navIcons.innerHTML=
-      '<button class="nic" onclick="abrirIdiomaMoneda()" style="font-size:1rem">🌐</button>'+
+      '<button class="nic" onclick="abrirIdiomaMoneda()" style="font-size:1rem">💰</button>'+
       '<button class="nic cart-btn" onclick="abrirCarrito()" style="position:relative">🛒<span class="bdot" id="cartBadgeMobile" style="display:none">0</span></button>'+
       '<button class="nic" onclick="abrirPanel()" style="font-size:'+(usuario.avatar&&(usuario.avatar.startsWith("data:")||/^\p{Emoji}/u.test(usuario.avatar)||usuario.avatar.length<=8)&&usuario.avatar.length<=2?'1.2rem':'0.85rem')+'">'+avatarMobile+'</button>';
     deskActs.innerHTML=
-      '<button class="bdn bdn-lang" onclick="abrirIdiomaMoneda()" title="Idioma / Moneda">🌐</button>'+
+      '<button class="bdn bdn-lang" onclick="abrirIdiomaMoneda()" title="Moneda">💰</button>'+
       '<div class="hdr-cart-btn" onclick="abrirCarrito()">🛒<span class="hdr-cart-badge" id="cartBadgeDesk" style="display:none">0</span></div>'+
       '<div class="hdr-divider"></div>'+
       '<div class="uchip" onclick="abrirPanel()">'+
@@ -697,11 +577,11 @@ function actualizarUI(){
     if(bt3ico)bt3ico.innerHTML=avatarMobile;
   }else{
     navIcons.innerHTML=
-      '<button class="nic" onclick="abrirIdiomaMoneda()" style="font-size:1rem">🌐</button>'+
+      '<button class="nic" onclick="abrirIdiomaMoneda()" style="font-size:1rem">💰</button>'+
       '<button class="nic" onclick="abrirLogin()">👤</button>'+
       '<button class="nic cart-btn" onclick="abrirCarrito()" style="position:relative">🛒<span class="bdot" id="cartBadgeMobile" style="display:none">0</span></button>';
     deskActs.innerHTML=
-      '<button class="bdn bdn-lang" onclick="abrirIdiomaMoneda()" title="Idioma / Moneda">🌐</button>'+
+      '<button class="bdn bdn-lang" onclick="abrirIdiomaMoneda()" title="Moneda">💰</button>'+
       '<button class="bdn bdn-o" onclick="abrirLogin()">'+t('iniciarSesion')+'</button>'+
       '<button class="bdn bdn-f" onclick="abrirRegistro()">'+t('registrarse')+' →</button>';
     if(bt3ico)bt3ico.textContent="👤";
@@ -831,7 +711,7 @@ function abrirLogin(){ abrirModal("mLogin"); }
 function abrirRegistro(){ abrirModal("mReg"); }
 function abrirCarritoBtn(){ abrirCarrito(); }
 function panelEditarPerfil(){ cerrarModal("mPanel"); setTimeout(abrirPerfil, 50); }
-      '<button class="bs" style="flex:1;font-size:.85rem;padding:10px;margin-top:0" onclick="panelSalir()">🚪 Salir</button>'+
+function panelSalir(){ cerrarModal("mPanel"); cerrarSesion(); }
 function cerrarPanelBtn(){ cerrarModal("mPanel"); }
 function cerrarLoginBtn(){ cerrarModal("mLogin"); }
 function cerrarRegBtn(){ cerrarModal("mReg"); }
@@ -1073,43 +953,26 @@ function abrirIdiomaMoneda(){
     modal.addEventListener("click", function(e){ if(e.target===modal) cerrarModal("mIdiomaMoneda"); });
   }
 
-  var langOpts = [
-    {code:"es", flag:"🇻🇪", name:"Español",   sub:"Venezuela"},
-    {code:"en", flag:"🇺🇸", name:"English",   sub:"United States"},
-    {code:"pt", flag:"🇧🇷", name:"Português", sub:"Brasil"}
-  ];
   var curOpts = [
-    {code:"VES", sym:"Bs.",   name:"Bolívar",      rate:"Moneda local"},
-    {code:"USD", sym:"$",     name:"Dólar",        rate:"Tasa BCV ref."},
-    {code:"EUR", sym:"€",     name:"Euro",         rate:"Tasa ref."},
-    {code:"COP", sym:"COP$",  name:"Peso Col.",    rate:"Tasa ref."}
+    {code:"VES", sym:"Bs.",   name:"Bolívar Venezolano", flag:"🇻🇪", sub:"Venezuela"},
+    {code:"USD", sym:"$",     name:"Dólar",              flag:"🇺🇸", sub:"Estados Unidos"},
+    {code:"COP", sym:"COP$",  name:"Peso Colombiano",    flag:"🇨🇴", sub:"Colombia"},
+    {code:"MXN", sym:"MX$",   name:"Peso Mexicano",      flag:"🇲🇽", sub:"México"},
+    {code:"ARS", sym:"AR$",   name:"Peso Argentino",     flag:"🇦🇷", sub:"Argentina"},
+    {code:"CLP", sym:"CL$",   name:"Peso Chileno",       flag:"🇨🇱", sub:"Chile"},
+    {code:"PEN", sym:"S/.",   name:"Sol Peruano",        flag:"🇵🇪", sub:"Perú"},
+    {code:"BRL", sym:"R$",    name:"Real Brasileño",     flag:"🇧🇷", sub:"Brasil"}
   ];
-
-  var langHTML = langOpts.map(function(l){
-    var isSel = LANG===l.code;
-    return(
-      '<button class="ilm-opt'+(isSel?" ilm-sel":"") +
-        '" data-lang="'+l.code+'" onclick="setLang(this.dataset.lang);actualizarLangUI()">'+
-        '<span class="ilm-flag">'+l.flag+'</span>'+
-        '<span class="ilm-name">'+l.name+'</span>'+
-        '<span class="ilm-sub">'+l.sub+'</span>'+
-        (isSel?'<span class="ilm-check">✓</span>':'')+
-      '</button>'
-    );
-  }).join("");
 
   var curHTML = curOpts.map(function(c){
     var isSel = CURRENCY===c.code;
-    var cur = CURRENCIES[c.code]||{};
-    var sample = bs(100);
-    var sampleStr = (isSel?' · <em>'+sample+' = 100</em>':'');
     return(
-      '<button class="ilm-cur-opt'+(isSel?" ilm-sel":"") +
+      '<button class="ilm-cur-opt'+(isSel?" ilm-sel":"")+
         '" data-cur="'+c.code+'" onclick="setCurrency(this.dataset.cur);actualizarLangUI()">'+
-        '<div class="ilm-cur-sym">'+c.sym+'</div>'+
+        '<div class="ilm-cur-flag">'+c.flag+'</div>'+
         '<div class="ilm-cur-body">'+
           '<div class="ilm-cur-name">'+c.name+'</div>'+
-          '<div class="ilm-cur-sub">'+c.rate+(isSel?(' · 100 Bs = '+bs(100)):'')+'</div>'+
+          '<div class="ilm-cur-sub">'+c.sym+' · '+c.sub+'</div>'+
         '</div>'+
         (isSel?'<span class="ilm-check">✓</span>':'')+
       '</button>'
@@ -1120,46 +983,28 @@ function abrirIdiomaMoneda(){
     '<div class="mdl ilm-modal">'+
       '<div class="mh">'+
         '<div style="display:flex;align-items:center;gap:10px">'+
-          '<div style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.3rem">🌐</div>'+
+          '<div style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.3rem">💰</div>'+
           '<div>'+
-            '<h2 style="font-size:1.3rem">Idioma y Moneda</h2>'+
-            '<p style="font-size:.72rem;opacity:.8;margin-top:1px">Tu preferencia se guarda automáticamente</p>'+
+            '<h2 style="font-size:1.3rem">Moneda</h2>'+
+            '<p style="font-size:.72rem;opacity:.8;margin-top:1px">Los precios se convierten automáticamente</p>'+
           '</div>'+
         '</div>'+
         '<button class="bx" onclick="cerrarIdioma()">✕</button>'+
       '</div>'+
       '<div class="mb" style="padding:0">'+
-
-        '<!-- IDIOMA -->'+
         '<div class="ilm-section">'+
           '<div class="ilm-section-title">'+
-            '<span class="ilm-section-ico">🌍</span>'+
-            '<div>'+
-              '<div class="ilm-section-label">Idioma de la interfaz</div>'+
-              '<div class="ilm-section-sub">Cambia el idioma de textos y botones</div>'+
-            '</div>'+
-          '</div>'+
-          '<div class="ilm-lang-grid" id="ilmLangGrid">'+langHTML+'</div>'+
-        '</div>'+
-
-        '<div class="ilm-divider"></div>'+
-
-        '<!-- MONEDA -->'+
-        '<div class="ilm-section">'+
-          '<div class="ilm-section-title">'+
-            '<span class="ilm-section-ico">💰</span>'+
+            '<span class="ilm-section-ico">🌎</span>'+
             '<div>'+
               '<div class="ilm-section-label">Moneda de visualización</div>'+
-              '<div class="ilm-section-sub">Los precios se convierten automáticamente</div>'+
+              '<div class="ilm-section-sub">Selecciona la moneda de tu país</div>'+
             '</div>'+
           '</div>'+
           '<div class="ilm-cur-grid" id="ilmCurGrid">'+curHTML+'</div>'+
         '</div>'+
-
         '<div class="ilm-footer">'+
           '<span>⚠️</span> Las tasas de cambio son referenciales y pueden variar'+
         '</div>'+
-
       '</div>'+
     '</div>';
 
@@ -1167,13 +1012,16 @@ function abrirIdiomaMoneda(){
 }
 
 function actualizarLangUI(){
-  // Update lang buttons
-  document.querySelectorAll(".lang-opt").forEach(function(b){
-    b.classList.toggle("sel", b.dataset.lang===LANG);
-  });
-  // Update currency buttons
-  document.querySelectorAll(".currency-opt").forEach(function(b){
-    b.classList.toggle("sel", b.dataset.cur===CURRENCY);
+  // Update currency buttons in modal
+  document.querySelectorAll(".ilm-cur-opt").forEach(function(b){
+    var isSel = b.dataset.cur===CURRENCY;
+    b.classList.toggle("ilm-sel", isSel);
+    var check = b.querySelector(".ilm-check");
+    if(isSel && !check){
+      var sp=document.createElement("span");sp.className="ilm-check";sp.textContent="✓";b.appendChild(sp);
+    } else if(!isSel && check){
+      check.remove();
+    }
   });
 }
 
