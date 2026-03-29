@@ -69,6 +69,15 @@ var T={
     editarPerfilBtn:"✏️ Editar Perfil",reproductorMusica:"Reprodutor de música",mostrar:"Mostrar",ocultar:"Ocultar"}
 };
 function t(key){return(T[LANG]&&T[LANG][key])||T.es[key]||key;}
+function sanitize(str){
+  if(!str) return "";
+  return String(str)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#x27;");
+}
 function bs(n){
   var cur=CURRENCIES[CURRENCY]||CURRENCIES.VES;
   var conv=Number(n)*cur.rate;
@@ -619,7 +628,10 @@ function guardarPerfil(){
 }
 
 // ── LOGIN / REGISTRO ─────────────────────────
+var _loginAttempts = 0;
+var _loginLocked = false;
 function doLogin(){
+  if(_loginLocked){ toast("Demasiados intentos. Espera 30 segundos.", "e"); return; }
   var emailEl=document.getElementById("lEmail"),passEl=document.getElementById("lPass"),errEl=document.getElementById("loginErr"),btnEl=document.getElementById("btnLogin");
   var email=emailEl.value.trim().toLowerCase(),pass=passEl.value;
   errEl.style.display="none";
@@ -627,7 +639,7 @@ function doLogin(){
   btnEl.disabled=true;btnEl.textContent="Verificando...";
   api("/login","POST",{email:email,password:pass}).then(function(r){
     btnEl.disabled=false;btnEl.textContent="Entrar →";
-    if(!r.ok){errEl.textContent="❌ "+(r.error||"Credenciales incorrectas.");errEl.style.display="block";passEl.value="";passEl.focus();return;}
+    if(!r.ok){_loginAttempts++;errEl.textContent="❌ "+(r.error||"Credenciales incorrectas.")+((_loginAttempts>=3)?" ("+( 5-_loginAttempts)+" intentos restantes)":"");errEl.style.display="block";passEl.value="";passEl.focus();if(_loginAttempts>=5){_loginLocked=true;setTimeout(function(){_loginLocked=false;_loginAttempts=0;toast("Puedes intentar de nuevo","i");},30000);}return;}
     usuario=r.usuario;localStorage.setItem("ns_usuario",JSON.stringify(usuario));cerrarModal("mLogin");emailEl.value="";passEl.value="";errEl.style.display="none";
     toast("¡Bienvenido, "+usuario.n+"! ("+({cliente:"Cliente",administrador:"Admin",superadmin:"Super Admin"}[usuario.rol]||usuario.rol)+")","s");
     actualizarUI();cargarDatos();mpCargarDesdeDB();_mpYaCargo=true;
@@ -819,7 +831,7 @@ function abrirLogin(){ abrirModal("mLogin"); }
 function abrirRegistro(){ abrirModal("mReg"); }
 function abrirCarritoBtn(){ abrirCarrito(); }
 function panelEditarPerfil(){ cerrarModal("mPanel"); setTimeout(abrirPerfil, 50); }
-function panelSalir(){ cerrarSesion(); cerrarModal("mPanel"); }
+      '<button class="bs" style="flex:1;font-size:.85rem;padding:10px;margin-top:0" onclick="panelSalir()">🚪 Salir</button>'+
 function cerrarPanelBtn(){ cerrarModal("mPanel"); }
 function cerrarLoginBtn(){ cerrarModal("mLogin"); }
 function cerrarRegBtn(){ cerrarModal("mReg"); }
@@ -833,8 +845,8 @@ function abrirCuentaCliente(){
     '<div><div style="font-weight:800;font-size:1.1rem">'+usuario.n+' '+usuario.a+'</div><div style="opacity:.85;font-size:.85rem">'+usuario.email+'</div>'+
     '<span style="background:var(--am);color:var(--na3);padding:2px 10px;border-radius:50px;font-size:.72rem;font-weight:900;margin-top:4px;display:inline-block">👤 Cliente</span></div></div>'+
     '<div style="display:flex;gap:8px;margin-bottom:12px">'+
-      '<button class="bp" style="flex:1;font-size:.85rem;padding:10px" onclick="panelEditarPerfil()">"+t("editarPerfilBtn")+"</button>'+
-      '<button class="bs" style="flex:1;font-size:.85rem;padding:10px;margin-top:0" onclick="panelSalir()"mPanel\")">🚪 "+t("salir")+"</button>'+
+      '<button class="bp" style="flex:1;font-size:.85rem;padding:10px" onclick="panelEditarPerfil()">✏️ Editar Perfil</button>'+
+      '<button class="bs" style="flex:1;font-size:.85rem;padding:10px;margin-top:0" onclick="panelSalir()">🚪 Salir</button>'+
     '</div>'+
     '<button onclick="mpPanelToggle()" id="mpPanelBtn" style="width:100%;margin-bottom:18px;padding:10px 14px;border-radius:10px;border:2px solid #e0d0c0;background:#fff8f0;font-weight:800;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;color:var(--na3)">'+mpPanelBtnLabel()+'</button>'+
     '<div class="tabs"><button class="tab on" onclick="cTabN(this,2)">🛍️ Mis Compras</button><button class="tab" onclick="cTabN(this,1)">🚨 Reportes</button><button class="tab" onclick="cTabN(this,3)">📋 Historial</button><button class="tab" onclick="cTabN(this,4)">⭐ Reseñas</button></div>'+
@@ -1411,22 +1423,34 @@ document.addEventListener("DOMContentLoaded",function(){
   if(guardado){
     try{
       var u = JSON.parse(guardado);
-      // Verificar con el servidor que el usuario sigue siendo válido y activo
+      // PASO 1: Restaurar sesión INMEDIATAMENTE desde localStorage
+      // Validar que los datos son coherentes
+      if(!u.id||!u.n||!u.rol){localStorage.removeItem('ns_usuario');cargarDatos();return;}
+      usuario = u;
+      actualizarUI();
+      aplicarIdioma();
+      cargarDatos();
+      // PASO 2: Verificar en background que el usuario sigue activo en el servidor
       api("/perfil/"+u.id,"GET").then(function(r){
         if(r.ok && r.perfil){
-          usuario = {id:r.perfil.id, n:r.perfil.nombre, a:r.perfil.apellido, email:r.perfil.email, rol:r.perfil.rol, avatar:r.perfil.avatar||""};
+          // Actualizar con datos frescos del servidor
+          usuario = {id:r.perfil.id, n:r.perfil.nombre, a:r.perfil.apellido,
+                     email:r.perfil.email, rol:r.perfil.rol, avatar:r.perfil.avatar||""};
           localStorage.setItem("ns_usuario", JSON.stringify(usuario));
-          actualizarUI();
-          cargarDatos();
+          actualizarUI(); // Refresca con datos actualizados
           if(!_mpYaCargo){ mpCargarDesdeDB(); _mpYaCargo=true; }
         } else {
-          // Usuario ya no existe o fue desactivado
+          // Usuario desactivado o eliminado en el servidor
+          usuario=null; carrito=[];
           localStorage.removeItem("ns_usuario");
           localStorage.removeItem("ns_carrito");
-          carrito = [];
-          cargarDatos();
+          actualizarUI();
+          toast("Tu sesión ha expirado. Por favor inicia sesión de nuevo.", "e");
         }
-      }).catch(function(){ cargarDatos(); });
+      }).catch(function(){
+        // Sin conexión: mantener sesión local (funciona offline)
+        if(!_mpYaCargo){ mpCargarDesdeDB(); _mpYaCargo=true; }
+      });
     }catch(e){
       localStorage.removeItem("ns_usuario");
       cargarDatos();
