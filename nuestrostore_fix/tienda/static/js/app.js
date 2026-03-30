@@ -1044,11 +1044,11 @@ function _renderAdminTab(){
   var c=document.getElementById("aTB");if(!c)return;
   if(aTab==="productos"){
     c.innerHTML='<div class="tw"><table><thead><tr><th>Img</th><th>Nombre</th><th>Precio</th><th>Stock</th><th>Acc.</th></tr></thead><tbody>'+
-      PRODS.map(function(p){var thumb=p.img?'<img src="'+p.img+'" style="width:40px;height:40px;object-fit:cover;border-radius:6px;"/>':'<span style="font-size:1.5rem">'+emojiProd(p)+'</span>';var sc=p.st<=0?"#c62828":p.st<=10?"#f57f17":"#2e7d32";return '<tr><td>'+thumb+'</td><td><strong>'+p.n+'</strong><br><small style="color:var(--gr)">'+p.cat+'</small></td><td style="color:var(--na3);font-weight:700">'+bs(p.o||p.p)+'</td><td style="color:'+sc+';font-weight:800">'+p.st+(p.st<=0?" 🚫":p.st<=10?" ⚠️":"")+'</td><td><button class="bte" onclick="editP('+p.id+')">✏️</button><button class="btd" onclick="elimP('+p.id+')">🗑️</button>'+(p.img?'<button class="btd" style="background:#e3f2fd;color:#1565c0" onclick="elimFoto('+p.id+')">🖼️✕</button>':'')+'</td></tr>';}).join("")+'</tbody></table></div>';
+      PRODS.map(function(p){var thumb=p.img?'<img src="'+p.img+'" style="width:44px;height:44px;object-fit:cover;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,.1)"/>':'<div style="width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#EFF6FF,#DBEAFE);display:flex;align-items:center;justify-content:center;font-size:1.4rem">'+emojiProd(p)+'</div>';var stBg=p.st<=0?'#FEF2F2':p.st<=10?'#FFFBEB':'#F0FDF4';var stColor=p.st<=0?'#DC2626':p.st<=10?'#D97706':'#16A34A';var stIcon=p.st<=0?' 🚫':p.st<=10?' ⚠️':'';var ofBadge=p.o?'<span style="background:#EFF6FF;color:#1E40AF;font-size:.65rem;font-weight:800;padding:2px 7px;border-radius:50px;margin-left:5px">OFERTA</span>':'';return '<tr>'+'<td>'+thumb+'</td>'+'<td><div style="font-weight:700;font-size:.88rem">'+p.n+ofBadge+'</div><small style="color:#94A3B8;font-size:.72rem">'+p.cat+'</small></td>'+'<td><span style="font-weight:800;color:#1E3A8A;font-family:Bebas Neue,cursive;font-size:1rem">'+bs(p.o||p.p)+'</span>'+(p.o?'<br><small style="color:#94A3B8;text-decoration:line-through;font-size:.72rem">'+bs(p.p)+'</small>':'')+'</td>'+'<td><span style="background:'+stBg+';color:'+stColor+';font-weight:800;font-size:.82rem;padding:4px 10px;border-radius:8px">'+p.st+stIcon+'</span></td>'+'<td style="white-space:nowrap">'+'<button class="bte" onclick="editP('+p.id+')" title="Editar">✏️</button>'+'<button class="btd" onclick="elimP('+p.id+')" title="Eliminar">🗑️</button>'+(p.img?'<button class="btd" title="Quitar foto" onclick="elimFoto('+p.id+')">🖼️</button>':'')+'</td></tr>';}).join('')+'</tbody></table></div>';
   }else if(aTab==="agregar"){
     var imgPv=(newPF.img||imgTempAdmin)?'<img src="'+(imgTempAdmin||newPF.img)+'" class="img-preview" id="imgPrev"/>':'<div id="imgPrev" style="display:none"></div>';
     var quitarFotoBtn=(editId&&(newPF.img||imgTempAdmin))?'<button class="btd" style="margin-top:6px;font-size:.8rem" onclick="quitarFotoFormAdmin()">🖼️✕ Quitar foto actual</button>':'';
-    c.innerHTML='<div class="f2"><div class="fg"><label>Nombre *</label><input class="fc" id="nNom" value="'+(newPF.n||"")+'"/></div><div class="fg"><label>Categoría</label><select class="fc" id="nCat">'+CATS.filter(function(x){return x.id>0;}).map(function(x){return '<option value="'+x.id+'"'+(x.id===newPF.cat?" selected":"")+'>'+x.n+'</option>';}).join("")+'</select></div></div><div class="fg"><label>Descripción</label><textarea class="fc" id="nDesc" rows="3" style="resize:vertical">'+(newPF.d||"")+'</textarea></div><div class="f2"><div class="fg"><label>Precio Bs. *</label><input class="fc" type="number" id="nPrecio" value="'+(newPF.p||"")+'" step="0.01"/></div><div class="fg"><label>Precio Oferta</label><input class="fc" type="number" id="nOferta" value="'+(newPF.o||"")+'" step="0.01"/></div></div><div class="f2"><div class="fg"><label>Stock *</label><input class="fc" type="number" id="nStock" value="'+(newPF.st||"")+'"/></div><div class="fg"><label>¿Destacado?</label><select class="fc" id="nDest"><option value="false">No</option><option value="true"'+(newPF.dest?" selected":"")+'>Sí ⭐</option></select></div></div><div class="fg"><label>📷 Foto</label>'+imgPv+quitarFotoBtn+'<div class="img-upload-area"><input type="file" accept="image/*" onchange="cargarImgProd(event)"/><span style="font-size:2rem;display:block;margin-bottom:6px">📷</span><span style="font-size:.85rem;color:var(--gr)">'+(newPF.img||imgTempAdmin?"Cambiar foto":"Subir foto")+'</span></div></div><button class="bp" onclick="guardarProd()">'+(editId?"💾 Guardar Cambios":"➕ Crear Producto")+'</button>'+(editId?'<button class="bs" onclick="cancelEdit()">Cancelar</button>':"");
+    c.innerHTML='<div class="f2"><div class="fg"><label>Nombre *</label><input class="fc" id="nNom" value="'+(newPF.n||"")+'"/></div><div class="fg"><label>Categoría</label><select class="fc" id="nCat">'+CATS.filter(function(x){return x.id>0;}).map(function(x){return '<option value="'+x.id+'"'+(x.id===newPF.cat?" selected":"")+'>'+x.n+'</option>';}).join("")+'</select></div></div><div class="fg"><label>Descripción</label><textarea class="fc" id="nDesc" rows="3" style="resize:vertical">'+(newPF.d||"")+'</textarea></div><div class="f2"><div class="fg"><label>Precio (COP$) *</label><input class="fc" type="number" id="nPrecio" value="'+(newPF.p||"")+'" step="0.01"/></div><div class="fg"><label>Precio Oferta</label><input class="fc" type="number" id="nOferta" value="'+(newPF.o||"")+'" step="0.01"/></div></div><div class="f2"><div class="fg"><label>Stock *</label><input class="fc" type="number" id="nStock" value="'+(newPF.st||"")+'"/></div><div class="fg"><label>¿Destacado?</label><select class="fc" id="nDest"><option value="false">No</option><option value="true"'+(newPF.dest?" selected":"")+'>Sí ⭐</option></select></div></div><div class="fg"><label>📷 Foto</label>'+imgPv+quitarFotoBtn+'<div class="img-upload-area"><input type="file" accept="image/*" onchange="cargarImgProd(event)"/><span style="font-size:2rem;display:block;margin-bottom:6px">📷</span><span style="font-size:.85rem;color:var(--gr)">'+(newPF.img||imgTempAdmin?"Cambiar foto":"Subir foto")+'</span></div></div><button class="bp" onclick="guardarProd()">'+(editId?"💾 Guardar Cambios":"➕ Crear Producto")+'</button>'+(editId?'<button class="bs" onclick="cancelEdit()">Cancelar</button>':"");
   }else if(aTab==="categorias"){
     _renderCategorias(c);
   }else{
@@ -1082,13 +1082,13 @@ function _renderAdminTab(){
         var badge=m.leido?'<span style="background:#e8f5e9;color:#2e7d32;font-size:.7rem;font-weight:800;padding:3px 9px;border-radius:50px">✅ Leído</span>':'<span style="background:#fff3e0;color:#e65100;font-size:.7rem;font-weight:800;padding:3px 9px;border-radius:50px">🔔 Nuevo</span>';
         var asuntoLabel={"pedido":"📦 Pedido","producto":"🛍️ Producto","devolucion":"↩️ Devolución","pago":"💳 Pago","envio":"🚚 Envío","queja":"😟 Queja","otro":"💬 Otro"}[m.asunto]||m.asunto;
         var prioBadge=m.prioridad?'<span class="prio-badge-'+(m.prioridad||"normal")+"'>"+(m.prioridad==="urgente"?"🔴 Urgente":m.prioridad==="informativo"?"🔵 Info":"🟢 Normal")+"</span>":"";
-        return '<div style="background:#fff;border:1.5px solid '+(m.leido?"#e0e0e0":"#ffcc80")+';border-radius:14px;padding:14px">'+
+        return '<div class="msg-card'+(m.leido?'':' unread')+'">'+
           '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">'+
-            '<div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--am),var(--na2));display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff;font-size:.95rem;flex-shrink:0">'+(m.nombre||"?")[0].toUpperCase()+'</div>'+
+            '<div class="msg-avatar">'+(m.nombre||"?")[0].toUpperCase()+'</div>'+
             '<div style="flex:1;min-width:0"><strong style="font-size:.86rem">'+m.nombre+'</strong><br><small style="color:var(--gr)">'+m.email+(m.tel?' · '+m.tel:'')+'</small></div>'+
             badge+prioBadge+'<span style="background:#f5f5f5;color:var(--na3);font-size:.7rem;font-weight:800;padding:3px 9px;border-radius:50px">'+asuntoLabel+'</span>'+
           '</div>'+
-          '<div style="background:#faf5f0;border-radius:10px;padding:10px 12px;font-size:.84rem;color:var(--bk);line-height:1.55;margin-bottom:8px">'+m.mensaje+'</div>'+
+          '<div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:10px 12px;font-size:.84rem;color:var(--bk);line-height:1.6;margin-bottom:8px">'+m.mensaje+'</div>'+
           '<div style="display:flex;gap:8px;align-items:center;justify-content:space-between">'+
             '<small style="color:var(--gr)">'+m.fecha+'</small>'+
             '<div style="display:flex;gap:6px">'+
@@ -1112,17 +1112,29 @@ function _renderAdminTab(){
 function _renderCategorias(c){api("/categorias").then(function(r){
   var cats=r.ok?r.categorias:[];
   var html='';
-  html+='<div style="margin-bottom:16px;background:#fff8e1;border-radius:10px;padding:14px;border-left:4px solid var(--am)">';
-  html+='<div style="font-weight:800;margin-bottom:10px;color:var(--na3)">➕ Nueva Categoría</div>';
-  html+='<div class="f2"><div class="fg"><label>Nombre *</label><input class="fc" id="catNom" placeholder="Ej: Tecnología"/></div>';
-  html+='<div class="fg"><label>Emoji</label><input class="fc" id="catEmoji" placeholder="🏷️" maxlength="4"/></div></div>';
-  html+='<button class="bp" style="margin-top:0" onclick="crearCategoria()">➕ Crear</button></div>';
-  html+='<div class="tw"><table><thead><tr><th>Emoji</th><th>Nombre</th><th>Acción</th></tr></thead><tbody>';
-  cats.forEach(function(cat){
-    html+='<tr><td>'+cat.emoji+'</td><td>'+cat.nombre+'</td>';
-    html+='<td><button class="btd" data-cid="'+cat.id+'" onclick="elimCategoria(parseInt(this.dataset.cid))">🗑️ Eliminar</button></td></tr>';
-  });
-  html+='</tbody></table></div>';
+  html+='<div class="cat-create-box">';
+  html+='<div class="admin-form-title">➕ Nueva Categoría</div>';
+  html+='<div class="f2">';
+  html+='<div class="fg"><label>Nombre *</label><input class="fc" id="catNom" placeholder="Ej: Tecnología"/></div>';
+  html+='<div class="fg"><label>Emoji</label><input class="fc" id="catEmoji" placeholder="🏷️" maxlength="4"/></div>';
+  html+='</div>';
+  html+='<button class="bp" style="margin-top:8px" onclick="crearCategoria()">➕ Crear Categoría</button>';
+  html+='</div>';
+  if(!cats.length){
+    html+='<div class="empty"><div class="eico">🏷️</div><p>No hay categorías aún</p></div>';
+  } else {
+    html+='<div class="tw"><table><thead><tr><th>Emoji</th><th>Nombre</th><th>Prods.</th><th>Acción</th></tr></thead><tbody>';
+    cats.forEach(function(cat){
+      var prodCount=PRODS.filter(function(p){return p.cid===cat.id;}).length;
+      html+='<tr>';
+      html+='<td style="font-size:1.3rem;text-align:center">'+cat.emoji+'</td>';
+      html+='<td><strong style="font-size:.88rem">'+cat.nombre+'</strong></td>';
+      html+='<td><span style="background:#EFF6FF;color:#1E3A8A;padding:3px 10px;border-radius:50px;font-size:.75rem;font-weight:700">'+prodCount+'</span></td>';
+      html+='<td><button class="btd" data-cid="'+cat.id+'" onclick="elimCategoria(parseInt(this.dataset.cid))">🗑️ Eliminar</button></td>';
+      html+='</tr>';
+    });
+    html+='</tbody></table></div>';
+  }
   c.innerHTML=html;
 });}
 
@@ -1143,10 +1155,11 @@ function elimP(id){if(!confirm("¿Eliminar?"))return;api("/productos/"+id,"DELET
 function _notifBanner(count, singular, plural, color, borderColor, action, actionLabel) {
   if(count <= 0) return '';
   var noun = count !== 1 ? plural : singular;
-  var banner = '<div style="background:'+color+';border:1.5px solid '+borderColor+';border-radius:12px;padding:12px 16px;margin-top:12px;font-size:.85rem;font-weight:700;">';
-  banner += '⚠️ Tienes ' + count + ' ' + noun;
-  if(action) banner += '. <span style="cursor:pointer;text-decoration:underline" onclick="'+action+'">'+actionLabel+'</span>';
-  banner += '</div>';
+  var banner = '<div class="notif-banner notif-banner-warn">';
+  banner += '<span style="font-size:1.1rem">⚠️</span>';
+  banner += '<span>Tienes <strong>' + count + '</strong> ' + noun;
+  if(action) banner += '. <span style="cursor:pointer;text-decoration:underline;color:#1E40AF" onclick="'+action+'">'+actionLabel+'</span>';
+  banner += '</span></div>';
   return banner;
 }
 
@@ -1221,9 +1234,9 @@ function _renderSuperTab(){
       var badge=m.leido?'<span style="background:#e8f5e9;color:#2e7d32;font-size:.7rem;font-weight:800;padding:3px 9px;border-radius:50px">✅ Leído</span>':'<span style="background:#fff3e0;color:#e65100;font-size:.7rem;font-weight:800;padding:3px 9px;border-radius:50px">🔔 Nuevo</span>';
       var asuntoLabel={"pedido":"📦 Pedido","producto":"🛍️ Producto","devolucion":"↩️ Devolución","pago":"💳 Pago","envio":"🚚 Envío","queja":"😟 Queja","otro":"💬 Otro"}[m.asunto]||m.asunto;
         var prioBadge=m.prioridad?'<span class="prio-badge-'+(m.prioridad||"normal")+"'>"+(m.prioridad==="urgente"?"🔴 Urgente":m.prioridad==="informativo"?"🔵 Info":"🟢 Normal")+"</span>":"";
-      return '<div style="background:#fff;border:1.5px solid '+(m.leido?"#e0e0e0":"#ffcc80")+';border-radius:14px;padding:14px">'+
+      return '<div class="msg-card'+(m.leido?'':' unread')+'">'+
         '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">'+
-          '<div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--am),var(--na2));display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff;font-size:1rem;flex-shrink:0">'+(m.nombre||"?")[0].toUpperCase()+'</div>'+
+          '<div class="msg-avatar">'+(m.nombre||"?")[0].toUpperCase()+'</div>'+
           '<div style="flex:1;min-width:0"><strong style="font-size:.88rem">'+m.nombre+'</strong><br><small style="color:var(--gr)">'+m.email+(m.tel?' · '+m.tel:'')+'</small></div>'+
           badge+prioBadge+'<span style="background:#f5f5f5;color:var(--na3);font-size:.7rem;font-weight:800;padding:3px 9px;border-radius:50px">'+asuntoLabel+'</span>'+
         '</div>'+
