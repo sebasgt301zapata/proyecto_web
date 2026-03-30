@@ -745,13 +745,13 @@ function abrirCuentaCliente(){
   cTabN(pb.querySelector(".tab"),2);
   abrirModal("mPanel");
 }
-function cTabN(btn,t){
+function cTabN(btn,tabN){
   document.querySelectorAll("#panB .tab").forEach(function(b){b.classList.remove("on");});btn.classList.add("on");
   var c=document.getElementById("cTabBody");
   c.innerHTML='<div style="text-align:center;padding:24px;color:var(--gr)">Cargando…</div>';
-  if(t===1){api("/mis-reportes/"+usuario.id).then(function(r){if(r.ok)REPORTES=r.reportes;c.innerHTML=renderMisReportes(REPORTES);});}
-  else if(t===2){api("/mis-pedidos/"+usuario.id).then(function(r){if(r.ok)PEDIDOS=r.pedidos;c.innerHTML=renderMisPedidos(PEDIDOS);});}
-  else if(t===3){
+  if(tabN===1){api("/mis-reportes/"+usuario.id).then(function(r){if(r.ok)REPORTES=r.reportes;c.innerHTML=renderMisReportes(REPORTES);});}
+  else if(tabN===2){api("/mis-pedidos/"+usuario.id).then(function(r){if(r.ok)PEDIDOS=r.pedidos;c.innerHTML=renderMisPedidos(PEDIDOS);});}
+  else if(tabN===3){
     Promise.all([api("/mis-pedidos/"+usuario.id),api("/mis-reportes/"+usuario.id)]).then(function(res){
       if(res[0].ok)PEDIDOS=res[0].pedidos;if(res[1].ok)REPORTES=res[1].reportes;
       c.innerHTML=renderHistorial(PEDIDOS,REPORTES);
@@ -1149,8 +1149,28 @@ function _notifBanner(count, singular, plural, color, borderColor, action, actio
   banner += '</div>';
   return banner;
 }
-function buildSuper(){var pb=document.getElementById("panB");var tbs=[{k:"stats",l:"📊 Stats"},{k:"users",l:"👥 Usuarios"},{k:"prods",l:"📦 Productos"},{k:"categorias",l:"🏷️ Categorías"},{k:"reportes",l:"🚨 Reportes"},{k:"mensajes",l:"📬 Mensajes",id:"tabMensajesSuper"},{k:"cadmin",l:"➕ Admin"},{k:"logs",l:"📋 Logs"}];var html=tbs.map(function(t){return '<button class="tab'+(sTab===t.k?' on':'')+'"'+(t.id?' id="'+t.id+'"':'')+' onclick="setSTab(\"'+t.k+'\",this)">'+t.l+'</button>';}).join("");pb.innerHTML='<div class="tabs">'+html+'</div><div id="sTB"></div>';renderSuperTab();}
-function setSTab(t,btn){sTab=t;document.querySelectorAll("#panB .tab").forEach(function(b){b.classList.remove("on");});btn.classList.add("on");renderSuperTab();}
+function setSTabBtn(el){ setSTab(el.getAttribute('data-tab'), el); }
+function buildSuper(){
+  var pb=document.getElementById("panB");
+  var tbs=[
+    {k:"stats",    l:"📊 Stats"},
+    {k:"users",    l:"👥 Usuarios"},
+    {k:"prods",    l:"📦 Productos"},
+    {k:"categorias",l:"🏷️ Categorías"},
+    {k:"reportes", l:"🚨 Reportes"},
+    {k:"mensajes", l:"📬 Mensajes", id:"tabMensajesSuper"},
+    {k:"cadmin",   l:"➕ Admin"},
+    {k:"logs",     l:"📋 Logs"}
+  ];
+  var html = tbs.map(function(tb){
+    var cls = 'tab'+(sTab===tb.k?' on':'');
+    var idAttr = tb.id ? ' id="'+tb.id+'"' : '';
+    return '<button class="'+cls+'"'+idAttr+' data-tab="'+tb.k+'" onclick="setSTabBtn(this)">'+tb.l+'</button>';
+  }).join('');
+  pb.innerHTML = '<div class="tabs">'+html+'</div><div id="sTB"></div>';
+  renderSuperTab();
+}
+function setSTab(tab,btn){sTab=tab;document.querySelectorAll("#panB .tab").forEach(function(b){b.classList.remove("on");});btn.classList.add("on");renderSuperTab();}
 function renderSuperTab(){Promise.all([api("/productos").then(function(r){if(r.ok)PRODS=r.productos;}),api("/usuarios").then(function(r){if(r.ok)USUARIOS=r.usuarios;}),api("/reportes").then(function(r){if(r.ok)REPORTES=r.reportes;}),api("/logs").then(function(r){if(r.ok)LOGS=r.logs;}),api("/contactos").then(function(r){if(r.ok)CONTACTOS=r.contactos||[];})]).then(function(){_renderSuperTab();});}
 function _renderSuperTab(){
   var c=document.getElementById("sTB");if(!c)return;
