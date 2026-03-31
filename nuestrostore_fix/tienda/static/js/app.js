@@ -226,7 +226,7 @@ function carouselInit(name,items,delay){
   track.innerHTML=items.map(function(html){return '<div class="pc" style="flex-shrink:0;width:var(--cw)">'+html+'</div>';}).join("");
   // Set CSS var for card width
   var outer=document.getElementById("outer"+cap(name));
-  if(outer){var gap=14,pp=c.perPage,ow=outer.offsetWidth||outer.getBoundingClientRect().width||window.innerWidth;if(ow<10)ow=window.innerWidth;var peekOffset=(pp===1&&ow<480)?Math.floor(ow*0.12):0;var cw=Math.floor((ow-peekOffset-(gap*(pp-1)))/pp);if(cw<80)cw=Math.floor((window.innerWidth-48)/pp);outer.style.setProperty("--cw",cw+"px");outer.style.setProperty("--cgap",gap+"px");}
+  if(outer){var gap=14,pp=c.perPage,ow=outer.offsetWidth||outer.getBoundingClientRect().width||window.innerWidth;if(ow<10)ow=window.innerWidth;var peekOffset=(pp===1&&ow<480)?Math.floor(ow*0.22):0;var cw=Math.floor((ow-peekOffset-(gap*(pp-1)))/pp);if(cw<80)cw=Math.floor((window.innerWidth-48)/pp);outer.style.setProperty("--cw",cw+"px");outer.style.setProperty("--cgap",gap+"px");}
   // Dots
   var maxDots=Math.max(1,c.total-c.perPage+1);
   var isDark=name==="valorados";
