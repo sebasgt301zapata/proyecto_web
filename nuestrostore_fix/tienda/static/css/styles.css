@@ -2716,3 +2716,351 @@ table{table-layout:auto;}
   th{font-size:.7rem;}
   td{font-size:.8rem;}
 }
+
+/* ══════════════════════════════════════════
+   MOBILE FIX v2 — Header + Contacto + Hero
+   ══════════════════════════════════════════ */
+
+/* ─────────────────────────────────────────
+   1. HEADER / NAV-ROW — móvil compacto
+   ───────────────────────────────────────── */
+
+/* Reducir altura del header en móvil */
+@media(max-width:767px){
+  :root{--nav-h:56px;}
+  #hdr{height:var(--nav-h);}
+
+  .nav-row{
+    padding:0 10px;
+    gap:6px;
+  }
+
+  /* Logo más pequeño */
+  .logo{
+    font-size:1.4rem;
+    letter-spacing:1.5px;
+  }
+
+  /* Búsqueda ocupa el espacio disponible pero no tanto */
+  .search-wrap{
+    flex:1;
+    min-width:0;
+    max-width:none;
+  }
+
+  /* Barra de búsqueda más compacta */
+  .sw{
+    border-radius:40px;
+    border-width:1.5px;
+  }
+  .sw input{
+    font-size:.82rem;
+    padding:9px 4px;
+    min-width:0;
+  }
+  .sw-ico{
+    padding:0 6px 0 12px;
+    font-size:.9rem;
+  }
+  .sw-btn{
+    width:32px;
+    font-size:.78rem;
+  }
+
+  /* Íconos de nav — más pequeños y compactos */
+  .nav-icons{
+    gap:4px;
+    flex-shrink:0;
+  }
+  .nic{
+    width:34px;
+    height:34px;
+    font-size:.95rem;
+    border-width:1.5px;
+  }
+  .bdot{
+    width:14px;height:14px;
+    font-size:.48rem;
+    top:-2px;right:-2px;
+  }
+}
+
+/* Pantallas muy pequeñas */
+@media(max-width:360px){
+  .logo{font-size:1.25rem;letter-spacing:1px;}
+  .nic{width:30px;height:30px;font-size:.85rem;}
+  .sw-ico{display:none;}
+  .nav-row{gap:4px;padding:0 8px;}
+}
+
+/* ─────────────────────────────────────────
+   2. BOTTOM NAV — más grande y claro
+   ───────────────────────────────────────── */
+
+@media(max-width:767px){
+  :root{--bot-h:58px;}
+
+  .botnav{
+    height:var(--bot-h);
+    background:rgba(255,255,255,.97);
+    backdrop-filter:blur(12px);
+    border-top:1px solid #E2E8F0;
+    box-shadow:0 -2px 20px rgba(15,23,42,.1);
+  }
+
+  .btab{
+    font-size:.62rem;
+    font-weight:700;
+    padding:5px 2px;
+    gap:2px;
+    letter-spacing:.1px;
+  }
+
+  .btab-ico-wrap{
+    width:34px;height:34px;
+    border-radius:10px;
+    font-size:1.3rem;
+  }
+
+  .btab.on .btab-ico-wrap{
+    background:linear-gradient(135deg,#EFF6FF,#DBEAFE);
+    box-shadow:0 2px 8px rgba(37,99,235,.12);
+  }
+  .btab.on{color:#1E3A8A;}
+
+  /* Label debajo del ícono — más visible */
+  .btab span:last-child{
+    font-size:.58rem;
+    font-weight:700;
+  }
+
+  .iline{
+    width:18px;height:2.5px;
+    border-radius:2px;
+  }
+}
+
+/* ─────────────────────────────────────────
+   3. HERO BOTONES — proporciones correctas
+   ───────────────────────────────────────── */
+
+@media(max-width:479px){
+  .btn-hero{
+    padding:13px 20px;
+    font-size:.9rem;
+    border-radius:12px;
+    width:100%;
+    max-width:320px;
+    margin:0 auto;
+  }
+  .btn-hero-2{
+    padding:12px 20px;
+    font-size:.88rem;
+    border-radius:12px;
+    width:100%;
+    max-width:320px;
+    margin:0 auto;
+  }
+  .hero-btns{
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
+  }
+  /* Hero title más compacto */
+  .hero h1{
+    font-size:clamp(2.2rem,11vw,3rem);
+    letter-spacing:1px;
+    margin-bottom:8px;
+  }
+  .hero-desc{
+    font-size:.84rem;
+    margin:10px auto 16px;
+    padding:0 4px;
+  }
+  .hero-in{
+    padding:48px 20px 72px;
+  }
+}
+
+/* ─────────────────────────────────────────
+   4. CONTACTO — canales visibles en móvil
+   ───────────────────────────────────────── */
+
+@media(max-width:639px){
+  /* Canales — layout horizontal compacto */
+  .contact-channels{
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    padding:14px 12px;
+    background:#fff;
+    border-bottom:1px solid #E2E8F0;
+  }
+
+  .contact-channel{
+    background:#fff;
+    border:1.5px solid #E2E8F0;
+    border-radius:12px;
+    padding:11px 10px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    box-shadow:0 2px 8px rgba(0,0,0,.06);
+    text-decoration:none;
+    color:var(--bk);
+    transition:all .18s;
+  }
+  .contact-channel:active{
+    transform:scale(.97);
+    background:#EFF6FF;
+    border-color:#93C5FD;
+  }
+
+  .cc-ico{
+    width:36px;height:36px;
+    border-radius:10px;
+    font-size:1.1rem;
+    flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+  }
+
+  .cc-info strong{
+    font-size:.78rem;
+    font-weight:800;
+    color:#0F172A;
+    display:block;
+  }
+  .cc-info span{
+    font-size:.65rem;
+    color:#64748B;
+    display:block;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    max-width:100px;
+  }
+
+  .cc-arrow{display:none;}
+
+  /* Hero de contacto más compacto */
+  .contact-hero{
+    padding:32px 16px 28px;
+  }
+  .contact-hero h2{
+    font-size:clamp(1.9rem,9vw,2.6rem);
+    margin-bottom:8px;
+  }
+  .contact-hero p{
+    font-size:.82rem;
+  }
+  .contact-hero-badge{
+    font-size:.68rem;
+    padding:5px 13px;
+    margin-bottom:10px;
+  }
+  .contact-hero-trust{
+    gap:6px;margin-top:10px;
+  }
+  .contact-hero-trust span{
+    font-size:.67rem;
+    padding:4px 10px;
+  }
+
+  /* Cuerpo de contacto */
+  .contact-body{
+    padding:12px 12px 80px;
+    gap:12px;
+  }
+  .contact-form-wrap{
+    padding:16px 14px;
+    border-radius:14px;
+  }
+  .cf-header{
+    margin-bottom:14px;
+    padding-bottom:12px;
+  }
+  .cf-icon{
+    width:40px;height:40px;
+    font-size:1.1rem;
+    border-radius:11px;
+  }
+  .cf-header h3{font-size:.9rem;}
+  .cf-header p{font-size:.72rem;}
+
+  /* Info cards */
+  .contact-info-card{
+    padding:14px 12px;
+    border-radius:12px;
+  }
+  .cic-title{font-size:.82rem;margin-bottom:10px;}
+
+  /* FAQ más compacto */
+  .cfaq-q{
+    padding:9px 11px;
+    font-size:.78rem;
+  }
+
+  /* Botón WhatsApp flotante */
+  .contact-wa-float{
+    padding:10px 14px;
+    border-radius:50px;
+    font-size:.76rem;
+    bottom:calc(var(--bot-h) + 10px);
+    right:12px;
+  }
+  .wa-float-ico{font-size:1.1rem;}
+  .wa-float-txt{display:none;}
+}
+
+/* Pantallas muy pequeñas — canales en lista */
+@media(max-width:359px){
+  .contact-channels{
+    grid-template-columns:1fr;
+    gap:6px;
+  }
+}
+
+/* ─────────────────────────────────────────
+   5. FEATURES STRIP — móvil
+   ───────────────────────────────────────── */
+
+@media(max-width:479px){
+  .features-strip{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:0;
+  }
+  .feat{
+    padding:16px 14px;
+    min-width:0;
+    max-width:none;
+    border-right:1px solid #F1F5F9;
+    border-bottom:1px solid #F1F5F9;
+  }
+  .feat:nth-child(even){border-right:none;}
+  .feat:nth-child(3),.feat:nth-child(4){border-bottom:none;}
+  .feat-ico{
+    width:40px;height:40px;
+    border-radius:12px;
+    font-size:1.2rem;
+  }
+  .feat strong{font-size:.8rem;}
+  .feat small{font-size:.7rem;}
+}
+
+/* ─────────────────────────────────────────
+   6. SECCIONES hero stats — móvil
+   ───────────────────────────────────────── */
+
+@media(max-width:479px){
+  .hero-stats{
+    padding:8px 12px;
+    border-radius:14px;
+    gap:0;
+    margin-top:16px;
+    width:calc(100% - 0px);
+  }
+  .hstat{padding:0 10px;}
+  .hstat strong{font-size:1.3rem;}
+  .hstat span{font-size:.58rem;}
+  .hstat-div{height:26px;}
+}
