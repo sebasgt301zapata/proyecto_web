@@ -779,35 +779,52 @@ button,input,select,textarea{font-family:'Inter',sans-serif;}
 .botnav{
   position:fixed;bottom:0;left:0;right:0;
   height:var(--bot-h);z-index:850;
-  background:#fff;
-  border-top:1px solid #f0ebe5;
-  box-shadow:0 -4px 24px rgba(0,0,0,.09);
+  background:rgba(255,255,255,.97);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-top:1.5px solid #E2E8F0;
+  box-shadow:0 -4px 20px rgba(15,23,42,.1);
   display:flex;align-items:stretch;
+}
+@media(min-width:768px){.botnav{display:none;}}
+@supports(padding:max(0px)){
+  .botnav{
+    padding-bottom:env(safe-area-inset-bottom);
+    height:calc(var(--bot-h) + env(safe-area-inset-bottom));
+  }
 }
 .btab{
   flex:1;display:flex;flex-direction:column;
   align-items:center;justify-content:center;
-  gap:3px;padding:6px 4px;
+  gap:3px;padding:5px 4px 7px;
   background:none;border:none;cursor:pointer;
-  color:var(--gr);font-size:.6rem;font-weight:700;
+  color:#94A3B8;font-size:.6rem;font-weight:700;
   transition:color .15s;position:relative;
+  letter-spacing:.1px;
+  -webkit-tap-highlight-color:transparent;
+}
+.btab span:last-child{
+  font-size:.6rem;font-weight:700;
+  line-height:1;
 }
 .btab-ico-wrap{
-  width:36px;height:36px;border-radius:12px;
+  width:36px;height:36px;border-radius:11px;
   display:flex;align-items:center;justify-content:center;
-  font-size:1.25rem;transition:background .15s,transform .15s;
+  font-size:1.3rem;
+  transition:background .15s,transform .15s;
   position:relative;
 }
 .btab.on .btab-ico-wrap{
   background:linear-gradient(135deg,#EFF6FF,#DBEAFE);
+  box-shadow:0 2px 10px rgba(37,99,235,.15);
 }
-.btab.on{color:var(--na3);}
-.btab:active .btab-ico-wrap{transform:scale(.88);}
+.btab:active .btab-ico-wrap{transform:scale(.86);}
 .iline{
-  height:3px;width:20px;
+  height:2.5px;width:20px;
   background:linear-gradient(90deg,#06B6D4,#2563EB);
-  border-radius:2px;margin-top:1px;
+  border-radius:2px;margin-top:2px;
+  flex-shrink:0;
 }
+
 /* MODALES */
 .ov{position:fixed;inset:0;z-index:1500;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);display:none;align-items:flex-end;justify-content:center;}
 @media(min-width:600px){.ov{align-items:center;padding:16px;}}
@@ -1516,9 +1533,6 @@ footer::before{
   .f2{grid-template-columns:1fr 1fr;gap:8px;}
 
   /* ── BOTTOM NAV ── */
-  .botnav{height:var(--bot-h);}
-  .btab{font-size:.58rem;gap:2px;padding:5px 2px;}
-  .btab-ico-wrap{width:34px;height:34px;border-radius:10px;font-size:1.15rem;}
 
   /* ── CARRITO SHEET ── */
   .csh{border-radius:20px 20px 0 0;}
@@ -1894,11 +1908,7 @@ footer::before{
 .csoc-wa{background:linear-gradient(135deg,#dcfce7,#86efac);color:#166534;}
 
 /* ── Bottom nav (5 tabs) ── */
-.botnav{
-  /* El bottom nav ya maneja 4 tabs; solo ajustamos para 5 */
-}
 @media(max-width:767px){
-  .botnav .btab span{font-size:.52rem;}
 }
 
 /* ── Badge pulse animation ── */
@@ -2267,8 +2277,6 @@ footer a,.footer-links a{transition:color .15s,padding-left .15s;}
 .bp:hover{box-shadow:0 8px 28px rgba(30,58,138,.35);transform:translateY(-1px);}
 
 /* ── Bottom nav refinement ── */
-.botnav{border-top:1px solid #E2E8F0;box-shadow:0 -2px 16px rgba(15,23,42,.06);}
-.btab.on{color:#1E3A8A;}
 
 /* ── Header NIC buttons ── */
 .nic{background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.2);}
@@ -2845,50 +2853,7 @@ table{table-layout:auto;}
    BOTTOM NAV — Refuerzo móvil
    ══════════════════════════════════════════ */
 
-@media(max-width:767px){
-  :root{ --bot-h:60px; }
 
-  .botnav{
-    height:var(--bot-h);
-    background:rgba(255,255,255,.96);
-    backdrop-filter:blur(14px);
-    -webkit-backdrop-filter:blur(14px);
-    border-top:1px solid #E2E8F0;
-    box-shadow:0 -4px 20px rgba(15,23,42,.09);
-  }
-
-  .btab{
-    font-size:.6rem;
-    font-weight:700;
-    padding:5px 2px 6px;
-    gap:3px;
-    color:#94A3B8;
-    letter-spacing:.1px;
-  }
-  .btab.on{ color:#1E3A8A; }
-
-  .btab-ico-wrap{
-    width:36px;
-    height:36px;
-    border-radius:11px;
-    font-size:1.3rem;
-    transition:background .15s, transform .15s;
-  }
-  .btab.on .btab-ico-wrap{
-    background:linear-gradient(135deg,#EFF6FF,#DBEAFE);
-    box-shadow:0 2px 8px rgba(37,99,235,.15);
-  }
-  .btab:active .btab-ico-wrap{
-    transform:scale(.86);
-  }
-
-  .iline{
-    height:2.5px;
-    width:20px;
-    border-radius:2px;
-    background:linear-gradient(90deg,#06B6D4,#2563EB);
-  }
-}
 
 /* ══════════════════════════════════════════
    MOBILE — Header limpio + Contacto
@@ -2970,64 +2935,6 @@ table{table-layout:auto;}
   .logo{ font-size:1.15rem; letter-spacing:1px; }
   .sw-ico{ display:none; }
   .nav-row{ padding:0 8px; gap:6px; }
-}
-
-/* ── BOTTOM NAV — más visible en móvil ── */
-@media(max-width:767px){
-  :root{ --bot-h:60px; }
-
-  .botnav{
-    height:var(--bot-h);
-    background:rgba(255,255,255,.97);
-    backdrop-filter:blur(16px);
-    -webkit-backdrop-filter:blur(16px);
-    border-top:1px solid #E2E8F0;
-    box-shadow:0 -4px 20px rgba(15,23,42,.1);
-  }
-
-  .btab{
-    font-size:.6rem;
-    font-weight:700;
-    padding:5px 2px;
-    gap:2px;
-    letter-spacing:.1px;
-  }
-
-  .btab-ico-wrap{
-    width:36px;
-    height:36px;
-    border-radius:11px;
-    font-size:1.3rem;
-  }
-
-  .btab.on .btab-ico-wrap{
-    background:linear-gradient(135deg,#EFF6FF,#DBEAFE);
-    box-shadow:0 2px 8px rgba(37,99,235,.15);
-  }
-  .btab.on{ color:#1E3A8A; }
-
-  .iline{
-    height:2.5px;
-    width:18px;
-    border-radius:2px;
-    margin-top:1px;
-  }
-
-  /* Badge del carrito en botnav */
-  #cartBadgeNav{
-    position:absolute;
-    top:-4px; right:-4px;
-    background:linear-gradient(135deg,#1E3A8A,#2563EB);
-    color:#fff;
-    border-radius:50%;
-    width:17px; height:17px;
-    font-size:.55rem;
-    font-weight:900;
-    border:2px solid #fff;
-    display:none;
-    align-items:center;
-    justify-content:center;
-  }
 }
 
 /* ── CONTACT CHANNELS — móvil definitivo ── */
@@ -3176,4 +3083,122 @@ table{table-layout:auto;}
   .feat-ico{ width:40px; height:40px; font-size:1.2rem; }
   .feat strong{ font-size:.8rem; }
   .feat small{ font-size:.7rem; }
+}
+
+/* ══════════════════════════════════════════
+   CARRUSEL MÓVIL — Tarjetas proporcionales
+   ══════════════════════════════════════════ */
+
+/* En móvil: imagen más pequeña, tarjeta compacta */
+@media(max-width:479px){
+
+  /* Sección carrusel sin padding lateral para aprovechar ancho */
+  .sec{
+    padding:20px 0 24px !important;
+  }
+  .sec-header{
+    padding:0 14px;
+    margin-bottom:12px;
+  }
+  .sec-ofertas-flash{
+    padding:24px 0 !important;
+  }
+  .sec-ofertas-flash .sec-header,
+  .sec-ofertas-flash .div,
+  .sec-ofertas-flash .carousel-dots{
+    padding-left:14px;
+    padding-right:14px;
+  }
+  #sec-valorados .sec-header,
+  #sec-valorados .div,
+  #sec-valorados .carousel-dots{
+    padding-left:14px;
+    padding-right:14px;
+  }
+
+  /* Imagen de producto — altura fija en lugar de aspect-ratio */
+  .carousel-track .pc .pi{
+    aspect-ratio:unset !important;
+    height:160px !important;
+    min-height:160px !important;
+    max-height:160px !important;
+  }
+
+  /* Emoji del producto — tamaño razonable */
+  .carousel-track .pc .pi .pi-emoji{
+    font-size:3.5rem !important;
+  }
+
+  /* Info del producto más compacta */
+  .carousel-track .pc .pif{
+    padding:10px 12px 10px !important;
+    gap:3px !important;
+  }
+  .carousel-track .pc .pnm{
+    font-size:.85rem !important;
+    line-height:1.3 !important;
+    -webkit-line-clamp:2;
+    display:-webkit-box;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
+  .carousel-track .pc .ppr-v{
+    font-size:1.2rem !important;
+  }
+  .carousel-track .pc .badd{
+    padding:9px 8px !important;
+    font-size:.8rem !important;
+    border-radius:10px !important;
+  }
+
+  /* Track con padding lateral para el efecto peek */
+  .carousel-track{
+    padding-left:14px !important;
+    gap:10px !important;
+  }
+
+  /* Carousel outer sin overflow clip en el lado derecho para ver el peek */
+  .carousel-outer{
+    overflow:hidden;
+    padding-right:0;
+  }
+
+  /* Dots más pequeños y con padding */
+  .carousel-dots{
+    margin-top:10px !important;
+  }
+
+  /* Botones de nav del carrusel más pequeños */
+  .sec-header .carousel-btn{
+    width:34px !important;
+    height:34px !important;
+    font-size:1.1rem !important;
+  }
+
+  /* Ver todos — más pequeño */
+  .ver-mas-btn{
+    font-size:.72rem !important;
+    padding:6px 12px !important;
+  }
+
+  /* Sec-t título más pequeño */
+  .sec-t{
+    font-size:1.3rem !important;
+    letter-spacing:1.5px !important;
+  }
+  .sec-sub{
+    font-size:.78rem !important;
+    margin-top:2px !important;
+  }
+}
+
+/* Tablet pequeña: 2 tarjetas bien proporcionadas */
+@media(min-width:480px) and (max-width:639px){
+  .carousel-track .pc .pi{
+    aspect-ratio:unset !important;
+    height:180px !important;
+  }
+  .carousel-track .pc .pnm{
+    font-size:.82rem !important;
+  }
 }
