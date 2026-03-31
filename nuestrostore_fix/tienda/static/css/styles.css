@@ -120,8 +120,8 @@ button,input,select,textarea{font-family:'Inter',sans-serif;}
 .dnav-btn.active::after{left:12px;right:12px;}
 
 /* ── Íconos móvil — ocultos, el bottom nav los reemplaza ── */
-.nav-icons{display:flex;align-items:center;gap:6px;}
-@media(min-width:768px){.nav-icons{display:none;}} /* en desktop usa desk-acts */
+.nav-icons{display:none;} /* oculto en móvil — carrito y cuenta están en bottom nav */
+@media(min-width:768px){.nav-icons{display:none;}} /* en desktop también usa desk-acts */
 .nic{background:rgba(255,255,255,.18);border:2px solid rgba(255,255,255,.28);border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1rem;cursor:pointer;position:relative;transition:background .15s,border-color .15s,transform .1s;}
 .nic:active{background:rgba(0,0,0,.28);}
 .bdot{
@@ -2717,410 +2717,53 @@ table{table-layout:auto;}
   td{font-size:.8rem;}
 }
 
-/* ══════════════════════════════════════════
-   MOBILE FIX v2 — Header + Contacto + Hero
-   ══════════════════════════════════════════ */
 
-/* ─────────────────────────────────────────
-   1. HEADER / NAV-ROW — móvil compacto
-   ───────────────────────────────────────── */
 
-/* Reducir altura del header en móvil */
+@media(max-width:767px){.logo{display:block !important;font-size:1.3rem;letter-spacing:1.5px;}}
+
+/* Header móvil: logo + búsqueda, sin íconos (van en bottom nav) */
 @media(max-width:767px){
-  :root{--nav-h:56px;}
-  #hdr{height:var(--nav-h);}
 
-  .nav-row{
-    padding:0 10px;
-    gap:6px;
-  }
-
-  /* Logo más pequeño */
+  /* Logo visible y compacto */
   .logo{
-    font-size:1.4rem;
+    display:block;
+    font-size:1.35rem;
     letter-spacing:1.5px;
-  }
-
-  /* Búsqueda ocupa el espacio disponible pero no tanto */
-  .search-wrap{
-    flex:1;
-    min-width:0;
-    max-width:none;
-  }
-
-  /* Barra de búsqueda más compacta */
-  .sw{
-    border-radius:40px;
-    border-width:1.5px;
-  }
-  .sw input{
-    font-size:.82rem;
-    padding:9px 4px;
-    min-width:0;
-  }
-  .sw-ico{
-    padding:0 6px 0 12px;
-    font-size:.9rem;
-  }
-  .sw-btn{
-    width:32px;
-    font-size:.78rem;
-  }
-
-  /* Íconos de nav — más pequeños y compactos */
-  .nav-icons{
-    gap:4px;
     flex-shrink:0;
   }
-  .nic{
-    width:34px;
-    height:34px;
-    font-size:.95rem;
-    border-width:1.5px;
-  }
-  .bdot{
-    width:14px;height:14px;
-    font-size:.48rem;
-    top:-2px;right:-2px;
-  }
-}
 
-/* Pantallas muy pequeñas */
-@media(max-width:360px){
-  .logo{font-size:1.25rem;letter-spacing:1px;}
-  .nic{width:30px;height:30px;font-size:.85rem;}
-  .sw-ico{display:none;}
-  .nav-row{gap:4px;padding:0 8px;}
-}
-
-/* ─────────────────────────────────────────
-   2. BOTTOM NAV — más grande y claro
-   ───────────────────────────────────────── */
-
-@media(max-width:767px){
-  :root{--bot-h:58px;}
-
-  .botnav{
-    height:var(--bot-h);
-    background:rgba(255,255,255,.97);
-    backdrop-filter:blur(12px);
-    border-top:1px solid #E2E8F0;
-    box-shadow:0 -2px 20px rgba(15,23,42,.1);
-  }
-
-  .btab{
-    font-size:.62rem;
-    font-weight:700;
-    padding:5px 2px;
-    gap:2px;
-    letter-spacing:.1px;
-  }
-
-  .btab-ico-wrap{
-    width:34px;height:34px;
-    border-radius:10px;
-    font-size:1.3rem;
-  }
-
-  .btab.on .btab-ico-wrap{
-    background:linear-gradient(135deg,#EFF6FF,#DBEAFE);
-    box-shadow:0 2px 8px rgba(37,99,235,.12);
-  }
-  .btab.on{color:#1E3A8A;}
-
-  /* Label debajo del ícono — más visible */
-  .btab span:last-child{
-    font-size:.58rem;
-    font-weight:700;
-  }
-
-  .iline{
-    width:18px;height:2.5px;
-    border-radius:2px;
-  }
-}
-
-/* ─────────────────────────────────────────
-   3. HERO BOTONES — proporciones correctas
-   ───────────────────────────────────────── */
-
-@media(max-width:479px){
-  .btn-hero{
-    padding:13px 20px;
-    font-size:.9rem;
-    border-radius:12px;
-    width:100%;
-    max-width:320px;
-    margin:0 auto;
-  }
-  .btn-hero-2{
-    padding:12px 20px;
-    font-size:.88rem;
-    border-radius:12px;
-    width:100%;
-    max-width:320px;
-    margin:0 auto;
-  }
-  .hero-btns{
-    flex-direction:column;
-    align-items:center;
-    gap:10px;
-  }
-  /* Hero title más compacto */
-  .hero h1{
-    font-size:clamp(2.2rem,11vw,3rem);
-    letter-spacing:1px;
-    margin-bottom:8px;
-  }
-  .hero-desc{
-    font-size:.84rem;
-    margin:10px auto 16px;
-    padding:0 4px;
-  }
-  .hero-in{
-    padding:48px 20px 72px;
-  }
-}
-
-/* ─────────────────────────────────────────
-   4. CONTACTO — canales visibles en móvil
-   ───────────────────────────────────────── */
-
-@media(max-width:639px){
-  /* Canales — layout horizontal compacto */
-  .contact-channels{
-    grid-template-columns:1fr 1fr;
-    gap:8px;
-    padding:14px 12px;
-    background:#fff;
-    border-bottom:1px solid #E2E8F0;
-  }
-
-  .contact-channel{
-    background:#fff;
-    border:1.5px solid #E2E8F0;
-    border-radius:12px;
-    padding:11px 10px;
-    display:flex;
-    align-items:center;
-    gap:8px;
-    box-shadow:0 2px 8px rgba(0,0,0,.06);
-    text-decoration:none;
-    color:var(--bk);
-    transition:all .18s;
-  }
-  .contact-channel:active{
-    transform:scale(.97);
-    background:#EFF6FF;
-    border-color:#93C5FD;
-  }
-
-  .cc-ico{
-    width:36px;height:36px;
-    border-radius:10px;
-    font-size:1.1rem;
-    flex-shrink:0;
-    display:flex;align-items:center;justify-content:center;
-  }
-
-  .cc-info strong{
-    font-size:.78rem;
-    font-weight:800;
-    color:#0F172A;
-    display:block;
-  }
-  .cc-info span{
-    font-size:.65rem;
-    color:#64748B;
-    display:block;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    max-width:100px;
-  }
-
-  .cc-arrow{display:none;}
-
-  /* Hero de contacto más compacto */
-  .contact-hero{
-    padding:32px 16px 28px;
-  }
-  .contact-hero h2{
-    font-size:clamp(1.9rem,9vw,2.6rem);
-    margin-bottom:8px;
-  }
-  .contact-hero p{
-    font-size:.82rem;
-  }
-  .contact-hero-badge{
-    font-size:.68rem;
-    padding:5px 13px;
-    margin-bottom:10px;
-  }
-  .contact-hero-trust{
-    gap:6px;margin-top:10px;
-  }
-  .contact-hero-trust span{
-    font-size:.67rem;
-    padding:4px 10px;
-  }
-
-  /* Cuerpo de contacto */
-  .contact-body{
-    padding:12px 12px 80px;
-    gap:12px;
-  }
-  .contact-form-wrap{
-    padding:16px 14px;
-    border-radius:14px;
-  }
-  .cf-header{
-    margin-bottom:14px;
-    padding-bottom:12px;
-  }
-  .cf-icon{
-    width:40px;height:40px;
-    font-size:1.1rem;
-    border-radius:11px;
-  }
-  .cf-header h3{font-size:.9rem;}
-  .cf-header p{font-size:.72rem;}
-
-  /* Info cards */
-  .contact-info-card{
-    padding:14px 12px;
-    border-radius:12px;
-  }
-  .cic-title{font-size:.82rem;margin-bottom:10px;}
-
-  /* FAQ más compacto */
-  .cfaq-q{
-    padding:9px 11px;
-    font-size:.78rem;
-  }
-
-  /* Botón WhatsApp flotante */
-  .contact-wa-float{
-    padding:10px 14px;
-    border-radius:50px;
-    font-size:.76rem;
-    bottom:calc(var(--bot-h) + 10px);
-    right:12px;
-  }
-  .wa-float-ico{font-size:1.1rem;}
-  .wa-float-txt{display:none;}
-}
-
-/* Pantallas muy pequeñas — canales en lista */
-@media(max-width:359px){
-  .contact-channels{
-    grid-template-columns:1fr;
-    gap:6px;
-  }
-}
-
-/* ─────────────────────────────────────────
-   5. FEATURES STRIP — móvil
-   ───────────────────────────────────────── */
-
-@media(max-width:479px){
-  .features-strip{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:0;
-  }
-  .feat{
-    padding:16px 14px;
-    min-width:0;
-    max-width:none;
-    border-right:1px solid #F1F5F9;
-    border-bottom:1px solid #F1F5F9;
-  }
-  .feat:nth-child(even){border-right:none;}
-  .feat:nth-child(3),.feat:nth-child(4){border-bottom:none;}
-  .feat-ico{
-    width:40px;height:40px;
-    border-radius:12px;
-    font-size:1.2rem;
-  }
-  .feat strong{font-size:.8rem;}
-  .feat small{font-size:.7rem;}
-}
-
-/* ─────────────────────────────────────────
-   6. SECCIONES hero stats — móvil
-   ───────────────────────────────────────── */
-
-@media(max-width:479px){
-  .hero-stats{
-    padding:8px 12px;
-    border-radius:14px;
-    gap:0;
-    margin-top:16px;
-    width:calc(100% - 0px);
-  }
-  .hstat{padding:0 10px;}
-  .hstat strong{font-size:1.3rem;}
-  .hstat span{font-size:.58rem;}
-  .hstat-div{height:26px;}
-}
-
-/* ══════════════════════════════════════════
-   MOBILE FIX v3 — Header solo búsqueda
-   ══════════════════════════════════════════ */
-
-/* En móvil: ocultar logo, mostrar solo búsqueda + 2 íconos */
-@media(max-width:767px){
-
-  /* Logo — oculto en móvil para maximizar espacio de búsqueda */
-  .logo{ display:none; }
-
-  /* Search wrap ocupa todo el espacio disponible */
+  /* Search wrap ocupa todo el espacio restante */
   .search-wrap{
     flex:1;
     min-width:0;
   }
 
-  /* Búsqueda más alta y visible */
+  /* Búsqueda compacta y usable */
   .sw{
     height:38px;
-    border-radius:12px;
+    border-radius:10px;
     background:rgba(255,255,255,.2);
     border:1.5px solid rgba(255,255,255,.35);
   }
   .sw input{
     padding:0 4px;
-    font-size:.85rem;
+    font-size:.84rem;
     height:100%;
   }
   .sw-ico{
-    padding:0 8px 0 12px;
-    font-size:.95rem;
-  }
-  .sw-btn{
-    width:38px;
-    height:100%;
-    border-radius:0 10px 10px 0;
+    padding:0 6px 0 10px;
     font-size:.9rem;
   }
-  /* Mostrar texto "Buscar" en móvil también */
-  .sw-btn-ico{ display:none; }
-  .sw-btn-txt{ display:inline; font-size:.72rem; font-weight:800; }
-
-  /* Solo 2 íconos: 👤 cuenta + 🛒 carrito */
-  .nav-icons{
-    gap:6px;
-    flex-shrink:0;
+  .sw-btn{
+    width:36px;
+    height:100%;
+    border-radius:0 8px 8px 0;
+    font-size:.85rem;
   }
-  .nic{
-    width:38px;
-    height:38px;
-    font-size:1.1rem;
-    border-radius:50%;
-    border-width:1.5px;
-  }
+  .sw-btn-ico{ display:inline; }
+  .sw-btn-txt{ display:none; }
 
-  /* nav-row sin gap extra */
+  /* nav-row solo logo + búsqueda */
   .nav-row{
     padding:0 10px;
     gap:8px;
@@ -3128,20 +2771,275 @@ table{table-layout:auto;}
   #hdr{ height:52px; }
   :root{ --nav-h:52px; }
 }
+/* ══════════════════════════════════════════
+   HEADER MÓVIL — Logo + Búsqueda únicamente
+   Carrito y cuenta solo en bottom nav
+   ══════════════════════════════════════════ */
 
-/* ──────────────────────────────────────────
-   CONTACT CHANNELS — Fix definitivo mobile
-   ────────────────────────────────────────── */
+@media(max-width:767px){
 
-/* Base (mobile first) — forzar estilos con mayor especificidad */
+  /* ── Altura del header ── */
+  :root{ --nav-h:54px; }
+  #hdr{ height:54px; }
+
+  /* ── Nav row: logo + search lado a lado ── */
+  .nav-row{
+    padding:0 12px;
+    gap:10px;
+  }
+
+  /* ── Logo: visible y compacto ── */
+  .logo{
+    display:block !important;
+    font-size:1.35rem;
+    letter-spacing:1.5px;
+    flex-shrink:0;
+  }
+
+  /* ── Búsqueda: ocupa todo el espacio restante ── */
+  .search-wrap{
+    flex:1;
+    min-width:0;
+  }
+
+  /* ── Barra de búsqueda refinada ── */
+  .sw{
+    height:36px;
+    border-radius:10px;
+    background:rgba(255,255,255,.18);
+    border:1.5px solid rgba(255,255,255,.3);
+  }
+  .sw input{
+    padding:0 4px;
+    font-size:.82rem;
+    height:100%;
+  }
+  .sw-ico{
+    padding:0 7px 0 10px;
+    font-size:.88rem;
+  }
+  .sw-btn{
+    width:36px;
+    height:100%;
+    border-radius:0 8px 8px 0;
+    font-size:.88rem;
+  }
+  .sw-btn-ico{ display:inline; }
+  .sw-btn-txt{ display:none; }
+
+  /* ── Ocultar nav-icons completamente en móvil ──
+     Carrito y cuenta viven en el bottom nav       */
+  .nav-icons{
+    display:none !important;
+  }
+
+  /* ── Pantallas muy pequeñas ── */
+  @media(max-width:360px){
+    .logo{ font-size:1.15rem; letter-spacing:1px; }
+    .nav-row{ padding:0 8px; gap:7px; }
+    .sw-ico{ display:none; }
+  }
+}
+
+/* ══════════════════════════════════════════
+   BOTTOM NAV — Refuerzo móvil
+   ══════════════════════════════════════════ */
+
+@media(max-width:767px){
+  :root{ --bot-h:60px; }
+
+  .botnav{
+    height:var(--bot-h);
+    background:rgba(255,255,255,.96);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+    border-top:1px solid #E2E8F0;
+    box-shadow:0 -4px 20px rgba(15,23,42,.09);
+  }
+
+  .btab{
+    font-size:.6rem;
+    font-weight:700;
+    padding:5px 2px 6px;
+    gap:3px;
+    color:#94A3B8;
+    letter-spacing:.1px;
+  }
+  .btab.on{ color:#1E3A8A; }
+
+  .btab-ico-wrap{
+    width:36px;
+    height:36px;
+    border-radius:11px;
+    font-size:1.3rem;
+    transition:background .15s, transform .15s;
+  }
+  .btab.on .btab-ico-wrap{
+    background:linear-gradient(135deg,#EFF6FF,#DBEAFE);
+    box-shadow:0 2px 8px rgba(37,99,235,.15);
+  }
+  .btab:active .btab-ico-wrap{
+    transform:scale(.86);
+  }
+
+  .iline{
+    height:2.5px;
+    width:20px;
+    border-radius:2px;
+    background:linear-gradient(90deg,#06B6D4,#2563EB);
+  }
+}
+
+/* ══════════════════════════════════════════
+   MOBILE — Header limpio + Contacto
+   Solo logo + búsqueda en header móvil.
+   Carrito y cuenta SOLO en bottom nav.
+   ══════════════════════════════════════════ */
+
+@media(max-width:767px){
+
+  /* ── HEADER ──────────────────────────── */
+
+  /* Altura reducida */
+  #hdr{ height:52px; }
+  :root{ --nav-h:52px; }
+
+  .nav-row{
+    padding:0 12px;
+    gap:8px;
+    justify-content:flex-start;
+  }
+
+  /* Logo — visible, tamaño compacto */
+  .logo{
+    font-size:1.35rem;
+    letter-spacing:1.5px;
+    flex-shrink:0;
+  }
+  .logo-dot{ display:none; }
+
+  /* Búsqueda — ocupa todo el espacio restante */
+  .search-wrap{
+    flex:1;
+    min-width:0;
+    max-width:none;
+  }
+
+  /* Barra de búsqueda estilizada */
+  .sw{
+    height:36px;
+    border-radius:10px;
+    background:rgba(255,255,255,.18);
+    border:1.5px solid rgba(255,255,255,.3);
+  }
+  .sw.focused{
+    border-color:#93C5FD;
+    box-shadow:0 0 0 3px rgba(147,197,253,.25);
+  }
+  .sw input{
+    padding:0 4px;
+    font-size:.84rem;
+    height:100%;
+  }
+  .sw-ico{
+    padding:0 7px 0 11px;
+    font-size:.9rem;
+  }
+  .sw-btn{
+    width:34px;
+    height:100%;
+    border-radius:0 8px 8px 0;
+    font-size:.78rem;
+  }
+  /* Ícono de búsqueda en el botón */
+  .sw-btn-ico{ display:inline; }
+  .sw-btn-txt{ display:none; }
+
+  /* nav-icons COMPLETAMENTE oculto en móvil */
+  .nav-icons{ display:none !important; }
+
+  /* desk-nav también oculto */
+  .desk-nav{ display:none !important; }
+
+  /* desk-acts oculto */
+  .desk-acts{ display:none !important; }
+}
+
+/* Pantallas muy pequeñas */
+@media(max-width:360px){
+  .logo{ font-size:1.15rem; letter-spacing:1px; }
+  .sw-ico{ display:none; }
+  .nav-row{ padding:0 8px; gap:6px; }
+}
+
+/* ── BOTTOM NAV — más visible en móvil ── */
+@media(max-width:767px){
+  :root{ --bot-h:60px; }
+
+  .botnav{
+    height:var(--bot-h);
+    background:rgba(255,255,255,.97);
+    backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);
+    border-top:1px solid #E2E8F0;
+    box-shadow:0 -4px 20px rgba(15,23,42,.1);
+  }
+
+  .btab{
+    font-size:.6rem;
+    font-weight:700;
+    padding:5px 2px;
+    gap:2px;
+    letter-spacing:.1px;
+  }
+
+  .btab-ico-wrap{
+    width:36px;
+    height:36px;
+    border-radius:11px;
+    font-size:1.3rem;
+  }
+
+  .btab.on .btab-ico-wrap{
+    background:linear-gradient(135deg,#EFF6FF,#DBEAFE);
+    box-shadow:0 2px 8px rgba(37,99,235,.15);
+  }
+  .btab.on{ color:#1E3A8A; }
+
+  .iline{
+    height:2.5px;
+    width:18px;
+    border-radius:2px;
+    margin-top:1px;
+  }
+
+  /* Badge del carrito en botnav */
+  #cartBadgeNav{
+    position:absolute;
+    top:-4px; right:-4px;
+    background:linear-gradient(135deg,#1E3A8A,#2563EB);
+    color:#fff;
+    border-radius:50%;
+    width:17px; height:17px;
+    font-size:.55rem;
+    font-weight:900;
+    border:2px solid #fff;
+    display:none;
+    align-items:center;
+    justify-content:center;
+  }
+}
+
+/* ── CONTACT CHANNELS — móvil definitivo ── */
 @media(max-width:639px){
 
   .contact-channels{
     display:grid !important;
     grid-template-columns:1fr 1fr !important;
     gap:10px !important;
-    padding:14px !important;
+    padding:14px 12px !important;
     background:#F8FAFC !important;
+    max-width:100% !important;
   }
 
   .contact-channel{
@@ -3149,27 +3047,28 @@ table{table-layout:auto;}
     flex-direction:column !important;
     align-items:center !important;
     justify-content:center !important;
-    gap:6px !important;
+    gap:8px !important;
     background:#fff !important;
     border:1.5px solid #E2E8F0 !important;
     border-radius:14px !important;
-    padding:14px 8px !important;
+    padding:16px 8px !important;
     text-decoration:none !important;
     color:#0F172A !important;
-    box-shadow:0 2px 8px rgba(0,0,0,.07) !important;
+    box-shadow:0 2px 8px rgba(0,0,0,.06) !important;
     text-align:center !important;
-    min-height:80px !important;
+    min-height:88px !important;
+    transition:all .18s !important;
+    cursor:pointer !important;
   }
 
   .contact-channel:active{
+    transform:scale(.96) !important;
     background:#EFF6FF !important;
     border-color:#93C5FD !important;
-    transform:scale(.97);
   }
 
   .cc-ico{
-    width:44px !important;
-    height:44px !important;
+    width:44px !important; height:44px !important;
     border-radius:12px !important;
     font-size:1.4rem !important;
     display:flex !important;
@@ -3178,54 +3077,103 @@ table{table-layout:auto;}
     flex-shrink:0 !important;
     margin:0 auto !important;
   }
-
   .cc-ico-wa{ background:linear-gradient(135deg,#D1FAE5,#6EE7B7) !important; }
   .cc-ico-mail{ background:linear-gradient(135deg,#FEF9C3,#FDE68A) !important; }
   .cc-ico-tel{ background:linear-gradient(135deg,#DBEAFE,#93C5FD) !important; }
   .cc-ico-loc{ background:linear-gradient(135deg,#FCE7F3,#F9A8D4) !important; }
 
-  .cc-info{
-    text-align:center !important;
-    min-width:0 !important;
-  }
+  .cc-info{ text-align:center !important; }
   .cc-info strong{
     display:block !important;
     font-size:.78rem !important;
     font-weight:800 !important;
     color:#0F172A !important;
-    margin-bottom:2px !important;
     white-space:nowrap !important;
   }
   .cc-info span{
     display:block !important;
-    font-size:.64rem !important;
+    font-size:.65rem !important;
     color:#64748B !important;
     white-space:nowrap !important;
     overflow:hidden !important;
     text-overflow:ellipsis !important;
     max-width:90px !important;
+    margin:0 auto !important;
   }
-
-  /* Ocultar flecha en móvil */
   .cc-arrow{ display:none !important; }
 
-  /* Contact hero — forzar gradiente visible */
+  /* Héro contacto */
   .contact-hero{
-    background:linear-gradient(135deg,#020617 0%,#0F172A 25%,#1E3A8A 60%,#2563EB 100%) !important;
-    color:#fff !important;
+    padding:32px 16px 28px !important;
   }
+  .contact-hero h2{
+    font-size:clamp(1.8rem,8vw,2.4rem) !important;
+    margin-bottom:8px !important;
+  }
+  .contact-hero p{ font-size:.82rem !important; }
+  .contact-hero-badge{
+    font-size:.68rem !important;
+    padding:5px 13px !important;
+    margin-bottom:10px !important;
+  }
+  .contact-hero-trust{ gap:6px !important; margin-top:10px !important; }
+  .contact-hero-trust span{ font-size:.66rem !important; padding:4px 10px !important; }
 }
 
 /* Pantallas muy angostas */
 @media(max-width:340px){
-  .contact-channels{
-    grid-template-columns:1fr !important;
-  }
+  .contact-channels{ grid-template-columns:1fr !important; }
   .contact-channel{
     flex-direction:row !important;
     text-align:left !important;
     justify-content:flex-start !important;
-    padding:12px !important;
+    padding:12px 10px !important;
     min-height:auto !important;
   }
+  .cc-info{ text-align:left !important; }
+}
+
+/* ── HERO BOTONES — proporcionales en móvil ── */
+@media(max-width:479px){
+  .hero-btns{
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
+    width:100%;
+  }
+  .btn-hero, .btn-hero-2{
+    width:100%;
+    max-width:300px;
+    margin:0 auto;
+    padding:13px 20px;
+    font-size:.9rem;
+    border-radius:12px;
+    justify-content:center;
+  }
+  .hero h1{
+    font-size:clamp(2.2rem,11vw,3.2rem);
+    letter-spacing:1px;
+  }
+  .hero-in{
+    padding:44px 20px 68px;
+  }
+}
+
+/* ── FEATURES STRIP — grid 2x2 en móvil ── */
+@media(max-width:479px){
+  .features-strip{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+  }
+  .feat{
+    padding:16px 12px;
+    border-right:1px solid #F1F5F9;
+    border-bottom:1px solid #F1F5F9;
+    min-width:0; max-width:none;
+  }
+  .feat:nth-child(even){ border-right:none; }
+  .feat:nth-child(3),.feat:nth-child(4){ border-bottom:none; }
+  .feat-ico{ width:40px; height:40px; font-size:1.2rem; }
+  .feat strong{ font-size:.8rem; }
+  .feat small{ font-size:.7rem; }
 }
