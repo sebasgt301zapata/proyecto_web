@@ -568,9 +568,7 @@ function actualizarUI(){
     }
     // Nombre truncado
     var nombre=usuario.n.split(" ")[0];
-    navIcons.innerHTML=
-      '<button class="nic cart-btn" onclick="abrirCarrito()" style="position:relative">🛒<span class="bdot" id="cartBadgeMobile" style="display:none">0</span></button>'+
-      '<button class="nic" onclick="abrirPanel()" style="font-size:'+(usuario.avatar&&(usuario.avatar.startsWith("data:")||/^\p{Emoji}/u.test(usuario.avatar)||usuario.avatar.length<=8)&&usuario.avatar.length<=2?'1.2rem':'0.85rem')+'">'+avatarMobile+'</button>';
+    navIcons.innerHTML=''; // En móvil carrito y cuenta están en el bottom nav
     deskActs.innerHTML=
       '<button class="bdn bdn-lang" onclick="abrirIdiomaMoneda()" title="Moneda">💰</button>'+
       '<div class="hdr-cart-btn" onclick="abrirCarrito()">🛒<span class="hdr-cart-badge" id="cartBadgeDesk" style="display:none">0</span></div>'+
@@ -586,9 +584,7 @@ function actualizarUI(){
       panelBtn;
     if(bt3ico)bt3ico.innerHTML=avatarMobile;
   }else{
-    navIcons.innerHTML=
-      '<button class="nic" onclick="abrirLogin()">👤</button>'+
-      '<button class="nic cart-btn" onclick="abrirCarrito()" style="position:relative">🛒<span class="bdot" id="cartBadgeMobile" style="display:none">0</span></button>';
+    navIcons.innerHTML=''; // En móvil carrito y cuenta están en el bottom nav
     deskActs.innerHTML=
       '<button class="bdn bdn-lang" onclick="abrirIdiomaMoneda()" title="Moneda">💰</button>'+
       '<button class="bdn bdn-o" onclick="abrirLogin()">'+t('iniciarSesion')+'</button>'+
