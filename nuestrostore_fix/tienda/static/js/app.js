@@ -569,7 +569,6 @@ function actualizarUI(){
     // Nombre truncado
     var nombre=usuario.n.split(" ")[0];
     navIcons.innerHTML=
-      '<button class="nic" onclick="abrirIdiomaMoneda()" style="font-size:1rem">💰</button>'+
       '<button class="nic cart-btn" onclick="abrirCarrito()" style="position:relative">🛒<span class="bdot" id="cartBadgeMobile" style="display:none">0</span></button>'+
       '<button class="nic" onclick="abrirPanel()" style="font-size:'+(usuario.avatar&&(usuario.avatar.startsWith("data:")||/^\p{Emoji}/u.test(usuario.avatar)||usuario.avatar.length<=8)&&usuario.avatar.length<=2?'1.2rem':'0.85rem')+'">'+avatarMobile+'</button>';
     deskActs.innerHTML=
@@ -588,7 +587,6 @@ function actualizarUI(){
     if(bt3ico)bt3ico.innerHTML=avatarMobile;
   }else{
     navIcons.innerHTML=
-      '<button class="nic" onclick="abrirIdiomaMoneda()" style="font-size:1rem">💰</button>'+
       '<button class="nic" onclick="abrirLogin()">👤</button>'+
       '<button class="nic cart-btn" onclick="abrirCarrito()" style="position:relative">🛒<span class="bdot" id="cartBadgeMobile" style="display:none">0</span></button>';
     deskActs.innerHTML=
