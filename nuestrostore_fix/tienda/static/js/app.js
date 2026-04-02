@@ -31,6 +31,7 @@ async function api(path,method,body){
 // ── MONEDA E IDIOMA ──────────────────────────
 var LANG = "es";
 var CURRENCY = localStorage.getItem("ns_currency") || "COP";
+var DARK_MODE = localStorage.getItem("ns_dark") === "1";
 var CURRENCIES = {
   VES:{name:"Bolívares",symbol:"Bs.",rate:1,locale:"es-VE"},
   USD:{name:"Dólares",symbol:"$",rate:0.000028,locale:"en-US"},
@@ -786,6 +787,22 @@ function doRegistro(){
 function cerrarSesion(){usuario=null;carrito=[];wishlist=[];_mpCargando=false;_mpYaCargo=false;localStorage.removeItem("ns_usuario");localStorage.removeItem("ns_carrito");localStorage.removeItem("ns_wishlist");actualizarUI();actualizarCarrito();actualizarTodosHearts();toast("Sesión cerrada","i");}
 
 // ── UI ───────────────────────────────────────
+
+// ── MODO OSCURO ───────────────────────────────────────────────
+function aplicarDarkMode(dark){
+  document.documentElement.classList.toggle("dark", dark);
+  localStorage.setItem("ns_dark", dark ? "1" : "0");
+  DARK_MODE = dark;
+  // Update all toggle buttons
+  document.querySelectorAll(".dm-toggle").forEach(function(btn){
+    btn.innerHTML = dark ? "☀️" : "🌙";
+    btn.setAttribute("aria-label", dark ? "Modo claro" : "Modo oscuro");
+    btn.setAttribute("title", dark ? "Cambiar a modo claro" : "Cambiar a modo oscuro");
+  });
+}
+function toggleDarkMode(){
+  aplicarDarkMode(!DARK_MODE);
+}
 function actualizarUI(){
   var navIcons=document.getElementById("navIcons"),deskActs=document.getElementById("deskActs"),bt3ico=document.getElementById("bt3ico");
   if(usuario){
@@ -805,6 +822,7 @@ function actualizarUI(){
     var nombre=usuario.n.split(" ")[0];
     navIcons.innerHTML=''; // En móvil carrito y cuenta están en el bottom nav
     deskActs.innerHTML=
+      '<button class="dm-toggle bdn bdn-lang" onclick="toggleDarkMode()" title="Modo oscuro">'+(DARK_MODE?'☀️':'🌙')+'</button>'+
       '<button class="bdn bdn-lang" onclick="abrirIdiomaMoneda()" title="Moneda">💰</button>'+
       '<div class="hdr-cart-btn" onclick="abrirCarrito()">🛒<span class="hdr-cart-badge" id="cartBadgeDesk" style="display:none">0</span></div>'+
       '<div class="hdr-divider"></div>'+
@@ -821,6 +839,7 @@ function actualizarUI(){
   }else{
     navIcons.innerHTML=''; // En móvil carrito y cuenta están en el bottom nav
     deskActs.innerHTML=
+      '<button class="dm-toggle bdn bdn-lang" onclick="toggleDarkMode()" title="Modo oscuro">'+(DARK_MODE?'☀️':'🌙')+'</button>'+
       '<button class="bdn bdn-lang" onclick="abrirIdiomaMoneda()" title="Moneda">💰</button>'+
       '<button class="bdn bdn-o" onclick="abrirLogin()">'+t('iniciarSesion')+'</button>'+
       '<button class="bdn bdn-f" onclick="abrirRegistro()">'+t('registrarse')+' →</button>';
@@ -1566,6 +1585,7 @@ document.addEventListener("DOMContentLoaded",function(){
   initSearch();
   mpInit();
   aplicarIdioma();
+  aplicarDarkMode(DARK_MODE); // Apply saved dark mode preference
   irPagina("inicio");
   // Show loading skeleton while data loads
   var pI = document.getElementById("pInicio");
