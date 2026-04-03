@@ -202,6 +202,19 @@ def init_db():
             fecha    {t("TEXT DEFAULT (datetime('now','localtime'))", 'TIMESTAMP DEFAULT NOW()')}
         )
         """,
+        f"""
+        CREATE TABLE IF NOT EXISTS cupones (
+            id          {t('INTEGER PRIMARY KEY AUTOINCREMENT', 'SERIAL PRIMARY KEY')},
+            codigo      TEXT NOT NULL UNIQUE,
+            tipo        TEXT NOT NULL DEFAULT 'porcentaje',
+            valor       REAL NOT NULL,
+            min_compra  REAL NOT NULL DEFAULT 0,
+            usos_max    {t('INTEGER', 'INT')} NOT NULL DEFAULT 100,
+            usos_actual {t('INTEGER', 'INT')} NOT NULL DEFAULT 0,
+            activo      {t('INTEGER', 'SMALLINT')} NOT NULL DEFAULT 1,
+            creado      {t("TEXT DEFAULT (datetime('now','localtime'))", 'TIMESTAMP DEFAULT NOW()')}
+        )
+        """,
     ]
 
     from django.db import transaction
