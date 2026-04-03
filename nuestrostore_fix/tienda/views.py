@@ -439,6 +439,30 @@ def api_mis_pedidos(request, uid):
     return JsonResponse({"ok": True, "pedidos": pedidos})
 
 
+
+# ── PEDIDOS ADMIN (todos) ──────────────────────────────────────
+@csrf_exempt
+@require_http_methods(["GET"])
+def api_todos_pedidos(request):
+    """Todos los pedidos — para el superadmin."""
+    rows = _exec("""
+        SELECT id, uid, u_nom AS uNom, u_email AS uEmail,
+               items, total, estado, fecha
+        FROM pedidos ORDER BY id DESC
+    """)
+    pedidos = []
+    for r in rows:
+        pedidos.append({
+            "id":     r["id"],
+            "uNom":   r["uNom"],
+            "uEmail": r["uEmail"],
+            "items":  json.loads(r["items"] or "[]"),
+            "total":  r["total"],
+            "estado": r["estado"],
+            "fecha":  r["fecha"],
+        })
+    return JsonResponse({"ok": True, "pedidos": pedidos})
+
 # ── USUARIOS ──────────────────────────────────────────
 def api_get_usuarios(request):
     rows = _exec("SELECT id, nombre AS n, apellido AS a, email, rol, activo AS act, tel FROM usuarios ORDER BY id")
