@@ -50,6 +50,9 @@ urlpatterns = [
     path('api/contactos/<int:cid>/leer',   views.api_contacto_leer,    name='api_contacto_leer'),
     path('api/contactos/<int:cid>/eliminar', views.api_contacto_eliminar, name='api_contacto_eliminar'),
 
+    # Pedidos admin
+    path('api/todos-pedidos', views.api_todos_pedidos, name='api_todos_pedidos'),
+
     # Cupones
     path('api/cupones/validar',  views.api_validar_cupon,   name='api_validar_cupon'),
     path('api/cupones/usar',     views.api_usar_cupon,       name='api_usar_cupon'),
