@@ -654,7 +654,21 @@
   <div class="chd"><h3>🛒 Mi Carrito</h3><button class="bx" onclick="cerrarCarrito()">✕</button></div>
   <div class="cits" id="cits"><div class="empty"><div class="eico">🛒</div><h3>Carrito vacío</h3><p>Agrega productos</p></div></div>
   <div class="cft">
-    <div class="ctot"><span>Total:</span><span id="cTot">Bs. 0,00</span></div>
+    <!-- Cupón -->
+    <div class="cupon-wrap">
+      <div class="cupon-row">
+        <input id="cuponInput" class="cupon-inp" placeholder="Código de cupón" autocomplete="off" spellcheck="false"
+               oninput="this.value=this.value.toUpperCase()"
+               onkeydown="if(event.key==='Enter')aplicarCupon()"/>
+        <button id="cuponBtn" class="cupon-btn" onclick="aplicarCupon()">Aplicar</button>
+      </div>
+      <div id="cuponMsg" class="cupon-msg"></div>
+    </div>
+    <!-- Subtotal + descuento -->
+    <div id="cDescRow" class="ctot cdesc-row" style="display:none">
+      <span>Descuento</span><span id="cDesc" style="color:#16A34A">- COP$ 0</span>
+    </div>
+    <div class="ctot ctot-final"><span>Total:</span><span id="cTot">COP$ 0</span></div>
     <div class="cft-btns">
       <button class="bp btn-fact" onclick="generarFactura()">📄 Factura</button>
       <button class="bp btn-pagar" onclick="pedido()">Pagar →</button>
