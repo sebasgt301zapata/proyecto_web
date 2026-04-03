@@ -4246,3 +4246,62 @@ html.dark .notif-banner-warn {
   border-color: #D97706;
   color: #FCD34D;
 }
+
+/* ══════════════════════════════════════════
+   HISTORIAL DE BÚSQUEDA
+   ══════════════════════════════════════════ */
+
+.sw-hist-item{
+  gap:10px;
+}
+.sw-hist-item .sugg-ico{
+  font-size:.85rem;
+  opacity:.45;
+  width:28px;
+  height:28px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+}
+.sw-hist-item:hover .sugg-ico{
+  opacity:.7;
+}
+.sw-hist-item .sugg-nm{
+  color:var(--gr2);
+}
+html.dark .sw-hist-item .sugg-nm{
+  color:var(--na3);
+}
+
+/* ══════════════════════════════════════════
+   FLY-TO-CART DOT
+   ══════════════════════════════════════════ */
+
+/* La burbuja voladora se crea dinámicamente en JS,
+   aquí solo añadimos el keyframe del badge al recibirla */
+
+@keyframes badgePop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.55); }
+  70%  { transform: scale(.85); }
+  100% { transform: scale(1); }
+}
+
+.badge-pulse {
+  animation: badgePop .4s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+/* Asegurar que el badge del botnav sea visible durante el vuelo */
+#cartBadgeNav,
+.bdot,
+.hdr-cart-badge {
+  will-change: transform;
+}
+
+/* Pequeño efecto de "bounce" en el botón Agregar al pulsarse */
+.badd:active {
+  transform: scale(.93);
+  transition: transform .1s;
+}
+
