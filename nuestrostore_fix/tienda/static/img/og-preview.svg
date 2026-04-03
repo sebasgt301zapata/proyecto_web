@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#020617"/>
+      <stop offset="35%"  stop-color="#0F172A"/>
+      <stop offset="70%"  stop-color="#1E3A8A"/>
+      <stop offset="100%" stop-color="#2563EB"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#06B6D4"/>
+      <stop offset="100%" stop-color="#3B82F6"/>
+    </linearGradient>
+    <linearGradient id="card1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#1E293B"/>
+      <stop offset="100%" stop-color="#0F172A"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- Decorative circles -->
+  <circle cx="980" cy="120" r="220" fill="#1E3A8A" opacity="0.3"/>
+  <circle cx="1100" cy="500" r="160" fill="#2563EB" opacity="0.2"/>
+  <circle cx="60"   cy="540" r="180" fill="#0F172A" opacity="0.5"/>
+  <circle cx="200"  cy="80"  r="100" fill="#1E40AF" opacity="0.25"/>
+
+  <!-- Dot grid pattern -->
+  <pattern id="dots" x="0" y="0" width="30" height="30" patternUnits="userSpaceOnUse">
+    <circle cx="2" cy="2" r="1.2" fill="#ffffff" opacity="0.04"/>
+  </pattern>
+  <rect width="1200" height="630" fill="url(#dots)"/>
+
+  <!-- Left content -->
+
+  <!-- Badge -->
+  <rect x="80" y="100" width="220" height="34" rx="17" fill="rgba(6,182,212,0.15)" stroke="#06B6D4" stroke-width="1.5"/>
+  <text x="190" y="122" font-family="Arial,sans-serif" font-size="13" font-weight="700" fill="#67E8F9" text-anchor="middle" letter-spacing="2">✦ TIENDA ONLINE</text>
+
+  <!-- Main title -->
+  <text x="80" y="210" font-family="Arial Black,Arial,sans-serif" font-size="86" font-weight="900" fill="#FFFFFF" letter-spacing="-2">Nuestro</text>
+  <text x="80" y="300" font-family="Arial Black,Arial,sans-serif" font-size="86" font-weight="900" fill="url(#accent)" letter-spacing="-2">Store</text>
+
+  <!-- Accent line -->
+  <rect x="80" y="328" width="180" height="5" rx="3" fill="url(#accent)"/>
+
+  <!-- Subtitle -->
+  <text x="80" y="390" font-family="Arial,sans-serif" font-size="22" fill="#CBD5E1" font-weight="400">Tu tienda de confianza en Colombia</text>
+
+  <!-- Feature pills -->
+  <rect x="80"  y="430" width="130" height="36" rx="18" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+  <text x="145" y="453" font-family="Arial,sans-serif" font-size="14" fill="#F1F5F9" text-anchor="middle">🚚 Envío gratis</text>
+
+  <rect x="224" y="430" width="108" height="36" rx="18" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+  <text x="278" y="453" font-family="Arial,sans-serif" font-size="14" fill="#F1F5F9" text-anchor="middle">💳 PSE</text>
+
+  <rect x="346" y="430" width="118" height="36" rx="18" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+  <text x="405" y="453" font-family="Arial,sans-serif" font-size="14" fill="#F1F5F9" text-anchor="middle">📱 Nequi</text>
+
+  <rect x="478" y="430" width="140" height="36" rx="18" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+  <text x="548" y="453" font-family="Arial,sans-serif" font-size="14" fill="#F1F5F9" text-anchor="middle">💚 Daviplata</text>
+
+  <!-- URL -->
+  <text x="80" y="560" font-family="Arial,sans-serif" font-size="16" fill="#64748B">proyecto-web-tcxo.onrender.com</text>
+
+  <!-- Right side — product cards mockup -->
+
+  <!-- Card 1 (back) -->
+  <rect x="760" y="90" width="230" height="310" rx="18" fill="#1E293B" opacity="0.6" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+
+  <!-- Card 2 (middle) -->
+  <rect x="810" y="130" width="240" height="320" rx="18" fill="#1E3A8A" opacity="0.7" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+
+  <!-- Card 3 (front) -->
+  <rect x="860" y="160" width="260" height="340" rx="20" fill="url(#card1)" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+
+  <!-- Card image area -->
+  <rect x="876" y="176" width="228" height="160" rx="12" fill="linear-gradient(135deg,#1E40AF,#1E293B)"/>
+  <rect x="876" y="176" width="228" height="160" rx="12" fill="#0F172A"/>
+  <!-- Product emoji centered -->
+  <text x="990" y="270" font-family="Arial,sans-serif" font-size="64" text-anchor="middle">💻</text>
+
+  <!-- Discount badge on card -->
+  <rect x="876" y="186" width="70" height="26" rx="13" fill="#EF4444"/>
+  <text x="911" y="203" font-family="Arial,sans-serif" font-size="12" font-weight="700" fill="#fff" text-anchor="middle">-20%</text>
+
+  <!-- Card info -->
+  <text x="886" y="364" font-family="Arial,sans-serif" font-size="11" fill="#60A5FA" font-weight="700" letter-spacing="1">ELECTRÓNICA</text>
+  <text x="886" y="388" font-family="Arial,sans-serif" font-size="18" fill="#F1F5F9" font-weight="700">Laptop UltraBook</text>
+  <text x="886" y="410" font-family="Arial,sans-serif" font-size="22" fill="#93C5FD" font-weight="900" font-family="Arial Black,Arial">COP$ 89.990</text>
+
+  <!-- Stars -->
+  <text x="886" y="432" font-family="Arial,sans-serif" font-size="14" fill="#F59E0B">★★★★★</text>
+  <text x="951" y="432" font-family="Arial,sans-serif" font-size="12" fill="#64748B"> (128)</text>
+
+  <!-- Add to cart button on card -->
+  <rect x="876" y="446" width="228" height="38" rx="10" fill="#2563EB"/>
+  <text x="990" y="470" font-family="Arial,sans-serif" font-size="14" font-weight="700" fill="#fff" text-anchor="middle">🛒 Agregar al Carrito</text>
+
+  <!-- Floating badge top right -->
+  <rect x="1080" y="70" width="80" height="80" rx="40" fill="#06B6D4" opacity="0.15" filter="url(#glow)"/>
+  <circle cx="1120" cy="110" r="36" fill="#06B6D4" opacity="0.2"/>
+  <text x="1120" y="118" font-family="Arial,sans-serif" font-size="28" text-anchor="middle">🇨🇴</text>
+
+  <!-- Stats row bottom right -->
+  <rect x="760" y="520" width="360" height="60" rx="12" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+
+  <text x="840"  y="547" font-family="Arial Black,Arial,sans-serif" font-size="20" fill="#F1F5F9" font-weight="900" text-anchor="middle">20+</text>
+  <text x="840"  y="566" font-family="Arial,sans-serif" font-size="11" fill="#64748B" text-anchor="middle">PRODUCTOS</text>
+
+  <rect x="920" y="530" width="1" height="36" fill="rgba(255,255,255,0.1)"/>
+
+  <text x="980"  y="547" font-family="Arial Black,Arial,sans-serif" font-size="20" fill="#F1F5F9" font-weight="900" text-anchor="middle">24/7</text>
+  <text x="980"  y="566" font-family="Arial,sans-serif" font-size="11" fill="#64748B" text-anchor="middle">SOPORTE</text>
+
+  <rect x="1040" y="530" width="1" height="36" fill="rgba(255,255,255,0.1)"/>
+
+  <text x="1100" y="547" font-family="Arial Black,Arial,sans-serif" font-size="20" fill="#F1F5F9" font-weight="900" text-anchor="middle">30</text>
+  <text x="1100" y="566" font-family="Arial,sans-serif" font-size="11" fill="#64748B" text-anchor="middle">DÍAS GARANTÍA</text>
+</svg>
