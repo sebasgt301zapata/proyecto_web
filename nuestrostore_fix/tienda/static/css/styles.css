@@ -4305,3 +4305,113 @@ html.dark .sw-hist-item .sugg-nm{
   transition: transform .1s;
 }
 
+
+/* ══════════════════════════════════════════
+   CUPÓN DE DESCUENTO — Carrito
+   ══════════════════════════════════════════ */
+
+.cupon-wrap{
+  padding:14px 16px 10px;
+  border-bottom:1px solid #F1F5F9;
+  margin-bottom:6px;
+}
+.cupon-row{
+  display:flex;gap:8px;
+  align-items:center;
+}
+.cupon-inp{
+  flex:1;
+  padding:9px 12px;
+  border:1.5px solid #E2E8F0;
+  border-radius:10px;
+  font-size:.85rem;
+  font-weight:700;
+  letter-spacing:.5px;
+  outline:none;
+  background:#F8FAFC;
+  color:#0F172A;
+  font-family:'Inter',sans-serif;
+  transition:border-color .18s;
+}
+.cupon-inp:focus{
+  border-color:#2563EB;
+  background:#fff;
+  box-shadow:0 0 0 3px rgba(37,99,235,.1);
+}
+.cupon-inp::placeholder{
+  color:#94A3B8;
+  font-weight:400;
+  letter-spacing:0;
+}
+.cupon-btn{
+  padding:9px 16px;
+  background:linear-gradient(135deg,#1E3A8A,#2563EB);
+  color:#fff;
+  border:none;
+  border-radius:10px;
+  font-size:.82rem;
+  font-weight:800;
+  cursor:pointer;
+  white-space:nowrap;
+  font-family:'Inter',sans-serif;
+  transition:all .18s;
+  flex-shrink:0;
+}
+.cupon-btn:hover{ background:linear-gradient(135deg,#1E40AF,#3B82F6); }
+.cupon-btn:active{ transform:scale(.97); }
+.cupon-btn:disabled{
+  background:#E2E8F0;
+  color:#94A3B8;
+  cursor:not-allowed;
+}
+.cupon-msg{
+  font-size:.78rem;
+  font-weight:700;
+  margin-top:6px;
+  min-height:16px;
+  transition:opacity .2s;
+}
+.cupon-ok{ color:#16A34A; }
+.cupon-err{ color:#DC2626; }
+
+/* Fila de descuento */
+.cdesc-row{
+  color:#16A34A !important;
+  font-size:.88rem;
+  padding:6px 16px;
+  margin-bottom:0;
+}
+.cdesc-row span:last-child{
+  font-weight:800;
+}
+.ctot-final{
+  font-weight:800;
+  padding:8px 16px 10px;
+}
+
+/* Dark mode cupon */
+html.dark .cupon-inp{
+  background:#0F172A;
+  border-color:#334155;
+  color:#F1F5F9;
+}
+html.dark .cupon-inp:focus{
+  border-color:#3B82F6;
+  background:#1E293B;
+}
+html.dark .cupon-inp::placeholder{ color:#475569; }
+html.dark .cupon-btn:disabled{
+  background:#1E293B;
+  color:#475569;
+}
+
+/* ══════════════════════════════════════════
+   COMPARTIR — botón en modal producto
+   ══════════════════════════════════════════ */
+
+.share-btn{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+}
