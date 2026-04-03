@@ -13,6 +13,165 @@ from django.db import transaction
 from .database import _exec, _exec_one, _exec_insert, log_action, hash_pass, check_pass
 
 
+
+# ── RATE LIMITER (in-memory, sin dependencias externas) ───────
+import threading
+import time
+
+class _RateLimiter:
+    """
+    Token-bucket por IP.
+    max_calls intentos en window_secs; bloqueo por lockout_secs tras agotar tokens.
+    Thread-safe con Lock.
+    """
+    def __init__(self, max_calls=5, window_secs=60, lockout_secs=300):
+        self._max    = max_calls
+        self._window = window_secs
+        self._lock_t = lockout_secs
+        self._data   = {}   # ip -> {tokens, window_start, locked_until}
+        self._mu     = threading.Lock()
+
+    def _clean(self, now):
+        """Eliminar entradas expiradas para no acumular memoria."""
+        expired = [ip for ip, d in self._data.items()
+                   if now - d["window_start"] > max(self._window, self._lock_t) * 2]
+        for ip in expired:
+            del self._data[ip]
+
+    def check(self, ip):
+        """
+        Retorna (allowed: bool, wait_secs: int).
+        allowed=True  → la petición puede pasar.
+        allowed=False → bloquear; wait_secs indica cuántos segundos debe esperar.
+        """
+        now = time.time()
+        with self._mu:
+            self._clean(now)
+            d = self._data.get(ip)
+
+            if d is None:
+                self._data[ip] = {"tokens": self._max - 1,
+                                  "window_start": now,
+                                  "locked_until": 0}
+                return True, 0
+
+            # ¿En bloqueo duro?
+            if d["locked_until"] > now:
+                return False, int(d["locked_until"] - now)
+
+            # ¿Ventana expirada? → reset
+            if now - d["window_start"] > self._window:
+                d["tokens"]       = self._max - 1
+                d["window_start"] = now
+                d["locked_until"] = 0
+                return True, 0
+
+            # Aún en ventana activa
+            if d["tokens"] > 0:
+                d["tokens"] -= 1
+                return True, 0
+            else:
+                # Agotar tokens → activar bloqueo
+                d["locked_until"] = now + self._lock_t
+                return False, self._lock_t
+
+
+# Instancias globales: login y registro tienen límites distintos
+_rl_login    = _RateLimiter(max_calls=5,  window_secs=60,  lockout_secs=300)  # 5/min → 5 min bloqueo
+_rl_registro = _RateLimiter(max_calls=3,  window_secs=300, lockout_secs=600)  # 3 cada 5 min → 10 min bloqueo
+
+
+def _get_ip(request):
+    """Extrae la IP real respetando proxies (Render, Heroku, Cloudflare)."""
+    xff = request.META.get("HTTP_X_FORWARDED_FOR", "")
+    if xff:
+        return xff.split(",")[0].strip()
+    return request.META.get("REMOTE_ADDR", "unknown")
+
+
+# ── CUPONES ───────────────────────────────────────────────────
+@csrf_exempt
+@require_http_methods(["GET"])
+def api_validar_cupon(request):
+    codigo = (request.GET.get("codigo") or "").strip().upper()
+    total  = float(request.GET.get("total") or 0)
+    if not codigo:
+        return JsonResponse({"ok": False, "error": "Código requerido"})
+    row = _exec_one(
+        "SELECT * FROM cupones WHERE UPPER(codigo)=? AND activo=1",
+        (codigo,)
+    )
+    if not row:
+        return JsonResponse({"ok": False, "error": "Cupón no válido o expirado"})
+    if row["usos_actual"] >= row["usos_max"]:
+        return JsonResponse({"ok": False, "error": "Este cupón ya alcanzó su límite de usos"})
+    if total < row["min_compra"]:
+        from tienda.database import _exec as db_exec
+        return JsonResponse({
+            "ok": False,
+            "error": f"Compra mínima para este cupón: {row['min_compra']:,.0f}"
+        })
+    # Calculate discount
+    if row["tipo"] == "porcentaje":
+        descuento = round(total * row["valor"] / 100, 2)
+    else:  # monto_fijo
+        descuento = min(row["valor"], total)
+    return JsonResponse({
+        "ok": True,
+        "cupon": {
+            "codigo": row["codigo"],
+            "tipo": row["tipo"],
+            "valor": row["valor"],
+            "descuento": descuento,
+            "total_final": round(total - descuento, 2),
+        }
+    })
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def api_usar_cupon(request):
+    """Increment usage count after successful order."""
+    data   = json.loads(request.body or '{}')
+    codigo = (data.get("codigo") or "").strip().upper()
+    if codigo:
+        _exec("UPDATE cupones SET usos_actual=usos_actual+1 WHERE UPPER(codigo)=?", (codigo,))
+    return JsonResponse({"ok": True})
+
+
+@csrf_exempt
+def api_cupones_admin(request):
+    """CRUD de cupones — solo superadmin (validación básica por rol en body)."""
+    if request.method == "GET":
+        rows = _exec("SELECT * FROM cupones ORDER BY id DESC")
+        return JsonResponse({"ok": True, "cupones": [dict(r) for r in rows]})
+    if request.method == "POST":
+        data = json.loads(request.body or '{}')
+        codigo   = (data.get("codigo") or "").strip().upper()
+        tipo     = data.get("tipo", "porcentaje")
+        valor    = float(data.get("valor") or 0)
+        min_c    = float(data.get("min_compra") or 0)
+        usos_max = int(data.get("usos_max") or 100)
+        if not codigo or valor <= 0:
+            return JsonResponse({"ok": False, "error": "Datos incompletos"})
+        if tipo == "porcentaje" and (valor <= 0 or valor > 100):
+            return JsonResponse({"ok": False, "error": "El porcentaje debe ser entre 1 y 100"})
+        try:
+            _exec_insert(
+                "INSERT INTO cupones(codigo,tipo,valor,min_compra,usos_max) VALUES(?,?,?,?,?)",
+                (codigo, tipo, valor, min_c, usos_max)
+            )
+        except Exception:
+            return JsonResponse({"ok": False, "error": "El código ya existe"})
+        log_action("Admin", "CUPON_CREAR", f"Cupón {codigo} creado ({tipo} {valor})")
+        return JsonResponse({"ok": True})
+    if request.method == "DELETE":
+        data = json.loads(request.body or '{}')
+        cid  = int(data.get("id") or 0)
+        _exec("DELETE FROM cupones WHERE id=?", (cid,))
+        return JsonResponse({"ok": True})
+    return JsonResponse({"ok": False, "error": "Método no permitido"}, status=405)
+
 # ── Frontend ──────────────────────────────────────────
 def index(request):
     return render(request, 'index.html')
@@ -22,6 +181,15 @@ def index(request):
 @csrf_exempt
 @require_http_methods(["POST"])
 def api_login(request):
+    ip = _get_ip(request)
+    allowed, wait = _rl_login.check(ip)
+    if not allowed:
+        mins = (wait + 59) // 60
+        return JsonResponse({
+            "ok": False,
+            "error": f"Demasiados intentos. Espera {mins} minuto{'s' if mins != 1 else ''} antes de volver a intentarlo."
+        }, status=429)
+
     data  = json.loads(request.body or '{}')
     email = (data.get("email") or "").strip().lower()
     pw    = data.get("password") or ""
@@ -40,6 +208,15 @@ def api_login(request):
 @csrf_exempt
 @require_http_methods(["POST"])
 def api_registro(request):
+    ip = _get_ip(request)
+    allowed, wait = _rl_registro.check(ip)
+    if not allowed:
+        mins = (wait + 59) // 60
+        return JsonResponse({
+            "ok": False,
+            "error": f"Demasiados registros desde esta IP. Espera {mins} minuto{'s' if mins != 1 else ''} e inténtalo de nuevo."
+        }, status=429)
+
     data  = json.loads(request.body or '{}')
     nom   = (data.get("nom") or "").strip()
     ape   = (data.get("ape") or "").strip()
