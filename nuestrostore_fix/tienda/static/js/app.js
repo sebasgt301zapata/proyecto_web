@@ -697,6 +697,45 @@ function renderProds(){
 }
 
 // ── VER PRODUCTO ─────────────────────────────
+
+// ── COMPARTIR PRODUCTO ────────────────────────────────────────
+function compartirProducto(pid, nom){
+  var p = PRODS.find(function(x){ return x.id === pid; });
+  var pNom = nom || (p ? p.n : "Producto");
+  var url  = window.location.href.split("?")[0];
+  var text = "👀 Mira este producto en NuestroStore:\n*" + pNom + "*";
+  if(p && p.o) text += "\n💰 " + bs(p.o) + " (antes " + bs(p.p) + ")";
+  else if(p)   text += "\n💰 " + bs(p.p);
+  text += "\n\n" + url;
+
+  if(navigator.share){
+    navigator.share({ title: pNom, text: text, url: url })
+      .catch(function(){});
+  } else {
+    // Fallback: copy to clipboard
+    var copyText = text;
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(copyText).then(function(){
+        toast("🔗 Link copiado al portapapeles","s");
+      }).catch(function(){
+        _fallbackCopy(copyText);
+      });
+    } else {
+      _fallbackCopy(copyText);
+    }
+  }
+}
+function _fallbackCopy(text){
+  var ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.cssText = "position:fixed;top:-9999px;left:-9999px";
+  document.body.appendChild(ta);
+  ta.select();
+  try{ document.execCommand("copy"); toast("🔗 Link copiado al portapapeles","s"); }
+  catch(e){ toast("No se pudo copiar el link","e"); }
+  document.body.removeChild(ta);
+}
+
 function verProd(id){
   var p=PRODS.find(function(x){return x.id===id;});if(!p)return;
   document.getElementById("mProdT").textContent=p.n;
@@ -720,6 +759,42 @@ function verProd(id){
     (usuario?'<button class="wl-btn-lg"'+(enWishlist(p.id)?' style="border-color:#3B82F6;color:#1E3A8A;background:#EFF6FF"':'')+' data-pid="'+p.id+'" onclick="toggleWishlist('+p.id+',event);var b=this;b.style.background=enWishlist('+p.id+')?\"#EFF6FF\":\"#fff\";b.style.color=enWishlist('+p.id+')?\"#1E3A8A\":\"var(--gr2)\";b.innerHTML=enWishlist('+p.id+')?\"💙 En Favoritos\":\"🤍 Guardar en Favoritos\"">'+(enWishlist(p.id)?'💙 En Favoritos':'🤍 Guardar en Favoritos')+'</button>':'')+
     (usuario&&!agotado?'<button class="bs" onclick="abrirResenia('+p.id+')">⭐ Escribir Reseña</button>':'')+
     (usuario?'<button class="bs" onclick="cerrarModal(\"mProd\");abrirRep('+p.id+')">🚨 Reportar Problema</button>':'')+resHtml;
+  // Productos relacionados
+  var relacionados = PRODS.filter(function(x){
+    return x.id !== p.id && x.cid === p.cid && x.st > 0;
+  }).slice(0,4);
+  var relHtml = '';
+  if(relacionados.length){
+    relHtml = '<div style="margin-top:20px;border-top:2px solid #f0f0f0;padding-top:16px">'
+      + '<div style="font-weight:800;color:var(--na3);margin-bottom:12px;font-size:.9rem">🛍️ También te puede gustar</div>'
+      + '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">'
+      + relacionados.map(function(r){
+          var rImg = r.img
+            ? '<img src="'+r.img+'" style="width:100%;height:80px;object-fit:cover;border-radius:8px;margin-bottom:8px"/>'
+            : '<div style="height:80px;border-radius:8px;background:linear-gradient(135deg,#EFF6FF,#DBEAFE);display:flex;align-items:center;justify-content:center;font-size:2rem;margin-bottom:8px">'+emojiProd(r)+'</div>';
+          var rPct = (r.o && r.p > 0) ? Math.round((1-r.o/r.p)*100) : 0;
+          var card = document.createElement("div");
+          card.style.cssText = "background:#fff;border:1.5px solid #E2E8F0;border-radius:12px;padding:10px;cursor:pointer;transition:border-color .18s";
+          card.setAttribute("data-relid", r.id);
+          card.innerHTML = rImg
+            + '<div style="font-size:.75rem;font-weight:700;color:#64748B;margin-bottom:2px">'+r.cat+'</div>'
+            + '<div style="font-size:.8rem;font-weight:700;color:#0F172A;line-height:1.3;margin-bottom:4px">'+r.n+'</div>'
+            + '<div style="font-family:Bebas Neue,cursive;font-size:.95rem;color:#1E3A8A">'
+            + bs(r.o||r.p)
+            + (rPct > 0 ? ' <span style="background:#EF4444;color:#fff;font-size:.55rem;font-weight:900;padding:1px 5px;border-radius:50px;font-family:Inter,sans-serif">-'+rPct+'%</span>' : '')
+            + '</div>';
+          card.addEventListener("mouseenter", function(){ this.style.borderColor="#93C5FD"; });
+          card.addEventListener("mouseleave", function(){ this.style.borderColor="#E2E8F0"; });
+          card.addEventListener("click", function(){
+            var rid = parseInt(this.getAttribute("data-relid"));
+            cerrarModal("mProd");
+            setTimeout(function(){ verProd(rid); }, 80);
+          });
+          return card.outerHTML;
+        }).join("")
+      + '</div></div>';
+  }
+  document.getElementById("mProdB").innerHTML = document.getElementById("mProdB").innerHTML + relHtml;
   abrirModal("mProd");
 }
 
@@ -964,6 +1039,69 @@ function flyToCart(sourceEl){
   }, 560);
 }
 
+
+// ── CUPONES ──────────────────────────────────────────────────
+var cuponActivo = null; // {codigo, tipo, valor, descuento}
+
+function aplicarCupon(){
+  var inp = document.getElementById("cuponInput");
+  var btn = document.getElementById("cuponBtn");
+  var msg = document.getElementById("cuponMsg");
+  if(!inp || !msg) return;
+  var codigo = inp.value.trim().toUpperCase();
+  if(!codigo){ msg.textContent="Ingresa un código"; msg.className="cupon-msg cupon-err"; return; }
+  var total = carrito.reduce(function(s,x){ return s+x.p*x.qty; }, 0);
+  btn.disabled = true;
+  btn.textContent = "Validando…";
+  fetch("/api/cupones/validar?codigo="+encodeURIComponent(codigo)+"&total="+total)
+    .then(function(r){ return r.json(); })
+    .then(function(r){
+      btn.disabled = false;
+      btn.textContent = "Aplicar";
+      if(!r.ok){
+        cuponActivo = null;
+        msg.textContent = "❌ " + r.error;
+        msg.className = "cupon-msg cupon-err";
+        actualizarTotalCarrito();
+        return;
+      }
+      cuponActivo = r.cupon;
+      msg.textContent = "✅ ¡Cupón aplicado! Descuento: " + bs(r.cupon.descuento);
+      msg.className = "cupon-msg cupon-ok";
+      actualizarTotalCarrito();
+    })
+    .catch(function(){
+      btn.disabled = false;
+      btn.textContent = "Aplicar";
+      msg.textContent = "❌ Error de conexión";
+      msg.className = "cupon-msg cupon-err";
+    });
+}
+
+function quitarCupon(){
+  cuponActivo = null;
+  var inp = document.getElementById("cuponInput");
+  var msg = document.getElementById("cuponMsg");
+  if(inp) inp.value = "";
+  if(msg){ msg.textContent = ""; msg.className = "cupon-msg"; }
+  actualizarTotalCarrito();
+}
+
+function actualizarTotalCarrito(){
+  var subtotal = carrito.reduce(function(s,x){ return s+x.p*x.qty; }, 0);
+  var descuento = cuponActivo ? cuponActivo.descuento : 0;
+  var total = subtotal - descuento;
+  var totEl = document.getElementById("cTot");
+  if(totEl) totEl.textContent = bs(total);
+  // Show/hide discount row
+  var discRow = document.getElementById("cDescRow");
+  if(discRow){
+    discRow.style.display = descuento > 0 ? "flex" : "none";
+    var discEl = document.getElementById("cDesc");
+    if(discEl) discEl.textContent = "- " + bs(descuento);
+  }
+}
+
 function addCart(id){
   if(!usuario){toast("Inicia sesión para comprar","e");abrirModal("mLogin");return;}
   var p=PRODS.find(function(x){return x.id===id;});
@@ -1002,7 +1140,7 @@ function quitarCart(id){carrito=carrito.filter(function(x){return x.id!==id;});a
 function actualizarCarrito(){
   var total=carrito.reduce(function(s,x){return s+x.p*x.qty;},0),count=carrito.reduce(function(s,x){return s+x.qty;},0);
   localStorage.setItem("ns_carrito", JSON.stringify(carrito));
-  var totEl=document.getElementById("cTot");if(totEl)totEl.textContent=bs(total);
+  actualizarTotalCarrito();
   actualizarBadge(count);
   var c=document.getElementById("cits");if(!c)return;
   if(!carrito.length){c.innerHTML='<div class="empty"><div class="eico">🛒</div><h3>Carrito vacío</h3><p>Agrega productos</p></div>';return;}
@@ -1549,7 +1687,30 @@ function eliminarMensaje(id){
     invalidateSCache(["contactos"]);renderSuperTab();
   });
 }
-function buildSuper(){var pb=document.getElementById("panB");var userAvaSuper=usuario.avatar?(usuario.avatar.startsWith("data:")||/^\p{Emoji}/u.test(usuario.avatar)||usuario.avatar.length<=8)?usuario.avatar:'<img src="'+usuario.avatar+'" style="width:32px;height:32px;object-fit:cover;border-radius:50%"/>':(usuario.n[0]);var userBar='<div class="panel-user-bar">'+'<div class="pub-ava">'+userAvaSuper+'</div>'+'<div class="pub-info"><div class="pub-name">'+usuario.n+' '+usuario.a+'</div><div class="pub-role">👑 Super Admin</div></div>'+'<div class="pub-actions">'+'<button class="pub-btn pub-btn-edit" onclick="panelEditarPerfil()">✏️ Perfil</button>'+'<button class="pub-btn pub-btn-exit" onclick="panelSalir()">🚪 Salir</button>'+'</div></div>';var tbs=[{k:"stats",l:"📊 Stats"},{k:"users",l:"👥 Usuarios"},{k:"prods",l:"📦 Productos"},{k:"categorias",l:"🏷️ Categorías"},{k:"reportes",l:"🚨 Reportes"},{k:"mensajes",l:"📬 Mensajes",id:"tabMensajesSuper"},{k:"cadmin",l:"➕ Admin"},{k:"logs",l:"📋 Logs"}];var html=tbs.map(function(t){var id=t.id?' id="'+t.id+'"':'';var on=' onclick="setSTab(\''+t.k+'\',this)"';return '<button class="tab'+(sTab===t.k?' on':'')+'"'+id+on+'>'+t.l+'</button>';}).join("");pb.innerHTML=userBar+'<div class="tabs">'+html+'</div><div id="sTB"></div>';
+
+function crearCupon(){
+  var cod=document.getElementById("cpCod").value.trim().toUpperCase();
+  var tipo=document.getElementById("cpTipo").value;
+  var val=parseFloat(document.getElementById("cpVal").value);
+  var min=parseFloat(document.getElementById("cpMin").value)||0;
+  var usos=parseInt(document.getElementById("cpUsos").value)||100;
+  if(!cod||isNaN(val)||val<=0){toast("Completa código y valor","e");return;}
+  api("/cupones","POST",{codigo:cod,tipo:tipo,valor:val,min_compra:min,usos_max:usos}).then(function(r){
+    if(!r.ok){toast(r.error||"Error","e");return;}
+    toast("Cupón "+cod+" creado 🎫","s");
+    invalidateSCache(["cupones"]);
+    sTab="cupones";setSTab("cupones",document.querySelector('[data-k=\"cupones\"]')||document.querySelector(".tab.on"));renderSuperTab();
+  });
+}
+function elimCupon(id){
+  if(!confirm("¿Eliminar este cupón?"))return;
+  api("/cupones","DELETE",{id:id}).then(function(r){
+    if(!r.ok){toast("Error","e");return;}
+    toast("Cupón eliminado","i");
+    renderSuperTab();
+  });
+}
+function buildSuper(){var pb=document.getElementById("panB");var userAvaSuper=usuario.avatar?(usuario.avatar.startsWith("data:")||/^\p{Emoji}/u.test(usuario.avatar)||usuario.avatar.length<=8)?usuario.avatar:'<img src="'+usuario.avatar+'" style="width:32px;height:32px;object-fit:cover;border-radius:50%"/>':(usuario.n[0]);var userBar='<div class="panel-user-bar">'+'<div class="pub-ava">'+userAvaSuper+'</div>'+'<div class="pub-info"><div class="pub-name">'+usuario.n+' '+usuario.a+'</div><div class="pub-role">👑 Super Admin</div></div>'+'<div class="pub-actions">'+'<button class="pub-btn pub-btn-edit" onclick="panelEditarPerfil()">✏️ Perfil</button>'+'<button class="pub-btn pub-btn-exit" onclick="panelSalir()">🚪 Salir</button>'+'</div></div>';var tbs=[{k:"stats",l:"📊 Stats"},{k:"users",l:"👥 Usuarios"},{k:"prods",l:"📦 Productos"},{k:"categorias",l:"🏷️ Categorías"},{k:"reportes",l:"🚨 Reportes"},{k:"mensajes",l:"📬 Mensajes",id:"tabMensajesSuper"},{k:"cadmin",l:"➕ Admin"},{k:"cupones",l:"🎫 Cupones"},{k:"logs",l:"📋 Logs"}];var html=tbs.map(function(t){var id=t.id?' id="'+t.id+'"':'';var on=' onclick="setSTab(\''+t.k+'\',this)"';return '<button class="tab'+(sTab===t.k?' on':'')+'"'+id+on+'>'+t.l+'</button>';}).join("");pb.innerHTML=userBar+'<div class="tabs">'+html+'</div><div id="sTB"></div>';
 // Al abrir el panel siempre refrescar la pestaña stats
 if(sTab==="stats")invalidateSCache(["prods","users","reportes","contactos"]);
 renderSuperTab();}
@@ -1591,6 +1752,7 @@ function renderSuperTab(){
   } else if(sTab==="logs"){
     if(_sNeedsRefresh("logs"))    fetches.push(api("/logs").then(function(r){if(r.ok){LOGS=r.logs;_sMarkFresh("logs");}}));
   }
+  // cadmin/cupones: no pre-fetch needed (cupones tab fetches inline)
   // cadmin: no fetch needed
 
   if(fetches.length){
@@ -1667,6 +1829,34 @@ function _renderSuperTab(){
         '</div>'+
       '</div>';
     }).join("")+'</div>';
+  }else if(sTab==="cupones"){
+    api("/cupones").then(function(r){
+      if(!r.ok){c.innerHTML='<div class="empty"><div class="eico">🎫</div><h3>Error cargando cupones</h3></div>';return;}
+      var cps=r.cupones||[];
+      var form='<div style="background:#EFF6FF;border:1.5px solid #93C5FD;border-radius:14px;padding:16px;margin-bottom:16px">'
+        +'<div class="admin-form-title">➕ Nuevo Cupón</div>'
+        +'<div class="f2">'
+        +'<div class="fg"><label>Código *</label><input class="fc" id="cpCod" placeholder="VERANO20" style="text-transform:uppercase"/></div>'
+        +'<div class="fg"><label>Tipo</label><select class="fc" id="cpTipo"><option value="porcentaje">% Porcentaje</option><option value="monto_fijo">COP$ Monto fijo</option></select></div>'
+        +'</div>'
+        +'<div class="f2">'
+        +'<div class="fg"><label>Valor *</label><input class="fc" type="number" id="cpVal" placeholder="20"/></div>'
+        +'<div class="fg"><label>Compra mínima</label><input class="fc" type="number" id="cpMin" placeholder="0"/></div>'
+        +'</div>'
+        +'<div class="fg"><label>Usos máximos</label><input class="fc" type="number" id="cpUsos" value="100"/></div>'
+        +'<button class="bp" onclick="crearCupon()">🎫 Crear Cupón</button>'
+        +'</div>';
+      var tabla=cps.length
+        ?'<div class="tw"><table><thead><tr><th>Código</th><th>Tipo</th><th>Valor</th><th>Usos</th><th>Estado</th><th></th></tr></thead><tbody>'
+        +cps.map(function(cp){
+          var val=cp.tipo==="porcentaje"?cp.valor+"%":"COP$ "+cp.valor.toLocaleString();
+          return '<tr><td><strong>'+cp.codigo+'</strong></td><td>'+cp.tipo+'</td><td>'+val+'</td><td>'+cp.usos_actual+"/"+cp.usos_max+'</td>'
+            +'<td><span class="bdg '+(cp.activo?"bok":"bno")+'">'+( cp.activo?"Activo":"Inactivo")+'</span></td>'
+            +'<td><button class="btd" onclick="elimCupon('+cp.id+')">🗑️</button></td></tr>';
+        }).join("")+'</tbody></table></div>'
+        :'<div class="empty"><div class="eico">🎫</div><h3>Sin cupones</h3><p>Crea el primero arriba</p></div>';
+      c.innerHTML=form+tabla;
+    });
   }else if(sTab==="cadmin"){
     c.innerHTML='<div style="max-width:480px"><div class="f2"><div class="fg"><label>Nombre *</label><input class="fc" id="aNom" placeholder="Nombre"/></div><div class="fg"><label>Apellido *</label><input class="fc" id="aApe" placeholder="Apellido"/></div></div><div class="fg"><label>Email *</label><input class="fc" type="email" id="aEmail" placeholder="correo@ejemplo.com"/></div><div class="fg"><label>Contraseña *</label><input class="fc" type="password" id="aPass" placeholder="Mínimo 8 caracteres"/></div><button class="bp" onclick="crearAdmin()">➕ Crear Administrador</button></div>';
   }else{
