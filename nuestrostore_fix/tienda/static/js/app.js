@@ -983,6 +983,137 @@ function cerrarSesion(){usuario=null;carrito=[];wishlist=[];_mpCargando=false;_m
 
 // ── UI ───────────────────────────────────────
 
+
+// ── RECUPERAR CONTRASEÑA — 3 pasos ──────────────────────────
+// Paso 1: email → solicitar código
+// Paso 2: ingresar código de 6 dígitos
+// Paso 3: nueva contraseña
+
+var _resetEmail = "";
+var _resetToken = "";
+
+function abrirRecuperarPass(){
+  cerrarModal("mLogin");
+  _resetEmail = "";
+  _resetToken = "";
+  var modal = document.getElementById("mReset");
+  if(!modal){
+    modal = document.createElement("div");
+    modal.id = "mReset";
+    modal.className = "ov";
+    modal.innerHTML =
+      '<div class="mdl" style="max-width:420px;border-radius:20px 20px 0 0;padding:0">'
+      + '<div class="mhd" style="padding:18px 20px 14px">'
+      + '<h3 id="resetT" style="font-size:1.05rem;font-weight:800;color:var(--bk)">🔑 Recuperar Contraseña</h3>'
+      + '<button class="bx" onclick="cerrarModal(\'mReset\')">✕</button>'
+      + '</div>'
+      + '<div id="resetBody" style="padding:16px 20px 24px"></div>'
+      + '</div>';
+    document.body.appendChild(modal);
+    modal.addEventListener("click", function(e){ if(e.target===modal) cerrarModal("mReset"); });
+  }
+  _renderResetStep1();
+  abrirModal("mReset");
+}
+
+function _renderResetStep1(){
+  document.getElementById("resetT").textContent = "🔑 Recuperar Contraseña";
+  document.getElementById("resetBody").innerHTML =
+    '<p style="color:var(--gr);font-size:.88rem;margin-bottom:16px;line-height:1.5">'
+    + 'Ingresa tu correo y te enviaremos un código de 6 dígitos para restablecer tu contraseña.</p>'
+    + '<div class="fg"><label>Correo electrónico *</label>'
+    + '<input class="fc" id="resetEmail" type="email" placeholder="tu@correo.com" autocomplete="email"/></div>'
+    + '<div id="resetErr" class="form-err" style="display:none"></div>'
+    + '<button class="bp" id="resetBtn1" style="margin-top:12px;width:100%" onclick="solicitarReset()">Enviar código</button>'
+    + '<div style="text-align:center;margin-top:12px">'
+    + '<button style="background:none;border:none;color:var(--na);font-size:.85rem;cursor:pointer" onclick="cerrarModal(\'mReset\');abrirLogin()">← Volver al inicio de sesión</button>'
+    + '</div>';
+  setTimeout(function(){ var el=document.getElementById("resetEmail"); if(el) el.focus(); }, 100);
+}
+
+function solicitarReset(){
+  var email = (document.getElementById("resetEmail").value||"").trim().toLowerCase();
+  var errEl = document.getElementById("resetErr");
+  var btn   = document.getElementById("resetBtn1");
+  errEl.style.display = "none";
+  if(!email || !email.includes("@")){ errEl.textContent="⚠️ Correo válido requerido"; errEl.style.display="block"; return; }
+  btn.disabled = true; btn.textContent = "Enviando…";
+  _resetEmail = email;
+  api("/reset/solicitar","POST",{email:email}).then(function(r){
+    btn.disabled = false; btn.textContent = "Enviar código";
+    if(!r.ok){ errEl.textContent="❌ "+(r.error||"Error"); errEl.style.display="block"; return; }
+    _renderResetStep2(r.dev_code);
+  });
+}
+
+function _renderResetStep2(devCode){
+  document.getElementById("resetT").textContent = "📨 Ingresa el Código";
+  var devNote = devCode
+    ? '<div style="background:#EFF6FF;border:1.5px solid #93C5FD;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:.84rem;color:#1E3A8A">'
+      + '🔧 <strong>Modo dev:</strong> Tu código es <strong style="font-family:monospace;font-size:1rem;letter-spacing:2px">'+devCode+'</strong></div>'
+    : '';
+  document.getElementById("resetBody").innerHTML =
+    '<p style="color:var(--gr);font-size:.88rem;margin-bottom:14px;line-height:1.5">'
+    + 'Enviamos un código de 6 dígitos a <strong>'+_resetEmail+'</strong>. Válido por 10 minutos.</p>'
+    + devNote
+    + '<div class="fg"><label>Código de 6 dígitos *</label>'
+    + '<input class="fc" id="resetCode" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6"'
+    + ' placeholder="123456" style="font-size:1.4rem;font-weight:800;letter-spacing:4px;text-align:center"/></div>'
+    + '<div id="resetErr" class="form-err" style="display:none"></div>'
+    + '<button class="bp" id="resetBtn2" style="margin-top:12px;width:100%" onclick="verificarCodigo()">Verificar código</button>'
+    + '<div style="text-align:center;margin-top:10px">'
+    + '<button style="background:none;border:none;color:var(--na);font-size:.82rem;cursor:pointer" onclick="_renderResetStep1()">← Cambiar correo</button>'
+    + '</div>';
+  setTimeout(function(){ var el=document.getElementById("resetCode"); if(el) el.focus(); }, 100);
+}
+
+function verificarCodigo(){
+  var code  = (document.getElementById("resetCode").value||"").trim();
+  var errEl = document.getElementById("resetErr");
+  var btn   = document.getElementById("resetBtn2");
+  errEl.style.display = "none";
+  if(!code || code.length !== 6){ errEl.textContent="⚠️ El código tiene 6 dígitos"; errEl.style.display="block"; return; }
+  btn.disabled = true; btn.textContent = "Verificando…";
+  api("/reset/verificar","POST",{email:_resetEmail, token:code}).then(function(r){
+    btn.disabled = false; btn.textContent = "Verificar código";
+    if(!r.ok){ errEl.textContent="❌ "+(r.error||"Código incorrecto"); errEl.style.display="block"; return; }
+    _resetToken = code;
+    _renderResetStep3();
+  });
+}
+
+function _renderResetStep3(){
+  document.getElementById("resetT").textContent = "🔐 Nueva Contraseña";
+  document.getElementById("resetBody").innerHTML =
+    '<p style="color:var(--gr);font-size:.88rem;margin-bottom:14px;line-height:1.5">'
+    + '¡Código verificado! Elige una nueva contraseña segura.</p>'
+    + '<div class="fg"><label>Nueva contraseña *</label>'
+    + '<input class="fc" id="resetNewPass" type="password" placeholder="Mínimo 8 caracteres" autocomplete="new-password"/></div>'
+    + '<div class="fg"><label>Confirmar contraseña *</label>'
+    + '<input class="fc" id="resetConfPass" type="password" placeholder="Repite la contraseña" autocomplete="new-password"/></div>'
+    + '<div id="resetErr" class="form-err" style="display:none"></div>'
+    + '<button class="bp" id="resetBtn3" style="margin-top:12px;width:100%" onclick="confirmarReset()">Cambiar contraseña</button>';
+  setTimeout(function(){ var el=document.getElementById("resetNewPass"); if(el) el.focus(); }, 100);
+}
+
+function confirmarReset(){
+  var pass1 = document.getElementById("resetNewPass").value;
+  var pass2 = document.getElementById("resetConfPass").value;
+  var errEl = document.getElementById("resetErr");
+  var btn   = document.getElementById("resetBtn3");
+  errEl.style.display = "none";
+  if(!pass1 || pass1.length < 8){ errEl.textContent="⚠️ Mínimo 8 caracteres"; errEl.style.display="block"; return; }
+  if(pass1 !== pass2){ errEl.textContent="⚠️ Las contraseñas no coinciden"; errEl.style.display="block"; return; }
+  btn.disabled = true; btn.textContent = "Cambiando…";
+  api("/reset/confirmar","POST",{email:_resetEmail, token:_resetToken, password:pass1}).then(function(r){
+    btn.disabled = false; btn.textContent = "Cambiar contraseña";
+    if(!r.ok){ errEl.textContent="❌ "+(r.error||"Error"); errEl.style.display="block"; return; }
+    cerrarModal("mReset");
+    toast("✅ Contraseña actualizada. Inicia sesión con tu nueva contraseña.","s");
+    setTimeout(abrirLogin, 400);
+  });
+}
+
 // ── MODO OSCURO ───────────────────────────────────────────────
 function aplicarDarkMode(dark){
   document.documentElement.classList.toggle("dark", dark);
