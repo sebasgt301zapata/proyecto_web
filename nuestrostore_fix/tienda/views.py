@@ -89,6 +89,105 @@ def _get_ip(request):
     return request.META.get("REMOTE_ADDR", "unknown")
 
 
+
+# ── RECUPERAR CONTRASEÑA ─────────────────────────────────────
+import secrets
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def api_solicitar_reset(request):
+    """
+    Genera un token de 6 dígitos y lo guarda en la DB.
+    En producción enviarías el email. Aquí lo devolvemos en la respuesta
+    (el frontend lo muestra al usuario para que lo ingrese).
+    """
+    data  = json.loads(request.body or '{}')
+    email = (data.get("email") or "").strip().lower()
+    if not email:
+        return JsonResponse({"ok": False, "error": "Correo requerido"})
+
+    user = _exec_one("SELECT id FROM usuarios WHERE LOWER(email)=? AND activo=1", (email,))
+    if not user:
+        # Security: don't reveal if email exists — always respond OK
+        return JsonResponse({"ok": True, "msg": "Si el correo está registrado recibirás el código."})
+
+    # Invalidate previous tokens for this email
+    _exec("UPDATE password_resets SET usado=1 WHERE email=?", (email,))
+
+    # Generate 6-digit code
+    code = str(secrets.randbelow(900000) + 100000)  # 100000-999999
+    _exec("INSERT INTO password_resets(email, token) VALUES(?,?)", (email, code))
+
+    log_action("Sistema", "RESET_SOLICITADO", f"Reset para {email}")
+
+    # In production: send email with code.
+    # For now: return code in response (dev mode).
+    # To enable real email: set EMAIL_* env vars and use Django email backend.
+    import os
+    dev_mode = os.environ.get("DEBUG", "True") == "True"
+    response = {"ok": True, "msg": "Código generado"}
+    if dev_mode:
+        response["dev_code"] = code  # Remove in production!
+    return JsonResponse(response)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def api_verificar_reset(request):
+    """Verifies the 6-digit code is valid and not expired (10 min window)."""
+    data  = json.loads(request.body or '{}')
+    email = (data.get("email") or "").strip().lower()
+    token = (data.get("token") or "").strip()
+    if not email or not token:
+        return JsonResponse({"ok": False, "error": "Datos incompletos"})
+
+    # Check token valid and not older than 10 minutes
+    row = _exec_one("""
+        SELECT id FROM password_resets
+        WHERE email=? AND token=? AND usado=0
+          AND (julianday('now','localtime') - julianday(creado)) * 1440 < 10
+    """, (email, token))
+
+    if not row:
+        return JsonResponse({"ok": False, "error": "Código inválido o expirado"})
+
+    return JsonResponse({"ok": True})
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def api_confirmar_reset(request):
+    """Changes the password after verifying the token."""
+    data     = json.loads(request.body or '{}')
+    email    = (data.get("email") or "").strip().lower()
+    token    = (data.get("token") or "").strip()
+    new_pass = data.get("password") or ""
+
+    if not email or not token or not new_pass:
+        return JsonResponse({"ok": False, "error": "Datos incompletos"})
+    if len(new_pass) < 8:
+        return JsonResponse({"ok": False, "error": "La contraseña debe tener al menos 8 caracteres"})
+
+    # Re-verify token
+    row = _exec_one("""
+        SELECT id FROM password_resets
+        WHERE email=? AND token=? AND usado=0
+          AND (julianday('now','localtime') - julianday(creado)) * 1440 < 10
+    """, (email, token))
+
+    if not row:
+        return JsonResponse({"ok": False, "error": "Código inválido o expirado"})
+
+    # Update password
+    h = hash_pass(new_pass)
+    _exec("UPDATE usuarios SET password=? WHERE LOWER(email)=?", (h, email))
+
+    # Mark token as used
+    _exec("UPDATE password_resets SET usado=1 WHERE email=? AND token=?", (email, token))
+
+    log_action(email, "RESET_COMPLETADO", "Contraseña cambiada por reset")
+    return JsonResponse({"ok": True})
+
 # ── CUPONES ───────────────────────────────────────────────────
 @csrf_exempt
 @require_http_methods(["GET"])
