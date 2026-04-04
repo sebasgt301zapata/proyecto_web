@@ -50,6 +50,11 @@ urlpatterns = [
     path('api/contactos/<int:cid>/leer',   views.api_contacto_leer,    name='api_contacto_leer'),
     path('api/contactos/<int:cid>/eliminar', views.api_contacto_eliminar, name='api_contacto_eliminar'),
 
+    # Recuperar contraseña
+    path('api/reset/solicitar',  views.api_solicitar_reset,  name='api_solicitar_reset'),
+    path('api/reset/verificar',  views.api_verificar_reset,  name='api_verificar_reset'),
+    path('api/reset/confirmar',  views.api_confirmar_reset,  name='api_confirmar_reset'),
+
     # Pedidos admin
     path('api/todos-pedidos', views.api_todos_pedidos, name='api_todos_pedidos'),
 
