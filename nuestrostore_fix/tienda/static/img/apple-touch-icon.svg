@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F172A"/>
+      <stop offset="50%" stop-color="#1E3A8A"/>
+      <stop offset="100%" stop-color="#2563EB"/>
+    </linearGradient>
+  </defs>
+  <rect width="180" height="180" rx="40" fill="url(#bg)"/>
+  <!-- N letter -->
+  <text x="90" y="120" font-family="Arial Black,Arial,sans-serif" font-size="110"
+        font-weight="900" fill="white" text-anchor="middle" letter-spacing="-5">N</text>
+  <!-- Store badge -->
+  <circle cx="140" cy="45" r="26" fill="#06B6D4"/>
+  <text x="140" y="53" font-family="Arial Black,Arial,sans-serif" font-size="22"
+        font-weight="900" fill="white" text-anchor="middle">S</text>
+</svg>

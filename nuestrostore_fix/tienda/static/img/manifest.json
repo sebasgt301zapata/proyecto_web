@@ -1,0 +1,29 @@
+{
+  "name": "NuestroStore",
+  "short_name": "NuestroStore",
+  "description": "Tu tienda de confianza en Colombia",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0F172A",
+  "theme_color": "#1E3A8A",
+  "orientation": "portrait",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "/static/img/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/img/apple-touch-icon.svg",
+      "sizes": "180x180",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "categories": [
+    "shopping"
+  ],
+  "screenshots": []
+}
