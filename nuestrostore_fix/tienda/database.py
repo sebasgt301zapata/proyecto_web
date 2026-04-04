@@ -203,6 +203,15 @@ def init_db():
         )
         """,
         f"""
+        CREATE TABLE IF NOT EXISTS password_resets (
+            id      {t('INTEGER PRIMARY KEY AUTOINCREMENT', 'SERIAL PRIMARY KEY')},
+            email   TEXT NOT NULL,
+            token   TEXT NOT NULL UNIQUE,
+            usado   {t('INTEGER', 'SMALLINT')} NOT NULL DEFAULT 0,
+            creado  {t("TEXT DEFAULT (datetime('now','localtime'))", 'TIMESTAMP DEFAULT NOW()')}
+        )
+        """,
+        f"""
         CREATE TABLE IF NOT EXISTS cupones (
             id          {t('INTEGER PRIMARY KEY AUTOINCREMENT', 'SERIAL PRIMARY KEY')},
             codigo      TEXT NOT NULL UNIQUE,
@@ -217,10 +226,32 @@ def init_db():
         """,
     ]
 
+    # Indexes for performance
+    indexes = [
+        "CREATE INDEX IF NOT EXISTS idx_usuarios_email   ON usuarios(email)",
+        "CREATE INDEX IF NOT EXISTS idx_usuarios_rol     ON usuarios(rol)",
+        "CREATE INDEX IF NOT EXISTS idx_productos_activo ON productos(activo)",
+        "CREATE INDEX IF NOT EXISTS idx_productos_catid  ON productos(cat_id)",
+        "CREATE INDEX IF NOT EXISTS idx_productos_dest   ON productos(destacado)",
+        "CREATE INDEX IF NOT EXISTS idx_pedidos_uid      ON pedidos(uid)",
+        "CREATE INDEX IF NOT EXISTS idx_pedidos_fecha    ON pedidos(fecha)",
+        "CREATE INDEX IF NOT EXISTS idx_resenias_pid     ON resenias(prod_id)",
+        "CREATE INDEX IF NOT EXISTS idx_resenias_uid     ON resenias(uid)",
+        "CREATE INDEX IF NOT EXISTS idx_reportes_uid     ON reportes(uid)",
+        "CREATE INDEX IF NOT EXISTS idx_reportes_estado  ON reportes(estado)",
+        "CREATE INDEX IF NOT EXISTS idx_contactos_leido  ON contactos(leido)",
+        "CREATE INDEX IF NOT EXISTS idx_cupones_codigo   ON cupones(codigo)",
+        "CREATE INDEX IF NOT EXISTS idx_pw_resets_token ON password_resets(token)",
+        "CREATE INDEX IF NOT EXISTS idx_pw_resets_email ON password_resets(email)",
+        "CREATE INDEX IF NOT EXISTS idx_logs_fecha       ON logs(fecha)",
+    ]
+
     from django.db import transaction
     with transaction.atomic():
         for sql in tables:
             _exec(sql)
+        for idx in indexes:
+            _exec(idx)
 
     # Datos iniciales
     existe = _exec_one("SELECT 1 FROM usuarios LIMIT 1")
