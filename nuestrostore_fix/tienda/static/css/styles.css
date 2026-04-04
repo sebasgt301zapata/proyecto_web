@@ -227,14 +227,88 @@ button,input,select,textarea{font-family:'Inter',sans-serif;}
   flex-shrink:0;
 }
 /* ═══ HERO REDESIGN ═══ */
+/* ── HERO — Base styles (restored) ── */
 .hero{
-  background:#fff;
+  background:#0F172A;
   padding:0;
   position:relative;
   overflow:hidden;
   min-height:clamp(520px,75vh,720px);
   display:flex;align-items:center;
 }
+.hero-in{
+  position:relative;z-index:2;
+  max-width:1200px;margin:0 auto;
+  padding:clamp(70px,11vw,110px) 28px clamp(90px,14vw,130px);
+  display:grid;grid-template-columns:1fr;
+  text-align:center;
+  width:100%;
+  gap:0;
+}
+@media(min-width:900px){
+  .hero-in{grid-template-columns:1.1fr .9fr;text-align:left;align-items:center;gap:60px;}
+  .hero-cta{display:flex;flex-direction:column;align-items:flex-start;}
+  .hero-btns{justify-content:flex-start;}
+  .hero-stats{margin-left:0;margin-right:auto;}
+}
+.hero-cta{
+  position:relative;z-index:2;
+  display:flex;flex-direction:column;
+  align-items:center;
+  gap:0;
+}
+.hero h1{
+  font-family:'Bebas Neue',cursive;
+  font-size:clamp(2.6rem,9vw,6.5rem);
+  color:#fff;letter-spacing:2px;line-height:1;
+  text-shadow:2px 4px 20px rgba(0,0,0,.25);
+  animation:fadeUp .7s ease .1s both;
+  margin-bottom:4px;
+}
+@media(min-width:480px){.hero h1{font-size:clamp(3rem,10vw,6.5rem);letter-spacing:3px;}}
+.hero h1 span{
+  background:linear-gradient(135deg,#67E8F9,#A5F3FC,#BAE6FD);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+  display:block;
+}
+.hero-desc{
+  color:rgba(255,255,255,.82);
+  font-size:.95rem;font-weight:500;line-height:1.65;
+  margin:12px auto 24px;max-width:480px;
+}
+@media(min-width:768px){.hero-desc{margin-left:0;margin-right:0;}}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.18);
+  color:rgba(255,255,255,.9);
+  padding:6px 16px;border-radius:50px;
+  font-size:.78rem;font-weight:700;
+  letter-spacing:.5px;margin-bottom:16px;
+  backdrop-filter:blur(8px);
+  animation:fadeUp .5s ease both;
+}
+.hero-btns{
+  display:flex;gap:12px;
+  justify-content:center;
+  flex-wrap:wrap;
+  margin-bottom:28px;
+}
+.hero-stats{
+  display:flex;align-items:center;
+  background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:14px;padding:12px 20px;
+  gap:16px;
+  backdrop-filter:blur(8px);
+  width:fit-content;
+  margin:0 auto;
+}
+.hstat{display:flex;flex-direction:column;align-items:center;gap:2px;}
+.hstat strong{font-family:'Bebas Neue',cursive;font-size:1.6rem;color:#fff;line-height:1;}
+.hstat span{font-size:.65rem;font-weight:700;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.8px;}
+.hstat-div{width:1px;height:28px;background:rgba(255,255,255,.15);}
 /* Fondo con gradiente más rico y textura */
 .hero::before{
   content:'';position:absolute;inset:0;
@@ -273,9 +347,7 @@ button,input,select,textarea{font-family:'Inter',sans-serif;}
   gap:0;
 }
 @media(min-width:900px){
-  .hero-in{grid-template-columns:1.1fr .9fr;text-align:left;align-items:center;gap:60px;}
-  .hero-cta{display:flex;flex-direction:column;align-items:flex-start;}
-  .hero-btns{justify-content:flex-start;}
+      .hero-btns{justify-content:flex-start;}
   .hero-stats{margin-left:0;margin-right:auto;}
 }
 
@@ -1480,8 +1552,7 @@ footer::before{
 
 /* ── MUY PEQUEÑOS (≤320px, ej. iPhone SE) ──────────── */
 @media(max-width:320px){
-  .hero h1{font-size:2.4rem;}
-  .hero-badge{display:none;}
+    .hero-badge{display:none;}
   .pg{grid-template-columns:1fr 1fr;}
   .mp-panel{width:calc(100vw - 10px);}
   .tienda-hero h2{font-size:1.7rem;}
@@ -1493,10 +1564,9 @@ footer::before{
   #hdr .nav-row{flex-direction:row;padding:0 16px;gap:10px;height:58px;}
   #hdr .nav-top{flex:0 0 auto;width:auto;}
   #hdr .nav-bottom{flex:1;max-width:400px;}
-  .hero{min-height:260px;}
+  
   .hero-in{padding:28px 20px 44px;}
-  .hero h1{font-size:2.4rem;}
-  .hero-desc{margin:8px auto 12px;font-size:.84rem;}
+    .hero-desc{margin:8px auto 12px;font-size:.84rem;}
   .hero-stats{margin-top:12px;}
   .botnav{display:none;}
   body{padding-bottom:0;}
