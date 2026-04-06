@@ -1,0 +1,154 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es" id="htmlRoot">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=5.0,viewport-fit=cover"/>
+<meta name="theme-color" content="#1E3A8A"/>
+<link rel="icon" type="image/svg+xml" href="{% static 'img/favicon.svg' %}"/>
+<link rel="apple-touch-icon" href="{% static 'img/apple-touch-icon.svg' %}"/>
+<link rel="manifest" href="{% static 'img/manifest.json' %}"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="description" content="{% block meta_desc %}NuestroStore Colombia — Tu tienda de confianza. PSE, Nequi, Daviplata.{% endblock %}"/>
+<meta name="robots" content="index,follow"/>
+<meta property="og:type"        content="website"/>
+<meta property="og:site_name"   content="NuestroStore"/>
+<meta property="og:url"         content="https://proyecto-web-tcxo.onrender.com{% block og_url %}/{% endblock %}"/>
+<meta property="og:title"       content="{% block og_title %}NuestroStore — Tu Tienda de Confianza 🛍️{% endblock %}"/>
+<meta property="og:description" content="{% block og_desc %}Descubre miles de productos con envío rápido a todo Colombia. PSE · Nequi · Daviplata{% endblock %}"/>
+<meta property="og:image"       content="https://proyecto-web-tcxo.onrender.com/static/img/og-preview.png"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
+<meta property="og:locale"      content="es_CO"/>
+<meta name="twitter:card"       content="summary_large_image"/>
+<meta name="twitter:image"      content="https://proyecto-web-tcxo.onrender.com/static/img/og-preview.png"/>
+<title>{% block title %}NuestroStore — Tu Tienda de Confianza{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="{% static 'css/styles.css' %}"/>
+{% block extra_head %}{% endblock %}
+</head>
+<body data-page="{% block body_page %}inicio{% endblock %}">
+
+<!-- ══ HEADER ══ -->
+<header id="hdr">
+  <div class="nav-row">
+    <a class="logo" href="/" aria-label="NuestroStore inicio"><b>Nuestro</b><span class="logo-store">Store</span><span class="logo-dot"></span></a>
+    <div class="search-wrap">
+      <div class="sw" id="swBox">
+        <span class="sw-ico">🔍</span>
+        <input id="sBusq" type="search" placeholder="Buscar productos, categorías…" autocomplete="off" enterkeyhint="search"/>
+        <button class="sw-clear" id="swClear" onclick="limpiarBusqueda()" style="display:none" aria-label="Limpiar">✕</button>
+        <button class="sw-btn" onclick="buscar()" aria-label="Buscar"><span class="sw-btn-ico">🔍</span><span class="sw-btn-txt">Buscar</span></button>
+      </div>
+      <div class="sw-suggestions" id="swSugg" style="display:none"></div>
+    </div>
+    <nav class="desk-nav">
+      <a class="dnav-btn {% block nav_inicio %}{% endblock %}" href="/">🏠 Inicio</a>
+      <a class="dnav-btn {% block nav_tienda %}{% endblock %}" href="/tienda/">🛍️ Tienda</a>
+      <a class="dnav-btn {% block nav_contacto %}{% endblock %}" href="/contacto/">📬 Contacto</a>
+    </nav>
+    <div class="nav-icons" id="navIcons">
+      <button class="nic" onclick="abrirLogin()" aria-label="Cuenta">👤</button>
+      <button class="nic cart-btn" onclick="abrirCarrito()" aria-label="Carrito">
+        🛒<span class="bdot" id="cartBadgeMobile" style="display:none">0</span>
+      </button>
+    </div>
+    <button class="dm-toggle nic dm-mob" onclick="toggleDarkMode()" aria-label="Modo oscuro">🌙</button>
+    <div class="desk-acts" id="deskActs"></div>
+  </div>
+</header>
+
+<!-- ══ CONTENIDO DE PÁGINA ══ -->
+{% block content %}{% endblock %}
+
+<!-- ══ BOTTOM NAV ══ -->
+<nav class="botnav">
+  <a class="btab {% block bn_inicio %}{% endblock %}" href="/">
+    <div class="btab-ico-wrap">🏠</div><span>Inicio</span><div class="iline"></div>
+  </a>
+  <a class="btab {% block bn_tienda %}{% endblock %}" href="/tienda/">
+    <div class="btab-ico-wrap">🛍️</div><span>Tienda</span><div class="iline"></div>
+  </a>
+  <button class="btab" onclick="abrirCarrito()">
+    <div class="btab-ico-wrap">🛒<span id="cartBadgeNav" class="bdot" style="display:none">0</span></div>
+    <span>Carrito</span>
+  </button>
+  <button class="btab" id="bt3" onclick="abrirPanel()">
+    <div class="btab-ico-wrap"><span id="bt3ico">👤</span></div><span id="btnav3">Cuenta</span><div class="iline" style="display:none"></div>
+  </button>
+  <a class="btab {% block bn_contacto %}{% endblock %}" href="/contacto/">
+    <div class="btab-ico-wrap">📬</div><span>Contacto</span><div class="iline"></div>
+  </a>
+</nav>
+
+<!-- ══ CARRITO ══ -->
+<div class="cov" id="cov" onclick="cerrarCarrito()"></div>
+<div class="csh" id="csh">
+  <div class="chd"><h3>🛒 Mi Carrito</h3><button class="bx" onclick="cerrarCarrito()">✕</button></div>
+  <div class="cits" id="cits"><div class="empty"><div class="eico">🛒</div><h3>Carrito vacío</h3><p>Agrega productos</p></div></div>
+  <div class="cft">
+    <div class="cupon-wrap">
+      <div class="cupon-row">
+        <input id="cuponInput" class="cupon-inp" placeholder="Código de cupón" autocomplete="off" spellcheck="false"
+               oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')aplicarCupon()"/>
+        <button id="cuponBtn" class="cupon-btn" onclick="aplicarCupon()">Aplicar</button>
+      </div>
+      <div id="cuponMsg" class="cupon-msg"></div>
+    </div>
+    <div id="cDescRow" class="ctot cdesc-row" style="display:none">
+      <span>Descuento</span><span id="cDesc" style="color:#16A34A">- COP$ 0</span>
+    </div>
+    <div class="ctot ctot-final"><span>Total:</span><span id="cTot">COP$ 0</span></div>
+    <div class="cft-btns">
+      <button class="bp btn-fact" onclick="generarFactura()">📄 Factura</button>
+      <button class="bp btn-pagar" onclick="pedido()">Pagar →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODALES ══ -->
+<div class="ov" id="mLogin"><div class="mdl"><div class="mh"><h2>🔐 Iniciar Sesión</h2><button class="bx" onclick="cerrarModal('mLogin')">✕</button></div><div class="mb"><div class="fg"><label>Correo</label><input class="fc" type="email" id="lEmail" placeholder="correo@ejemplo.com" autocomplete="email" inputmode="email"/></div><div class="fg"><label>Contraseña</label><input class="fc" type="password" id="lPass" placeholder="Tu contraseña" autocomplete="current-password"/></div><div id="loginErr" class="form-err" style="display:none"></div><button class="bp" id="btnLogin" onclick="doLogin()" style="min-height:52px;font-size:1.05rem;margin-top:4px">Entrar →</button><div class="lsw" style="margin-top:16px">¿No tienes cuenta? <a onclick="switchM('mLogin','mReg')">Regístrate gratis</a></div><button style="background:none;border:none;color:var(--na);font-size:.82rem;cursor:pointer;margin-top:8px;width:100%;font-family:Inter,sans-serif" onclick="cerrarModal('mLogin');abrirRecuperarPass()">¿Olvidaste tu contraseña?</button></div></div></div>
+
+<div class="ov" id="mReg"><div class="mdl"><div class="mh"><h2>✨ Crear Cuenta</h2><button class="bx" onclick="cerrarModal('mReg')">✕</button></div><div class="mb"><div class="f2"><div class="fg"><label>Nombre</label><input class="fc" id="rNom" placeholder="Tu nombre" autocomplete="given-name"/></div><div class="fg"><label>Apellido</label><input class="fc" id="rApe" placeholder="Apellido" autocomplete="family-name"/></div></div><div class="fg"><label>Correo</label><input class="fc" type="email" id="rEmail" placeholder="correo@ejemplo.com" inputmode="email" autocomplete="email"/></div><div class="fg"><label>Contraseña (mín. 8)</label><input class="fc" type="password" id="rPass" placeholder="Crea una contraseña segura" autocomplete="new-password"/></div><div class="fg"><label>Teléfono (opcional)</label><input class="fc" type="tel" id="rTel" placeholder="+57 300 000 0000" inputmode="tel"/></div><div id="regErr" class="form-err" style="display:none"></div><button class="bp" onclick="doRegistro()">Crear Cuenta →</button><div class="lsw">¿Ya tienes cuenta? <a onclick="switchM('mReg','mLogin')">Inicia sesión</a></div></div></div></div>
+
+<div class="ov" id="mProd"><div class="mdl"><div class="mh"><h2 id="mProdT">Producto</h2><button class="bx" onclick="cerrarModal('mProd')">✕</button></div><div class="mb" id="mProdB"></div></div></div>
+<div class="ov" id="mRep"><div class="mdl"><div class="mh"><h2>🚨 Reportar Problema</h2><button class="bx" onclick="cerrarModal('mRep')">✕</button></div><div class="mb"><input type="hidden" id="rPid"/><div class="fg"><label>Producto</label><select class="fc" id="rProdSel"><option value="0">-- General --</option></select></div><div class="fg"><label>Tipo</label><select class="fc" id="rTipo"><option value="stock">Stock incorrecto</option><option value="precio">Precio incorrecto</option><option value="descripcion">Descripción incorrecta</option><option value="calidad">Problema de calidad</option><option value="entrega">Problema de entrega</option><option value="otro">Otro</option></select></div><div class="fg"><label>Descripción *</label><textarea class="fc" id="rDesc" rows="4" placeholder="Describe el problema…"></textarea></div><button class="bp" onclick="enviarRep()">📨 Enviar Reporte →</button></div></div></div>
+<div class="ov" id="mResenia"><div class="mdl"><div class="mh"><h2>⭐ Dejar Reseña</h2><button class="bx" onclick="cerrarModal('mResenia')">✕</button></div><div class="mb"><input type="hidden" id="resPid"/><div id="resProdNom" style="font-weight:800;color:var(--na3);margin-bottom:14px"></div><div class="fg"><label>Calificación</label><div class="star-selector" id="starSelector"><span class="star sel" data-v="1" onclick="selStar(1)">★</span><span class="star sel" data-v="2" onclick="selStar(2)">★</span><span class="star sel" data-v="3" onclick="selStar(3)">★</span><span class="star sel" data-v="4" onclick="selStar(4)">★</span><span class="star sel" data-v="5" onclick="selStar(5)">★</span></div><input type="hidden" id="resEstrellas" value="5"/></div><div class="fg"><label>Tu reseña *</label><textarea class="fc" id="resComentario" rows="4" placeholder="¿Qué te pareció este producto?"></textarea></div><button class="bp" onclick="enviarResenia()">⭐ Publicar Reseña →</button></div></div></div>
+<div class="ov" id="mRespRep"><div class="mdl"><div class="mh"><h2>💬 Responder Reporte</h2><button class="bx" onclick="cerrarModal('mRespRep')">✕</button></div><div class="mb" id="mRespRepB"></div></div></div>
+<div class="ov" id="mPerfil"><div class="mdl"><div class="mh"><h2>✏️ Editar Perfil</h2><button class="bx" onclick="cerrarModal('mPerfil')">✕</button></div><div class="mb" id="mPerfilB"></div></div></div>
+<div class="ov" id="mPanel"><div class="mdl wide"><div class="mh"><h2 id="panT">⚙️ Panel</h2><button class="bx" onclick="cerrarModal('mPanel')">✕</button></div><div class="mb" id="panB"></div></div></div>
+<div class="ov" id="mPedido"><div class="mdl"><div class="mh"><h2>🛒 Confirmar Pedido</h2><button class="bx" onclick="cerrarModal('mPedido')">✕</button></div><div class="mb" id="mPedidoB"></div></div></div>
+
+<div class="factura-overlay" id="factOverlay"><div class="factura-box"><div class="fact-head"><h3>📄 Factura de Compra</h3><button class="bx" onclick="cerrarFactura()">✕</button></div><div class="fact-body" id="factBody"></div><div class="fact-btns"><button class="bp" style="flex:1;background:#f5f5f5;color:#333;border:2px solid #e0e0e0;box-shadow:none" onclick="cerrarFactura()">Cerrar</button><button class="bp" style="flex:1" onclick="imprimirFactura()">🖨️ Imprimir</button></div></div></div>
+
+<!-- ══ REPRODUCTOR DE MÚSICA ══ -->
+<div id="musicPlayer" class="mp-wrap mp-collapsed mp-hidden">
+  <button class="mp-fab" onclick="mpToggle()" aria-label="Música" id="mpFab"><span class="mp-fab-ico" id="mpFabIco">🎵</span><span class="mp-fab-waves" id="mpWaves" style="display:none"><span></span><span></span><span></span></span></button>
+  <div class="mp-panel" id="mpPanel">
+    <div class="mp-header"><div class="mp-header-left"><span class="mp-title-icon">🎶</span><span class="mp-title">Mi Música</span></div><div class="mp-header-right"><button class="mp-hbtn" onclick="mpAddFiles()" title="Agregar">➕</button><button class="mp-hbtn" onclick="mpToggle()" title="Minimizar">—</button><button class="mp-hbtn mp-hbtn-hide" onclick="mpHide()" title="Ocultar">✕</button></div></div>
+    <input type="file" id="mpFileInput" accept="audio/*" multiple style="display:none" onchange="mpLoadFiles(event)"/>
+    <div class="mp-empty" id="mpEmpty" onclick="mpAddFiles()"><div class="mp-empty-ico">🎵</div><div class="mp-empty-txt">Toca para agregar música</div><div class="mp-empty-sub">MP3, WAV, OGG y más</div></div>
+    <div class="mp-now" id="mpNow" style="display:none"><div class="mp-album-art" id="mpArt">🎵</div><div class="mp-track-info"><div class="mp-track-name" id="mpTrackName">—</div><div class="mp-track-dur"><span id="mpCurTime">0:00</span> / <span id="mpTotalTime">0:00</span></div></div></div>
+    <div class="mp-progress-wrap" id="mpProgressWrap" style="display:none"><div class="mp-progress-bg" id="mpProgressBg" onclick="mpSeek(event)"><div class="mp-progress-fill" id="mpProgressFill"></div><div class="mp-progress-thumb" id="mpThumb"></div></div></div>
+    <div class="mp-controls" id="mpControls" style="display:none"><button class="mp-ctrl-btn mp-ctrl-sm" id="mpShuffleBtn" onclick="mpToggleShuffle()">⇄</button><button class="mp-ctrl-btn" onclick="mpPrev()">⏮</button><button class="mp-ctrl-btn mp-play-btn" id="mpPlayBtn" onclick="mpTogglePlay()">▶</button><button class="mp-ctrl-btn" onclick="mpNext()">⏭</button><button class="mp-ctrl-btn mp-ctrl-sm" id="mpRepeatBtn" onclick="mpToggleRepeat()">↻</button></div>
+    <div class="mp-volume" id="mpVolume" style="display:none"><span class="mp-vol-ico" id="mpVolIco" onclick="mpToggleMute()">🔊</span><input type="range" class="mp-vol-slider" id="mpVolSlider" min="0" max="100" value="80" oninput="mpSetVolume(this.value)"/></div>
+    <div class="mp-playlist" id="mpPlaylist" style="display:none"><div class="mp-pl-header"><span>Lista de reproducción</span><button class="mp-pl-clear" onclick="mpClearAll()">Borrar todo</button></div><div class="mp-pl-list" id="mpPlList"></div></div>
+  </div>
+</div>
+
+<div class="tcs" id="tcs"></div>
+<script>const PAGE = "{% block js_page %}inicio{% endblock %}";</script>
+<script src="{% static 'js/app.js' %}"></script>
+<script>
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/static/sw.js',{scope:'/'})
+    .then(r=>{ window._swReg=r; })
+    .catch(e=>{ console.warn('[SW]',e); });
+}
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

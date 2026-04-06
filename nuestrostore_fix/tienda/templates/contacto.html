@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Contacto — NuestroStore Colombia{% endblock %}
+{% block meta_desc %}Contáctanos por WhatsApp, correo o teléfono. Respondemos en menos de 24 horas.{% endblock %}
+{% block og_url %}/contacto/{% endblock %}
+{% block og_title %}Contacto NuestroStore — Estamos aquí para ti 📬{% endblock %}
+{% block body_page %}contacto{% endblock %}
+{% block js_page %}contacto{% endblock %}
+{% block nav_contacto %}active{% endblock %}
+{% block bn_contacto %}on{% endblock %}
+
+{% block content %}
+<main id="pContacto">
+  <div class="contact-hero">
+    <div class="contact-hero-particles" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+    <div class="contact-hero-in">
+      <div class="contact-hero-badge">📬 Estamos aquí para ti</div>
+      <h2>¿Cómo podemos<br/><span>Ayudarte?</span></h2>
+      <p>Contáctanos por el canal que prefieras. Respondemos en menos de 24 horas.</p>
+      <div class="contact-hero-trust">
+        <span>⚡ Respuesta rápida</span>
+        <span>🔒 100% confidencial</span>
+        <span>🤝 Soporte real</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="contact-channels">
+    <a class="contact-channel" href="https://wa.me/573001234567" target="_blank" rel="noopener">
+      <div class="cc-ico cc-ico-wa">💬</div>
+      <div class="cc-info"><strong>WhatsApp</strong><span>Respuesta inmediata</span></div>
+      <div class="cc-arrow">→</div>
+    </a>
+    <a class="contact-channel" href="mailto:info@nuestrostore.com">
+      <div class="cc-ico cc-ico-mail">📧</div>
+      <div class="cc-info"><strong>Correo</strong><span>info@nuestrostore.com</span></div>
+      <div class="cc-arrow">→</div>
+    </a>
+    <a class="contact-channel" href="tel:+5760100000">
+      <div class="cc-ico cc-ico-tel">📞</div>
+      <div class="cc-info"><strong>Teléfono</strong><span>+57 601 000 0000</span></div>
+      <div class="cc-arrow">→</div>
+    </a>
+    <div class="contact-channel contact-channel-loc">
+      <div class="cc-ico cc-ico-loc">📍</div>
+      <div class="cc-info"><strong>Ubicación</strong><span>Bogotá, Colombia</span></div>
+      <div class="cc-arrow">→</div>
+    </div>
+  </div>
+
+  <div class="contact-body">
+    <div class="contact-form-wrap">
+      <div class="cf-header">
+        <div class="cf-icon">✉️</div>
+        <div><h3>Envíanos un Mensaje</h3><p>Te respondemos en menos de 24 horas</p></div>
+      </div>
+      <div id="cfLoginNote" class="cf-login-note" style="display:none">
+        <span>👤</span><span id="cfLoginNoteText">Tus datos se completaron automáticamente</span>
+      </div>
+      <div class="cf-row">
+        <div class="fg"><label>Nombre *</label><input class="fc" type="text" id="cfNombre" placeholder="Tu nombre completo" autocomplete="name"/></div>
+        <div class="fg"><label>Correo *</label><input class="fc" type="email" id="cfEmail" placeholder="correo@ejemplo.com" inputmode="email" autocomplete="email"/></div>
+      </div>
+      <div class="fg"><label>Teléfono (opcional)</label><input class="fc" type="tel" id="cfTel" placeholder="+57 300 000 0000" inputmode="tel"/></div>
+      <div class="fg">
+        <label>Asunto *</label>
+        <select class="fc" id="cfAsunto">
+          <option value="">-- Selecciona un asunto --</option>
+          <option value="pedido">📦 Consulta sobre un pedido</option>
+          <option value="producto">🛍️ Información de producto</option>
+          <option value="devolucion">↩️ Devolución o garantía</option>
+          <option value="pago">💳 Problema con el pago</option>
+          <option value="envio">🚚 Seguimiento de envío</option>
+          <option value="queja">😟 Queja o sugerencia</option>
+          <option value="otro">💬 Otro</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Mensaje * <span id="cfCharCount" class="cf-char-count">0 / 500</span></label>
+        <textarea class="fc" id="cfMensaje" rows="5" maxlength="500" placeholder="Cuéntanos en qué podemos ayudarte…" oninput="actualizarContador()"></textarea>
+      </div>
+      <div class="fg">
+        <label>Prioridad</label>
+        <div class="cf-priority-row">
+          <label class="cf-prio-opt"><input type="radio" name="cfPrioridad" value="normal" checked/><span class="cf-prio-badge prio-normal">🟢 Normal</span></label>
+          <label class="cf-prio-opt"><input type="radio" name="cfPrioridad" value="urgente"/><span class="cf-prio-badge prio-urgente">🔴 Urgente</span></label>
+          <label class="cf-prio-opt"><input type="radio" name="cfPrioridad" value="informativo"/><span class="cf-prio-badge prio-info">🔵 Informativo</span></label>
+        </div>
+      </div>
+      <div id="cfErr" class="form-err" style="display:none"></div>
+      <div id="cfOk" class="form-ok" style="display:none">✅ ¡Mensaje enviado con éxito! Te responderemos pronto.</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="bp contact-send-btn" onclick="enviarContacto()" style="flex:1">📨 Enviar Mensaje →</button>
+        <a class="contact-wa-btn" href="https://wa.me/573001234567" target="_blank" rel="noopener">💬 WhatsApp</a>
+      </div>
+    </div>
+
+    <div class="contact-info-wrap">
+      <div class="contact-info-card contact-map-card">
+        <div class="cic-title">📍 Nuestra Ubicación</div>
+        <div class="contact-map-wrap">
+          <iframe src="https://www.openstreetmap.org/export/embed.html?bbox=-74.1200%2C4.5500%2C-73.9800%2C4.7200&layer=mapnik&marker=4.6097%2C-74.0817"
+            width="100%" height="180" frameborder="0" style="border-radius:12px;border:0;display:block"
+            loading="lazy" title="Ubicación NuestroStore Bogotá"></iframe>
+          <div class="contact-map-label">📍 Bogotá, Colombia · Zona Metropolitana</div>
+        </div>
+      </div>
+      <div class="contact-info-card">
+        <div class="cic-title">🕐 Horario de Atención</div>
+        <div class="cic-schedule">
+          <div class="cis-row"><span>Lunes – Viernes</span><strong>8:00am – 6:00pm</strong></div>
+          <div class="cis-row"><span>Sábado</span><strong>9:00am – 2:00pm</strong></div>
+          <div class="cis-row cis-closed"><span>Domingo</span><strong>Cerrado</strong></div>
+        </div>
+        <div class="cic-note">⚡ WhatsApp disponible 24/7 para urgencias</div>
+      </div>
+      <div class="contact-info-card">
+        <div class="cic-title">❓ Preguntas Frecuentes</div>
+        <div class="contact-faq">
+          <div class="cfaq-item" onclick="toggleFaq(this)"><div class="cfaq-q">¿Cuánto tarda el envío? <span class="cfaq-arr">▼</span></div><div class="cfaq-a">Realizamos envíos express en 24-48 horas a todo Colombia. Zonas remotas pueden tardar hasta 5 días hábiles.</div></div>
+          <div class="cfaq-item" onclick="toggleFaq(this)"><div class="cfaq-q">¿Cómo hago una devolución? <span class="cfaq-arr">▼</span></div><div class="cfaq-a">Tienes 30 días desde la recepción. Contáctanos por WhatsApp y gestionamos sin costo.</div></div>
+          <div class="cfaq-item" onclick="toggleFaq(this)"><div class="cfaq-q">¿Qué métodos de pago aceptan? <span class="cfaq-arr">▼</span></div><div class="cfaq-a">PSE, transferencia bancaria, Nequi, Daviplata, divisas (USD) y efectivo contra entrega en Bogotá.</div></div>
+          <div class="cfaq-item" onclick="toggleFaq(this)"><div class="cfaq-q">¿Tienen garantía los productos? <span class="cfaq-arr">▼</span></div><div class="cfaq-a">Sí, todos tienen garantía mínima de 30 días. Algunos artículos tienen garantía extendida del fabricante.</div></div>
+          <div class="cfaq-item" onclick="toggleFaq(this)"><div class="cfaq-q">¿Hacen envíos a todo Colombia? <span class="cfaq-arr">▼</span></div><div class="cfaq-a">Sí, a todo el territorio nacional. El costo y tiempo varía según la región.</div></div>
+        </div>
+      </div>
+      <div class="contact-info-card contact-social-card">
+        <div class="cic-title">🌐 Síguenos</div>
+        <div class="contact-social-grid">
+          <a class="csoc-btn csoc-ig" href="#"><span>📸</span><strong>Instagram</strong></a>
+          <a class="csoc-btn csoc-fb" href="#"><span>📘</span><strong>Facebook</strong></a>
+          <a class="csoc-btn csoc-tw" href="#"><span>🐦</span><strong>Twitter</strong></a>
+          <a class="csoc-btn csoc-wa" href="https://wa.me/573001234567" target="_blank" rel="noopener"><span>💬</span><strong>WhatsApp</strong></a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <a class="contact-wa-float" href="https://wa.me/573001234567?text=Hola%2C%20necesito%20ayuda" target="_blank" rel="noopener" aria-label="Contactar por WhatsApp">
+    <span class="wa-float-ico">💬</span><span class="wa-float-txt">¿Necesitas ayuda?</span>
+  </a>
+
+  {% include "partials/footer.html" %}
+</main>
+{% endblock %}
