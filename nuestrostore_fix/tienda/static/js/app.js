@@ -1,47 +1,47 @@
 // NuestroStore v9 — app.js
-var PRODS=[],CATS=[{id:0,n:"🏷️ Todos"}],RESENIAS={},REPORTES=[],LOGS=[],PEDIDOS=[],USUARIOS=[];
-var usuario=null,carrito=[],wishlist=[],catActiva=0,busqueda="",sortActivo="def";
-var filtroPrecioMin=0,filtroPrecioMax=Infinity,filtroRating=0,filtroSoloOfertas=false;
-var aTab="productos",sTab="stats",editId=null,newPF={n:"",d:"",p:"",o:"",st:"",cat:1,dest:false,img:null};
-var CONTACTOS=[];
-var contFact=1000,paginaActual="inicio",starSelVal=5;
-var imgTempAdmin=null,imgTempSuper=null,spEditId=null,spNewPF={n:"",d:"",p:"",o:"",st:"",cat:1,dest:false,img:null};
-var swTimer=null;
+let PRODS=[],CATS=[{id:0,n:"🏷️ Todos"}],RESENIAS={},REPORTES=[],LOGS=[],PEDIDOS=[],USUARIOS=[];
+let usuario=null,carrito=[],wishlist=[],catActiva=0,busqueda="",sortActivo="def";
+let filtroPrecioMin=0,filtroPrecioMax=Infinity,filtroRating=0,filtroSoloOfertas=false;
+let aTab="productos",sTab="stats",editId=null,newPF={n:"",d:"",p:"",o:"",st:"",cat:1,dest:false,img:null};
+let CONTACTOS=[];
+let contFact=1000,paginaActual="inicio",starSelVal=5;
+let imgTempAdmin=null,imgTempSuper=null,spEditId=null,spNewPF={n:"",d:"",p:"",o:"",st:"",cat:1,dest:false,img:null};
+let swTimer=null;
 
 // Imágenes de muestra por categoría
-var EMOJIS_CAT={"tecnología":"💻","ropa":"👗","zapatos":"👟","hogar":"🏠","juguetes":"🧸","alimentos":"🍎","deportes":"⚽","belleza":"💄","libros":"📚","electrodomésticos":"🏠","muebles":"🪑","mascotas":"🐾"};
+let EMOJIS_CAT={"tecnología":"💻","ropa":"👗","zapatos":"👟","hogar":"🏠","juguetes":"🧸","alimentos":"🍎","deportes":"⚽","belleza":"💄","libros":"📚","electrodomésticos":"🏠","muebles":"🪑","mascotas":"🐾"};
 function emojiProd(p){
-  var cat=(p.cat||"").toLowerCase();
-  for(var k in EMOJIS_CAT){if(cat.indexOf(k)>=0)return EMOJIS_CAT[k];}
-  var letters=["🛍️","📦","🎁","✨","🌟","💎","🔑","🎯","🛒","💡"];
+  let cat=(p.cat||"").toLowerCase();
+  for(let k in EMOJIS_CAT){if(cat.indexOf(k)>=0)return EMOJIS_CAT[k];}
+  let letters=["🛍️","📦","🎁","✨","🌟","💎","🔑","🎯","🛒","💡"];
   return letters[p.id%letters.length]||"📦";
 }
 
 // ── API ─────────────────────────────────────
 async function api(path,method,body){
   try{
-    var opts={method:method||"GET",headers:{"Content-Type":"application/json"}};
+    let opts={method:method||"GET",headers:{"Content-Type":"application/json"}};
     if(body) opts.body=JSON.stringify(body);
-    var res=await fetch("/api"+path,opts);
-    var data=await res.json();
+    let res=await fetch("/api"+path,opts);
+    let data=await res.json();
     if(!res.ok&&!data.error) data.error="Error ("+res.status+")";
     return data;
   }catch(e){return{ok:false,error:"Error de conexión."};}
 }
 // ── MONEDA E IDIOMA ──────────────────────────
-var LANG = "es";
-var CURRENCY = localStorage.getItem("ns_currency") || "COP";
-var DARK_MODE = localStorage.getItem("ns_dark") === "1";
+const LANG = "es";
+let CURRENCY = localStorage.getItem("ns_currency") || "COP";
+let DARK_MODE = localStorage.getItem("ns_dark") === "1";
 
 // ── WEB PUSH — Cliente ───────────────────────────────────────
-var _pushSuscrito = false;
+let _pushSuscrito = false;
 
 function _urlB64ToUint8Array(base64String){
-  var padding = '='.repeat((4 - base64String.length % 4) % 4);
-  var base64  = (base64String + padding).replace(/-/g,'+').replace(/_/g,'/');
-  var rawData = atob(base64);
-  var arr     = new Uint8Array(rawData.length);
-  for(var i=0;i<rawData.length;i++) arr[i]=rawData.charCodeAt(i);
+  let padding = '='.repeat((4 - base64String.length % 4) % 4);
+  let base64  = (base64String + padding).replace(/-/g,'+').replace(/_/g,'/');
+  let rawData = atob(base64);
+  let arr     = new Uint8Array(rawData.length);
+  for(let i=0;i<rawData.length;i++) arr[i]=rawData.charCodeAt(i);
   return arr;
 }
 
@@ -70,15 +70,15 @@ function activarNotificaciones(){
     // Get VAPID public key
     fetch('/api/push/vapid-key').then(function(r){ return r.json(); }).then(function(r){
       if(!r.ok || !r.publicKey){ toast("Error al obtener clave VAPID","e"); return; }
-      var appServerKey = _urlB64ToUint8Array(r.publicKey);
+      let appServerKey = _urlB64ToUint8Array(r.publicKey);
 
       navigator.serviceWorker.ready.then(function(reg){
         reg.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: appServerKey
         }).then(function(sub){
-          var json = sub.toJSON();
-          var keys = json.keys || {};
+          let json = sub.toJSON();
+          let keys = json.keys || {};
           return fetch('/api/push/subscribe', {
             method: 'POST',
             headers: {'Content-Type':'application/json'},
@@ -146,7 +146,7 @@ function _actualizarBtnPush(){
 // ── PUSH ADMIN — Enviar notificaciones desde superadmin ──────
 function _renderPushAdmin(c){
   fetch('/api/push/stats').then(function(r){ return r.json(); }).then(function(r){
-    var total = r.total || 0;
+    let total = r.total || 0;
     c.innerHTML =
       '<div class="push-admin-wrap">'
       +'<div class="push-stats-row">'
@@ -174,11 +174,11 @@ function _renderPushAdmin(c){
 }
 
 function _enviarPushBroadcast(){
-  var title = (document.getElementById('pushTitle')||{}).value||'';
-  var body  = (document.getElementById('pushBody') ||{}).value||'';
-  var url   = (document.getElementById('pushUrl')  ||{}).value||'/';
-  var tag   = (document.getElementById('pushTag')  ||{}).value||'oferta';
-  var fb    = document.getElementById('pushFeedback');
+  let title = (document.getElementById('pushTitle')||{}).value||'';
+  let body  = (document.getElementById('pushBody') ||{}).value||'';
+  let url   = (document.getElementById('pushUrl')  ||{}).value||'/';
+  let tag   = (document.getElementById('pushTag')  ||{}).value||'oferta';
+  let fb    = document.getElementById('pushFeedback');
 
   if(!title.trim()||!body.trim()){
     if(fb) fb.textContent='⚠️ Título y mensaje requeridos';
@@ -198,7 +198,7 @@ function _enviarPushBroadcast(){
 }
 
 
-var CURRENCIES = {
+const CURRENCIES = {
   VES:{name:"Bolívares",symbol:"Bs.",rate:1,locale:"es-VE"},
   USD:{name:"Dólares",symbol:"$",rate:0.000028,locale:"en-US"},
   COP:{name:"Pesos Col.",symbol:"COP$",rate:115,locale:"es-CO"},
@@ -208,7 +208,7 @@ var CURRENCIES = {
   CLP:{name:"Pesos Chil.",symbol:"CL$",rate:0.026,locale:"es-CL"},
   BRL:{name:"Reales",symbol:"R$",rate:0.000145,locale:"pt-BR"}
 };
-var T={
+const T={
   es:{inicio:"Inicio",tienda:"Tienda",contacto:"Contacto",iniciarSesion:"Iniciar Sesión",registrarse:"Registrarse",buscar:"Buscar",buscarPlaceholder:"Buscar productos, categorías…",carrito:"Mi Carrito",cuenta:"Cuenta",bienvenido:"¡Bienvenido",cerrarSesion:"Cerrar sesión",editarPerfil:"Editar Perfil",misCompras:"Mis Compras",misReportes:"Mis Reportes",historial:"Historial",misResenias:"Mis Reseñas",agregarCarrito:"🛒 Agregar",sinPedidos:"Sin compras aún",verTienda:"Ver Tienda",pedido:"Pedido",productos:"Productos",articulos:"Artículos",gastado:"Gastado",subtotal:"Subtotal",total:"Total",procesado:"✅ Procesado",enviado:"🚚 En camino",entregado:"📦 Entregado",cancelado:"❌ Cancelado",ofertaDelDia:"🔥 Ofertas del Día",mejorValorados:"⭐ Mejor Valorados",verTodas:"Ver todas →",verTodos:"Ver todos →",agotado:"Agotado",enOferta:"OFERTA",sinResultados:"Sin resultados",cargando:"Cargando…",moneda:"Moneda",
     salir:"Salir",enviarMensaje:"📨 Enviar Mensaje →",nombre:"Nombre",apellido:"Apellido",telefono:"Teléfono",correo:"Correo",asunto:"Asunto",mensaje:"Mensaje",prioridad:"Prioridad",normal:"Normal",urgente:"Urgente",informativo:"Informativo",
     preguntasFrecuentes:"Preguntas Frecuentes",horarioAtencion:"Horario de Atención",nuestraUbicacion:"Nuestra Ubicación",siguenos:"Síguenos",
@@ -231,15 +231,15 @@ function sanitize(str){
     .replace(/'/g,"&#x27;");
 }
 function bs(n){
-  var cur=CURRENCIES[CURRENCY]||CURRENCIES.VES;
-  var conv=Number(n)*cur.rate;
+  let cur=CURRENCIES[CURRENCY]||CURRENCIES.VES;
+  let conv=Number(n)*cur.rate;
   if(CURRENCY==="VES") return cur.symbol+" "+conv.toLocaleString("es-VE",{minimumFractionDigits:2,maximumFractionDigits:2});
   return cur.symbol+" "+conv.toLocaleString(cur.locale,{minimumFractionDigits:2,maximumFractionDigits:2});
 }
 // setLang eliminado — idioma fijo en español
 function setCurrency(cur){
   CURRENCY=cur;localStorage.setItem("ns_currency",cur);
-  if(PRODS.length){renderInicio();if(paginaActual==="tienda")renderProds();}
+  if(PRODS.length){if(PAGE==="inicio")renderInicio();if(PAGE==="tienda")renderProds();}
   actualizarCarrito();
 }
 function aplicarIdioma(){
@@ -249,54 +249,33 @@ function aplicarIdioma(){
 
 // ── PÁGINAS ──────────────────────────────────
 function irPagina(pg){
-  paginaActual=pg;
-  var ids={inicio:"pInicio",tienda:"pTienda",contacto:"pContacto"};
-  Object.keys(ids).forEach(function(k){var el=document.getElementById(ids[k]);if(el)el.className=k===pg?"pagina active":"pagina";});
-  document.querySelectorAll(".btab").forEach(function(b){b.classList.remove("on");var l=b.querySelector(".iline");if(l)l.style.display="none";});
-  var bmap={inicio:"bt0",tienda:"bt1",contacto:"bt4"};
-  if(bmap[pg]){var btn=document.getElementById(bmap[pg]);if(btn){btn.classList.add("on");var l=btn.querySelector(".iline");if(l)l.style.display="block";}}
-  document.querySelectorAll(".dnav-btn").forEach(function(b){b.classList.remove("active");});
-  var dmap={inicio:"dnav0",tienda:"dnav1",contacto:"dnav2"};
-  if(dmap[pg]){var db=document.getElementById(dmap[pg]);if(db)db.classList.add("active");}
-  if(pg==="tienda"){
-    cargarCats();
-    if(PRODS.length){renderProds();actualizarEstadsTienda();}
-    else{
-      var g=document.getElementById("pg");
-      if(g)g.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:60px 20px"><div style="font-size:3rem;animation:spin 1s linear infinite">🔄</div><p style="font-weight:700;color:var(--na3);margin-top:16px">Cargando productos...</p></div>';
-      cargarDatos();
-    }
+  // Map page names to real URLs
+  const routes = {
+    'inicio':   '/',
+    'tienda':   '/tienda/',
+    'contacto': '/contacto/',
+  };
+  if(routes[pg]){
+    window.location.href = routes[pg];
+    return;
   }
-  if(pg==="inicio"&&PRODS.length){
-    requestAnimationFrame(function(){
-      requestAnimationFrame(function(){ renderInicio(); });
-    });
+  // For 'cuenta' open panel instead
+  if(pg === 'cuenta'){
+    abrirPanel();
+    return;
   }
-  if(pg==="contacto"){setTimeout(autocompletarContacto,100);}
-  window.scrollTo({top:0,behavior:"smooth"});
-  // ── Bottom nav ────────────────────────────────
-  var bn0=document.getElementById("btnav0");if(bn0)bn0.textContent=t("inicio");
-  var bn1=document.getElementById("btnav1");if(bn1)bn1.textContent=t("tienda");
-  var bn2=document.getElementById("btnav2");if(bn2)bn2.textContent=t("carrito");
-  var bn3=document.getElementById("btnav3");if(bn3)bn3.textContent=t("cuenta");
-  // ── Hero buttons ──────────────────────────────
-  var hb1=document.getElementById("heroBtn1");if(hb1)hb1.innerHTML="🛍️ "+t("tienda");
-  var hb2=document.getElementById("heroBtn2");if(hb2)hb2.innerHTML="⭐ "+t("mejorValorados");
-  // ── Page title ────────────────────────────────
-  document.title="NuestroStore — Tu Tienda de Confianza";
 }
 
-// ── TOAST ──────────────────────────────────
-function toast(msg,tipo){tipo=tipo||"i";var c=document.getElementById("tcs"),el=document.createElement("div");el.className="tst "+tipo;el.innerHTML="<span>"+({s:"✅",e:"❌",i:"🔔"}[tipo]||"🔔")+"</span> "+msg;c.appendChild(el);setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},3200);}
+function toast(msg,tipo){tipo=tipo||"i";let c=document.getElementById("tcs"),el=document.createElement("div");el.className="tst "+tipo;el.innerHTML="<span>"+({s:"✅",e:"❌",i:"🔔"}[tipo]||"🔔")+"</span> "+msg;c.appendChild(el);setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},3200);}
 
 // ── MODALES ────────────────────────────────
 function abrirModal(id){
-  var el=document.getElementById(id);
+  let el=document.getElementById(id);
   if(!el) return;
   el.classList.add("show");
 }
 function cerrarModal(id){
-  var el=document.getElementById(id);
+  let el=document.getElementById(id);
   if(!el) return;
   el.classList.remove("show");
 }
@@ -306,17 +285,17 @@ function bTab(tab,btn){if(tab==="cuenta"){if(usuario)abrirPanel();else abrirModa
 
 // ── CARGAR DATOS ────────────────────────────
 async function cargarDatos(){
-  var r=await api("/productos");
+  let r=await api("/productos");
   if(r.ok){
     PRODS=r.productos;
-    var catMap={};
+    let catMap={};
     PRODS.forEach(function(p){if(p.cid)catMap[p.cid]=p.cat;});
     CATS=[{id:0,n:"🏷️ Todos"}];
     Object.keys(catMap).forEach(function(cid){CATS.push({id:parseInt(cid),n:catMap[cid]});});
     actualizarStatsHero();
     if(paginaActual==="tienda"){cargarCats();renderProds();actualizarEstadsTienda();}
   }
-  var rr=await api("/resenias");
+  let rr=await api("/resenias");
   if(rr.ok){RESENIAS={};rr.resenias.forEach(function(res){if(!RESENIAS[res.pid])RESENIAS[res.pid]=[];RESENIAS[res.pid].push(res);});}
   // Always re-render current page after data loads
   if(paginaActual==="inicio"){
@@ -330,23 +309,23 @@ async function cargarDatos(){
   if(paginaActual==="tienda"){cargarCats();renderProds();actualizarEstadsTienda();}
 }
 function actualizarStatsHero(){
-  var cs=PRODS.filter(function(p){return p.st>0;});
-  var h=document.getElementById("hsProd");if(h)h.textContent=cs.length||"–";
-  var a=document.getElementById("aboutProd");if(a)a.textContent=cs.length||"–";
+  let cs=PRODS.filter(function(p){return p.st>0;});
+  let h=document.getElementById("hsProd");if(h)h.textContent=cs.length||"–";
+  let a=document.getElementById("aboutProd");if(a)a.textContent=cs.length||"–";
 }
 function actualizarEstadsTienda(){
-  var cs=PRODS.filter(function(p){return p.st>0;}),catSet={};
+  let cs=PRODS.filter(function(p){return p.st>0;}),catSet={};
   cs.forEach(function(p){catSet[p.cid]=1;});
-  var ofs=cs.filter(function(p){return p.o&&p.o<p.p;}).length;
-  var e1=document.getElementById("thProd"),e2=document.getElementById("thCats"),e3=document.getElementById("thOfs");
+  let ofs=cs.filter(function(p){return p.o&&p.o<p.p;}).length;
+  let e1=document.getElementById("thProd"),e2=document.getElementById("thCats"),e3=document.getElementById("thOfs");
   if(e1)e1.textContent=cs.length;if(e2)e2.textContent=Object.keys(catSet).length;if(e3)e3.textContent=ofs;
 }
 
 // ── BÚSQUEDA MEJORADA ───────────────────────
 // ── HISTORIAL DE BÚSQUEDA ────────────────────────────────────
-var _searchHistory = [];
-var _SEARCH_HIST_KEY = "ns_search_hist";
-var _SEARCH_MAX = 5;
+let _searchHistory = [];
+const _SEARCH_HIST_KEY = "ns_search_hist";
+const _SEARCH_MAX = 5;
 
 function _loadSearchHistory(){
   try{ _searchHistory = JSON.parse(localStorage.getItem(_SEARCH_HIST_KEY)||"[]"); }
@@ -365,26 +344,26 @@ function _clearSearchHistory(){
   _searchHistory = [];
   try{ localStorage.removeItem(_SEARCH_HIST_KEY); }catch(e){}
   // Close suggestions panel
-  var sugg = document.getElementById("swSugg");
+  let sugg = document.getElementById("swSugg");
   if(sugg) sugg.style.display = "none";
 }
 function _renderHistorySuggestions(){
-  var sugg = document.getElementById("swSugg");
+  let sugg = document.getElementById("swSugg");
   if(!sugg) return;
   _loadSearchHistory();
   if(!_searchHistory.length){
     sugg.style.display = "none";
     return;
   }
-  var html = '<div class="sw-sugg-sep" style="display:flex;align-items:center;justify-content:space-between">'
+  let html = '<div class="sw-sugg-sep" style="display:flex;align-items:center;justify-content:space-between">'
     + '<span>Búsquedas recientes</span>'
-    + '<span style="cursor:pointer;color:var(--na);font-size:.72rem;font-weight:700" onclick="_clearSearchHistory()">Borrar</span>'
+    + '<span style="cursor:pointer;color:let(--na);font-size:.72rem;font-weight:700" onclick="_clearSearchHistory()">Borrar</span>'
     + '</div>';
   html += _searchHistory.map(function(h){
     return '<div class="sw-sugg-item sw-hist-item" onclick="document.getElementById(\'sBusq\').value=\''+h.replace(/'/g,"\'")+'\';buscarDesdeHistorial(\''+h.replace(/'/g,"\'")+'\')">'
       + '<span class="sugg-ico" style="font-size:.9rem;opacity:.5">🕒</span>'
       + '<span class="sugg-nm">'+h+'</span>'
-      + '<span style="font-size:.72rem;color:var(--gr);margin-left:auto;padding-left:8px">↗</span>'
+      + '<span style="font-size:.72rem;color:let(--gr);margin-left:auto;padding-left:8px">↗</span>'
       + '</div>';
   }).join("");
   sugg.innerHTML = html;
@@ -393,19 +372,19 @@ function _renderHistorySuggestions(){
 function buscarDesdeHistorial(q){
   busqueda = q;
   document.getElementById("swSugg").style.display = "none";
-  var cl = document.getElementById("swClear");
+  let cl = document.getElementById("swClear");
   if(cl) cl.style.display = "flex";
   if(paginaActual !== "tienda") irPagina("tienda");
   else renderProds();
 }
 
 function initSearch(){
-  var inp=document.getElementById("sBusq"),sw=document.getElementById("swBox"),cl=document.getElementById("swClear"),sugg=document.getElementById("swSugg");
+  let inp=document.getElementById("sBusq"),sw=document.getElementById("swBox"),cl=document.getElementById("swClear"),sugg=document.getElementById("swSugg");
   if(!inp)return;
   inp.addEventListener("focus",function(){sw.classList.add("focused");if(!inp.value.trim())_renderHistorySuggestions();else mostrarSugerencias(inp.value);});
   inp.addEventListener("blur",function(){sw.classList.remove("focused");setTimeout(function(){sugg.style.display="none";},200);});
   inp.addEventListener("input",function(){
-    var v=inp.value;
+    let v=inp.value;
     if(cl)cl.style.display=v?"flex":"none";
     clearTimeout(swTimer);
     swTimer=setTimeout(function(){mostrarSugerencias(v);},250);
@@ -416,51 +395,51 @@ function initSearch(){
   });
 }
 function mostrarSugerencias(q){
-  var sugg=document.getElementById("swSugg");if(!sugg)return;
+  let sugg=document.getElementById("swSugg");if(!sugg)return;
   if(!q||q.length<1){sugg.style.display="none";return;}
-  var ql=q.toLowerCase();
-  var matches=PRODS.filter(function(p){return p.st>0&&(p.n.toLowerCase().indexOf(ql)>=0||(p.cat||"").toLowerCase().indexOf(ql)>=0);}).slice(0,6);
+  let ql=q.toLowerCase();
+  let matches=PRODS.filter(function(p){return p.st>0&&(p.n.toLowerCase().indexOf(ql)>=0||(p.cat||"").toLowerCase().indexOf(ql)>=0);}).slice(0,6);
   if(!matches.length){sugg.innerHTML='<div class="sw-sugg-empty">🔍 Sin resultados para "'+q+'"</div>';sugg.style.display="block";return;}
-  var catMatches=CATS.filter(function(c){return c.id>0&&c.n.toLowerCase().indexOf(ql)>=0;}).slice(0,2);
-  var html="";
+  let catMatches=CATS.filter(function(c){return c.id>0&&c.n.toLowerCase().indexOf(ql)>=0;}).slice(0,2);
+  let html="";
   if(catMatches.length){html+='<div class="sw-sugg-sep">Categorías</div>';html+=catMatches.map(function(c){return '<div class="sw-sugg-item" onclick="filtrarYVer('+c.id+')"><span class="sugg-ico">🏷️</span><span class="sugg-nm">'+resaltarTexto(c.n,q)+'</span></div>';}).join("");}
   html+='<div class="sw-sugg-sep">Productos</div>';
   html+=matches.map(function(p){
-    var ico=p.img?'<img src="'+p.img+'" style="width:28px;height:28px;object-fit:cover;border-radius:6px;" />':(emojiProd(p));
+    let ico=p.img?'<img src="'+p.img+'" style="width:28px;height:28px;object-fit:cover;border-radius:6px;" />':(emojiProd(p));
     return '<div class="sw-sugg-item" onclick="_saveSearchToHistory(\''+ q +'\');verProd('+p.id+');document.getElementById(\'swSugg\').style.display=\'none\'"><span class="sugg-ico">'+ico+'</span><span class="sugg-nm">'+resaltarTexto(p.n,q)+'</span><span class="sugg-cat">'+p.cat+'</span></div>';
   }).join("");
   sugg.innerHTML=html;sugg.style.display="block";
 }
-function resaltarTexto(txt,q){var re=new RegExp("("+q.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+")","gi");return txt.replace(re,"<mark>$1</mark>");}
+function resaltarTexto(txt,q){let re=new RegExp("("+q.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+")","gi");return txt.replace(re,"<mark>$1</mark>");}
 function filtrarYVer(catId){document.getElementById("swSugg").style.display="none";catActiva=parseInt(catId);irPagina("tienda");}
-function limpiarBusqueda(){var inp=document.getElementById("sBusq");if(inp){inp.value="";busqueda="";inp.focus();}var cl=document.getElementById("swClear");if(cl)cl.style.display="none";var s=document.getElementById("swSugg");if(s)s.style.display="none";if(paginaActual==="tienda")renderProds();}
+function limpiarBusqueda(){let inp=document.getElementById("sBusq");if(inp){inp.value="";busqueda="";inp.focus();}let cl=document.getElementById("swClear");if(cl)cl.style.display="none";let s=document.getElementById("swSugg");if(s)s.style.display="none";if(paginaActual==="tienda")renderProds();}
 function buscar(){busqueda=(document.getElementById("sBusq")||{}).value||"";busqueda=busqueda.trim();document.getElementById("swSugg").style.display="none";if(busqueda)_saveSearchToHistory(busqueda);if(paginaActual!=="tienda")irPagina("tienda");renderProds();}
 
 // ── CARRUSEL (arreglado, sin dejar de girar) ─
-var CR={ofertas:{idx:0,total:0,perPage:1,timer:null,items:[]},valorados:{idx:0,total:0,perPage:1,timer:null,items:[]}};
+let CR={ofertas:{idx:0,total:0,perPage:1,timer:null,items:[]},valorados:{idx:0,total:0,perPage:1,timer:null,items:[]}};
 
-function carouselPerPage(){var w=window.innerWidth;return w<480?1:w<640?2:w<900?3:w<1200?4:5;}
+function carouselPerPage(){let w=window.innerWidth;return w<480?1:w<640?2:w<900?3:w<1200?4:5;}
 
 function carouselInit(name,items,delay){
-  var c=CR[name];c.items=items;c.idx=0;c.total=items.length;c.perPage=carouselPerPage();
-  var track=document.getElementById("track"+cap(name));
+  let c=CR[name];c.items=items;c.idx=0;c.total=items.length;c.perPage=carouselPerPage();
+  let track=document.getElementById("track"+cap(name));
   if(!track)return;
   // Fade out skeleton cards if present
-  var skCards=track.querySelectorAll(".sk-card");
+  let skCards=track.querySelectorAll(".sk-card");
   if(skCards.length){
     skCards.forEach(function(sk){sk.style.opacity="0";});
   }
   // Render real cards (tiny delay lets fade-out play)
-  var doRender=function(){
+  let doRender=function(){
     track.style.transition="none";
-    track.innerHTML=items.map(function(html){return '<div class="pc" style="flex-shrink:0;width:var(--cw)">'+html+'</div>';}).join("");
-  // Set CSS var for card width
-  var outer=document.getElementById("outer"+cap(name));
-  if(outer){var gap=14,pp=c.perPage,ow=outer.offsetWidth||outer.getBoundingClientRect().width||window.innerWidth;if(ow<10)ow=window.innerWidth;var peekOffset=(pp===1&&ow<480)?Math.floor(ow*0.22):0;var cw=Math.floor((ow-peekOffset-(gap*(pp-1)))/pp);if(cw<80)cw=Math.floor((window.innerWidth-48)/pp);outer.style.setProperty("--cw",cw+"px");outer.style.setProperty("--cgap",gap+"px");}
+    track.innerHTML=items.map(function(html){return '<div class="pc" style="flex-shrink:0;width:let(--cw)">'+html+'</div>';}).join("");
+  // Set CSS let for card width
+  let outer=document.getElementById("outer"+cap(name));
+  if(outer){let gap=14,pp=c.perPage,ow=outer.offsetWidth||outer.getBoundingClientRect().width||window.innerWidth;if(ow<10)ow=window.innerWidth;let peekOffset=(pp===1&&ow<480)?Math.floor(ow*0.22):0;let cw=Math.floor((ow-peekOffset-(gap*(pp-1)))/pp);if(cw<80)cw=Math.floor((window.innerWidth-48)/pp);outer.style.setProperty("--cw",cw+"px");outer.style.setProperty("--cgap",gap+"px");}
   // Dots
-  var maxDots=Math.max(1,c.total-c.perPage+1);
-  var isDark=name==="valorados";
-  var dots=document.getElementById("dots"+cap(name));
+  let maxDots=Math.max(1,c.total-c.perPage+1);
+  let isDark=name==="valorados";
+  let dots=document.getElementById("dots"+cap(name));
   if(dots)dots.innerHTML=Array.from({length:maxDots}).map(function(_,i){return '<span class="cdot'+(isDark?" cdot-dark":"")+(i===0?" on":"")+'"></span>';}).join("");
   carouselRender(name);
   if(c.timer)clearInterval(c.timer);
@@ -474,62 +453,62 @@ function carouselInit(name,items,delay){
 }
 
 function carouselRender(name){
-  var c=CR[name];var track=document.getElementById("track"+cap(name));if(!track)return;
-  var outer=document.getElementById("outer"+cap(name));if(!outer)return;
-  var gap=14,pp=c.perPage,ow=outer.offsetWidth||outer.getBoundingClientRect().width||window.innerWidth;if(ow<10)ow=window.innerWidth;var peekOffset=(pp===1&&ow<480)?Math.floor(ow*0.12):0;var cw=Math.floor((ow-peekOffset-(gap*(pp-1)))/pp);if(cw<80)cw=Math.floor((window.innerWidth-48)/pp);
+  let c=CR[name];let track=document.getElementById("track"+cap(name));if(!track)return;
+  let outer=document.getElementById("outer"+cap(name));if(!outer)return;
+  let gap=14,pp=c.perPage,ow=outer.offsetWidth||outer.getBoundingClientRect().width||window.innerWidth;if(ow<10)ow=window.innerWidth;let peekOffset=(pp===1&&ow<480)?Math.floor(ow*0.12):0;let cw=Math.floor((ow-peekOffset-(gap*(pp-1)))/pp);if(cw<80)cw=Math.floor((window.innerWidth-48)/pp);
   outer.style.setProperty("--cw",cw+"px");outer.style.setProperty("--cgap",gap+"px");
   // Clamp idx
-  var maxIdx=Math.max(0,c.total-pp);c.idx=Math.min(c.idx,maxIdx);
-  var offset=c.idx*(cw+gap);
+  let maxIdx=Math.max(0,c.total-pp);c.idx=Math.min(c.idx,maxIdx);
+  let offset=c.idx*(cw+gap);
   track.style.transition="transform .45s cubic-bezier(.4,0,.2,1)";
   track.style.transform="translateX(-"+offset+"px)";
   // Update cards width
   Array.from(track.children).forEach(function(el){el.style.width=cw+"px";});
   // Update dots
-  var maxDots=Math.max(1,c.total-pp+1);
-  var dots=document.getElementById("dots"+cap(name));
+  let maxDots=Math.max(1,c.total-pp+1);
+  let dots=document.getElementById("dots"+cap(name));
   if(dots)Array.from(dots.children).forEach(function(d,i){d.classList.toggle("on",i===c.idx);});
 }
 
 function carouselNext(name){
-  var c=CR[name];var maxIdx=Math.max(0,c.total-c.perPage);
+  let c=CR[name];let maxIdx=Math.max(0,c.total-c.perPage);
   c.idx=c.idx>=maxIdx?0:c.idx+1;
   carouselRender(name);
   resetCarouselTimer(name);
 }
 function carouselPrev(name){
-  var c=CR[name];var maxIdx=Math.max(0,c.total-c.perPage);
+  let c=CR[name];let maxIdx=Math.max(0,c.total-c.perPage);
   c.idx=c.idx<=0?maxIdx:c.idx-1;
   carouselRender(name);
   resetCarouselTimer(name);
 }
 function resetCarouselTimer(name){
-  var c=CR[name];if(c.timer)clearInterval(c.timer);
-  if(c.total>c.perPage){var delay=name==="ofertas"?5000:4200;c.timer=setInterval(function(){carouselNext(name);},delay);}
+  let c=CR[name];if(c.timer)clearInterval(c.timer);
+  if(c.total>c.perPage){let delay=name==="ofertas"?5000:4200;c.timer=setInterval(function(){carouselNext(name);},delay);}
 }
 function cap(s){return s.charAt(0).toUpperCase()+s.slice(1);}
 
 // Swipe en carrusel
 function initCarouselSwipe(name){
-  var outer=document.getElementById("outer"+cap(name));if(!outer)return;
-  var startX=0,isDragging=false;
+  let outer=document.getElementById("outer"+cap(name));if(!outer)return;
+  let startX=0,isDragging=false;
   outer.addEventListener("mousedown",function(e){startX=e.clientX;isDragging=true;});
   outer.addEventListener("mousemove",function(e){if(!isDragging)return;});
-  outer.addEventListener("mouseup",function(e){if(!isDragging)return;isDragging=false;var diff=startX-e.clientX;if(Math.abs(diff)>40){if(diff>0)carouselNext(name);else carouselPrev(name);}});
+  outer.addEventListener("mouseup",function(e){if(!isDragging)return;isDragging=false;let diff=startX-e.clientX;if(Math.abs(diff)>40){if(diff>0)carouselNext(name);else carouselPrev(name);}});
   outer.addEventListener("mouseleave",function(){isDragging=false;});
   outer.addEventListener("touchstart",function(e){startX=e.touches[0].clientX;},{passive:true});
-  outer.addEventListener("touchend",function(e){var diff=startX-e.changedTouches[0].clientX;if(Math.abs(diff)>40){if(diff>0)carouselNext(name);else carouselPrev(name);}},{passive:true});
+  outer.addEventListener("touchend",function(e){let diff=startX-e.changedTouches[0].clientX;if(Math.abs(diff)>40){if(diff>0)carouselNext(name);else carouselPrev(name);}},{passive:true});
   // Pausar al hover
-  outer.addEventListener("mouseenter",function(){var c=CR[name];if(c.timer){clearInterval(c.timer);c.timer=null;}});
-  outer.addEventListener("mouseleave",function(){var c=CR[name];if(!c.timer&&c.total>c.perPage){var delay=name==="ofertas"?5000:4200;c.timer=setInterval(function(){carouselNext(name);},delay);}});
+  outer.addEventListener("mouseenter",function(){let c=CR[name];if(c.timer){clearInterval(c.timer);c.timer=null;}});
+  outer.addEventListener("mouseleave",function(){let c=CR[name];if(!c.timer&&c.total>c.perPage){let delay=name==="ofertas"?5000:4200;c.timer=setInterval(function(){carouselNext(name);},delay);}});
 }
 
 window.addEventListener("resize",function(){
   requestAnimationFrame(function(){
     ["ofertas","valorados"].forEach(function(name){
-      var c=CR[name];
+      let c=CR[name];
       if(!c||!c.items||!c.items.length)return;
-      var newPP=carouselPerPage();
+      let newPP=carouselPerPage();
       if(newPP!==c.perPage){
         c.perPage=newPP;
         carouselInit(name,c.items,name==="ofertas"?5000:4200);
@@ -542,32 +521,32 @@ window.addEventListener("resize",function(){
 window.addEventListener("orientationchange",function(){
   setTimeout(function(){
     ["ofertas","valorados"].forEach(function(name){
-      var c=CR[name];
+      let c=CR[name];
       if(c&&c.items&&c.items.length){c.perPage=carouselPerPage();carouselInit(name,c.items,name==="ofertas"?5000:4200);}
     });
   },200);
 });
 
 // ── INICIO ──────────────────────────────────
-function promedioEstrellas(pid){var arr=RESENIAS[pid];if(!arr||!arr.length)return 0;return arr.reduce(function(s,r){return s+r.estrellas;},0)/arr.length;}
-function starsHtml(avg){var full=Math.round(avg),h="";for(var i=1;i<=5;i++)h+='<span style="color:'+(i<=full?"#f59e0b":"#d1d5db")+'">★</span>';return h;}
+function promedioEstrellas(pid){let arr=RESENIAS[pid];if(!arr||!arr.length)return 0;return arr.reduce(function(s,r){return s+r.estrellas;},0)/arr.length;}
+function starsHtml(avg){let full=Math.round(avg),h="";for(let i=1;i<=5;i++)h+='<span style="color:'+(i<=full?"#f59e0b":"#d1d5db")+'">★</span>';return h;}
 
 function renderInicio(){
   // Remove loading skeleton
-  var sk=document.getElementById("skeletonLoader");
+  let sk=document.getElementById("skeletonLoader");
   if(sk)sk.remove();
-  var ofs=PRODS.filter(function(p){return p.o&&p.o<p.p&&p.st>0;});
+  let ofs=PRODS.filter(function(p){return p.o&&p.o<p.p&&p.st>0;});
   if(!ofs.length)ofs=PRODS.filter(function(p){return p.st>0;}).slice(0,6);
   ofs=ofs.slice(0,6);
   carouselInit("ofertas",ofs.map(function(p){return tarjetaInner(p,true);}),5000);
   initCarouselSwipe("ofertas");
 
-  var vals=PRODS.filter(function(p){return p.st>0;}).slice();
+  let vals=PRODS.filter(function(p){return p.st>0;}).slice();
   vals.sort(function(a,b){return promedioEstrellas(b.id)-promedioEstrellas(a.id);});
   vals=vals.slice(0,6);
   carouselInit("valorados",vals.map(function(p){
-    var avg=promedioEstrellas(p.id),stars=avg>0?starsHtml(avg):'<span style="color:#d1d5db">★★★★★</span>';
-    var cnt=RESENIAS[p.id]?RESENIAS[p.id].length:0;
+    let avg=promedioEstrellas(p.id),stars=avg>0?starsHtml(avg):'<span style="color:#d1d5db">★★★★★</span>';
+    let cnt=RESENIAS[p.id]?RESENIAS[p.id].length:0;
     return tarjetaInner(p,false,stars,cnt);
   }),4200);
   initCarouselSwipe("valorados");
@@ -579,7 +558,7 @@ function renderInicio(){
 
 // ── WISHLIST ─────────────────────────────────────────────
 function cargarWishlist(){
-  try{var w=localStorage.getItem("ns_wishlist");wishlist=w?JSON.parse(w):[];}
+  try{let w=localStorage.getItem("ns_wishlist");wishlist=w?JSON.parse(w):[];}
   catch(e){wishlist=[];}
 }
 function guardarWishlist(){
@@ -589,7 +568,7 @@ function enWishlist(pid){return wishlist.indexOf(pid)>=0;}
 function toggleWishlist(pid,e){
   if(e){e.stopPropagation();e.preventDefault();}
   if(!usuario){toast("Inicia sesión para guardar favoritos","e");abrirModal("mLogin");return;}
-  var idx=wishlist.indexOf(pid);
+  let idx=wishlist.indexOf(pid);
   if(idx>=0){
     wishlist.splice(idx,1);
     toast("Eliminado de favoritos","i");
@@ -618,24 +597,24 @@ function actualizarHeartBtn(btn,active){
 }
 function actualizarTodosHearts(){
   document.querySelectorAll(".wl-btn").forEach(function(btn){
-    var pid=parseInt(btn.getAttribute("data-pid"));
+    let pid=parseInt(btn.getAttribute("data-pid"));
     actualizarHeartBtn(btn, enWishlist(pid));
   });
 }
 function renderWishlist(){
-  var ids=wishlist.slice();
+  let ids=wishlist.slice();
   if(!ids.length){
     return '<div class="empty"><div class="eico">💙</div><h3>Sin favoritos aún</h3><p>Toca el corazón en cualquier producto para guardarlo aquí.</p><button class="bp" style="margin-top:14px" onclick="cerrarModal(\'mPanel\');irPagina(\'tienda\')">🛍️ Explorar Tienda</button></div>';
   }
-  var prods=ids.map(function(id){return PRODS.find(function(p){return p.id===id;});}).filter(Boolean);
+  let prods=ids.map(function(id){return PRODS.find(function(p){return p.id===id;});}).filter(Boolean);
   if(!prods.length){
     return '<div class="empty"><div class="eico">💙</div><h3>Productos no disponibles</h3><p>Algunos productos guardados ya no están disponibles.</p></div>';
   }
   return '<div style="display:flex;flex-direction:column;gap:10px">'+prods.map(function(p){
-    var imgEl=p.img?'<img src="'+p.img+'" style="width:56px;height:56px;object-fit:cover;border-radius:10px;flex-shrink:0"/>':
+    let imgEl=p.img?'<img src="'+p.img+'" style="width:56px;height:56px;object-fit:cover;border-radius:10px;flex-shrink:0"/>':
       '<div style="width:56px;height:56px;border-radius:10px;background:linear-gradient(135deg,#EFF6FF,#DBEAFE);display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0">'+emojiProd(p)+'</div>';
-    var agotado=p.st<=0;
-    var imgContent=p.img?'<img src="'+p.img+'" />':emojiProd(p);
+    let agotado=p.st<=0;
+    let imgContent=p.img?'<img src="'+p.img+'" />':emojiProd(p);
     return '<div class="wl-item" onclick="cerrarModal(\'mPanel\');verProd('+p.id+')">'+
       '<div class="wl-item-img">'+imgContent+'</div>'+
       '<div class="wl-item-info">'+
@@ -656,13 +635,13 @@ function renderWishlist(){
 }
 
 function tarjetaInner(p,showOferta,starsStr,cnt){
-  var imgEl=p.img?'<img src="'+p.img+'" data-pid="'+p.id+'" onclick="event.stopPropagation();(function(el){var pp=PRODS.find(function(x){return x.id===parseInt(el.dataset.pid);});if(pp)abrirZoomImagen(el.src,pp.n);})(this)"/>':(
+  let imgEl=p.img?'<img src="'+p.img+'" data-pid="'+p.id+'" onclick="event.stopPropagation();(function(el){let pp=PRODS.find(function(x){return x.id===parseInt(el.dataset.pid);});if(pp)abrirZoomImagen(el.src,pp.n);})(this)"/>':(
     '<span class="pi-emoji">'+emojiProd(p)+'</span>'
   );
-  var starsEl=starsStr?'<div class="pstars">'+starsStr+(cnt?' <small style="color:var(--gr);font-size:.7rem">('+cnt+')</small>':'')+'</div>':"";
-  var ofPct=(showOferta&&p.o&&p.p>0)?Math.round((1-p.o/p.p)*100):0;
-  var pctBadge=ofPct>0?'<span class="pdesc-pct">-'+ofPct+'%</span>':"";
-  var stockBadge=(p.st>0&&p.st<=5)?'<span style="position:absolute;bottom:8px;left:8px;background:rgba(230,81,0,.9);color:#fff;font-size:.62rem;font-weight:900;padding:3px 7px;border-radius:50px;z-index:2">⚡ Solo '+p.st+'</span>':"";
+  let starsEl=starsStr?'<div class="pstars">'+starsStr+(cnt?' <small style="color:let(--gr);font-size:.7rem">('+cnt+')</small>':'')+'</div>':"";
+  let ofPct=(showOferta&&p.o&&p.p>0)?Math.round((1-p.o/p.p)*100):0;
+  let pctBadge=ofPct>0?'<span class="pdesc-pct">-'+ofPct+'%</span>':"";
+  let stockBadge=(p.st>0&&p.st<=5)?'<span style="position:absolute;bottom:8px;left:8px;background:rgba(230,81,0,.9);color:#fff;font-size:.62rem;font-weight:900;padding:3px 7px;border-radius:50px;z-index:2">⚡ Solo '+p.st+'</span>':"";
   return '<div class="pi">'+imgEl+
     ((showOferta&&p.o)||(!showOferta&&p.o)?'<span class="pbo">🔥 OFERTA</span>':'')+
     pctBadge+(p.dest?'<span class="pbd">⭐</span>':'')+
@@ -685,30 +664,30 @@ function tarjetaHTML(p,showOferta,starsStr,cnt){
 }
 
 // ── TIENDA ──────────────────────────────────
-function cargarCats(){var c=document.getElementById("cats");if(!c)return;c.innerHTML=CATS.map(function(cat){return '<button class="cc'+(cat.id===catActiva?" on":"")+'" onclick="filtCat('+cat.id+',this)">'+cat.n+'</button>';}).join("");}
+function cargarCats(){let c=document.getElementById("cats");if(!c)return;c.innerHTML=CATS.map(function(cat){return '<button class="cc'+(cat.id===catActiva?" on":"")+'" onclick="filtCat('+cat.id+',this)">'+cat.n+'</button>';}).join("");}
 function filtCat(id,btn){catActiva=id;document.querySelectorAll(".cc").forEach(function(b){b.classList.remove("on");});btn.classList.add("on");renderProds();}
 function sortProds(val){sortActivo=val;renderProds();}
 function prodsFiltrados(){
-  var q=busqueda.toLowerCase().trim();
+  let q=busqueda.toLowerCase().trim();
   return PRODS.filter(function(p){
     if(p.st<=0)return false;
     // Categoría
-    var mc=catActiva===0||p.cid===catActiva;
+    let mc=catActiva===0||p.cid===catActiva;
     if(!mc)return false;
     // Búsqueda texto
     if(q){
-      var mb=p.n.toLowerCase().indexOf(q)>=0||
+      let mb=p.n.toLowerCase().indexOf(q)>=0||
              (p.d||"").toLowerCase().indexOf(q)>=0||
              (p.cat||"").toLowerCase().indexOf(q)>=0||
              String(p.p).indexOf(q)>=0;
       if(!mb)return false;
     }
     // Precio
-    var precio=p.o||p.p;
+    let precio=p.o||p.p;
     if(precio<filtroPrecioMin||precio>filtroPrecioMax)return false;
     // Rating mínimo
     if(filtroRating>0){
-      var avg=promedioEstrellas(p.id);
+      let avg=promedioEstrellas(p.id);
       if(avg<filtroRating)return false;
     }
     // Solo ofertas
@@ -721,14 +700,14 @@ function prodsFiltrados(){
 function initFiltrosPanel(){
   // Calculate min/max prices from PRODS
   if(!PRODS.length)return;
-  var precios=PRODS.filter(function(p){return p.st>0;}).map(function(p){return p.o||p.p;});
-  var pMin=Math.floor(Math.min.apply(null,precios));
-  var pMax=Math.ceil(Math.max.apply(null,precios));
+  let precios=PRODS.filter(function(p){return p.st>0;}).map(function(p){return p.o||p.p;});
+  let pMin=Math.floor(Math.min.apply(null,precios));
+  let pMax=Math.ceil(Math.max.apply(null,precios));
   // Round to nice numbers
   pMin=Math.floor(pMin/1000)*1000;
   pMax=Math.ceil(pMax/1000)*1000;
-  var slMin=document.getElementById("fSliderMin");
-  var slMax=document.getElementById("fSliderMax");
+  let slMin=document.getElementById("fSliderMin");
+  let slMax=document.getElementById("fSliderMax");
   if(!slMin||!slMax)return;
   slMin.min=pMin;slMin.max=pMax;slMin.value=filtroPrecioMin>0?filtroPrecioMin:pMin;
   slMax.min=pMin;slMax.max=pMax;slMax.value=filtroPrecioMax<Infinity?filtroPrecioMax:pMax;
@@ -738,28 +717,28 @@ function initFiltrosPanel(){
   actualizarRangeFill();
 }
 function actualizarPrecioLabels(){
-  var slMin=document.getElementById("fSliderMin");
-  var slMax=document.getElementById("fSliderMax");
-  var lMin=document.getElementById("fPrecioMin");
-  var lMax=document.getElementById("fPrecioMax");
+  let slMin=document.getElementById("fSliderMin");
+  let slMax=document.getElementById("fSliderMax");
+  let lMin=document.getElementById("fPrecioMin");
+  let lMax=document.getElementById("fPrecioMax");
   if(!slMin||!lMin)return;
   lMin.textContent=bs(parseFloat(slMin.value));
   lMax.textContent=bs(parseFloat(slMax.value));
 }
 function actualizarRangeFill(){
-  var slMin=document.getElementById("fSliderMin");
-  var slMax=document.getElementById("fSliderMax");
-  var fill=document.getElementById("fRangeFill");
+  let slMin=document.getElementById("fSliderMin");
+  let slMax=document.getElementById("fSliderMax");
+  let fill=document.getElementById("fRangeFill");
   if(!slMin||!fill)return;
-  var min=parseFloat(slMin.min),max=parseFloat(slMin.max);
-  var vMin=parseFloat(slMin.value),vMax=parseFloat(slMax.value);
-  var pLeft=((vMin-min)/(max-min))*100;
-  var pRight=((vMax-min)/(max-min))*100;
+  let min=parseFloat(slMin.min),max=parseFloat(slMin.max);
+  let vMin=parseFloat(slMin.value),vMax=parseFloat(slMax.value);
+  let pLeft=((vMin-min)/(max-min))*100;
+  let pRight=((vMax-min)/(max-min))*100;
   fill.style.left=pLeft+"%";
   fill.style.width=(pRight-pLeft)+"%";
 }
 function onSliderMin(el){
-  var slMax=document.getElementById("fSliderMax");
+  let slMax=document.getElementById("fSliderMax");
   if(parseFloat(el.value)>parseFloat(slMax.value)-parseFloat(el.step)){
     el.value=parseFloat(slMax.value)-parseFloat(el.step);
   }
@@ -770,7 +749,7 @@ function onSliderMin(el){
   renderProds();
 }
 function onSliderMax(el){
-  var slMin=document.getElementById("fSliderMin");
+  let slMin=document.getElementById("fSliderMin");
   if(parseFloat(el.value)<parseFloat(slMin.value)+parseFloat(el.step)){
     el.value=parseFloat(slMin.value)+parseFloat(el.step);
   }
@@ -789,7 +768,7 @@ function setRatingFiltro(val,btn){
 }
 function toggleFiltroOfertas(){
   filtroSoloOfertas=!filtroSoloOfertas;
-  var btn=document.getElementById("fSoloOfertas");
+  let btn=document.getElementById("fSoloOfertas");
   if(btn){
     btn.classList.toggle("on",filtroSoloOfertas);
     btn.querySelector(".filtro-check-ico").textContent=filtroSoloOfertas?"●":"○";
@@ -798,10 +777,10 @@ function toggleFiltroOfertas(){
   renderProds();
 }
 function toggleFiltrosPanel(){
-  var panel=document.getElementById("filtrosPanel");
-  var btn=document.getElementById("filtrosToggleBtn");
+  let panel=document.getElementById("filtrosPanel");
+  let btn=document.getElementById("filtrosToggleBtn");
   if(!panel)return;
-  var open=panel.style.display==="none"||!panel.style.display;
+  let open=panel.style.display==="none"||!panel.style.display;
   panel.style.display=open?"block":"none";
   if(btn)btn.classList.toggle("on",open);
   if(open)initFiltrosPanel();
@@ -810,13 +789,13 @@ function resetFiltros(){
   filtroPrecioMin=0;filtroPrecioMax=Infinity;
   filtroRating=0;filtroSoloOfertas=false;
   catActiva=0;busqueda="";
-  var inp=document.getElementById("sBusq");if(inp)inp.value="";
-  var cl=document.getElementById("swClear");if(cl)cl.style.display="none";
+  let inp=document.getElementById("sBusq");if(inp)inp.value="";
+  let cl=document.getElementById("swClear");if(cl)cl.style.display="none";
   // Reset UI
   document.querySelectorAll(".filtro-star-btn").forEach(function(b){b.classList.remove("on");});
-  var allBtn=document.querySelector(".filtro-star-btn[data-val='0']");
+  let allBtn=document.querySelector(".filtro-star-btn[data-val='0']");
   if(allBtn)allBtn.classList.add("on");
-  var ofBtn=document.getElementById("fSoloOfertas");
+  let ofBtn=document.getElementById("fSoloOfertas");
   if(ofBtn){ofBtn.classList.remove("on");ofBtn.querySelector(".filtro-check-ico").textContent="○";}
   initFiltrosPanel();
   actualizarFiltrosBadge();
@@ -824,41 +803,41 @@ function resetFiltros(){
   renderProds();
 }
 function actualizarFiltrosBadge(){
-  var cnt=0;
+  let cnt=0;
   if(filtroRating>0)cnt++;
   if(filtroSoloOfertas)cnt++;
   if(filtroPrecioMin>0)cnt++;
   if(filtroPrecioMax<Infinity)cnt++;
-  var badge=document.getElementById("filtrosBadge");
+  let badge=document.getElementById("filtrosBadge");
   if(badge){badge.style.display=cnt>0?"inline-flex":"none";badge.textContent=cnt;}
-  var btn=document.getElementById("filtrosToggleBtn");
+  let btn=document.getElementById("filtrosToggleBtn");
   if(btn)btn.classList.toggle("has-active",cnt>0);
 }
 
 function renderProds(){
-  var sk=document.getElementById("skeletonLoader");if(sk)sk.remove();
-  var g=document.getElementById("pg");if(!g)return;
-  var lista=prodsFiltrados();
+  let sk=document.getElementById("skeletonLoader");if(sk)sk.remove();
+  let g=document.getElementById("pg");if(!g)return;
+  let lista=prodsFiltrados();
   if(sortActivo==="precioAsc")lista.sort(function(a,b){return (a.o||a.p)-(b.o||b.p);});
   else if(sortActivo==="precioDesc")lista.sort(function(a,b){return (b.o||b.p)-(a.o||a.p);});
   else if(sortActivo==="nombre")lista.sort(function(a,b){return a.n.localeCompare(b.n);});
   else if(sortActivo==="valorados")lista.sort(function(a,b){return promedioEstrellas(b.id)-promedioEstrellas(a.id);});
   // Contador de resultados
-  var filtroInfo=document.getElementById("filtroInfo");
+  let filtroInfo=document.getElementById("filtroInfo");
   if(!filtroInfo){
-    var toolbar=document.querySelector(".tienda-toolbar");
-    if(toolbar){filtroInfo=document.createElement("div");filtroInfo.id="filtroInfo";filtroInfo.style.cssText="font-size:.8rem;font-weight:700;color:var(--gr);padding:6px 16px 0;max-width:960px;margin:0 auto;";toolbar.after(filtroInfo);}
+    let toolbar=document.querySelector(".tienda-toolbar");
+    if(toolbar){filtroInfo=document.createElement("div");filtroInfo.id="filtroInfo";filtroInfo.style.cssText="font-size:.8rem;font-weight:700;color:let(--gr);padding:6px 16px 0;max-width:960px;margin:0 auto;";toolbar.after(filtroInfo);}
   }
   if(filtroInfo){
-    var txt="";
+    let txt="";
     if(busqueda)txt+="🔍 \""+busqueda+"\" — ";
-    if(catActiva>0){var cat=CATS.find(function(c){return c.id===catActiva;});if(cat)txt+=cat.n+" — ";}
+    if(catActiva>0){let cat=CATS.find(function(c){return c.id===catActiva;});if(cat)txt+=cat.n+" — ";}
     txt+=lista.length+" resultado"+(lista.length!==1?"s":"");
-    if(busqueda||catActiva>0)txt+=' <span style="cursor:pointer;color:var(--na);text-decoration:underline;margin-left:6px" onclick="catActiva=0;busqueda="";document.getElementById(\"sBusq\").value="";renderProds();cargarCats()">✕ Limpiar</span>';
+    if(busqueda||catActiva>0)txt+=' <span style="cursor:pointer;color:let(--na);text-decoration:underline;margin-left:6px" onclick="catActiva=0;busqueda="";document.getElementById(\"sBusq\").value="";renderProds();cargarCats()">✕ Limpiar</span>';
     filtroInfo.innerHTML=txt;
   }
   if(!lista.length){g.innerHTML='<div style="grid-column:1/-1" class="empty"><div class="eico">🔍</div><h3>Sin resultados</h3><p>Prueba otra búsqueda o categoría</p>'+(busqueda||catActiva>0?'<button class="btn-hero-2" style="margin-top:12px;font-size:.85rem" onclick="catActiva=0;busqueda="";document.getElementById(\"sBusq\").value="";renderProds();cargarCats()">Ver todos los productos</button>':'')+' </div>';return;}
-  g.innerHTML=lista.map(function(p){var avg=promedioEstrellas(p.id);var stars=avg>0?starsHtml(avg):null;var cnt=RESENIAS[p.id]?RESENIAS[p.id].length:0;return tarjetaHTML(p,true,stars,cnt);}).join("");
+  g.innerHTML=lista.map(function(p){let avg=promedioEstrellas(p.id);let stars=avg>0?starsHtml(avg):null;let cnt=RESENIAS[p.id]?RESENIAS[p.id].length:0;return tarjetaHTML(p,true,stars,cnt);}).join("");
   requestAnimationFrame(actualizarTodosHearts);
 }
 
@@ -869,21 +848,21 @@ function renderProds(){
 // ── ZOOM IMAGEN PRODUCTO ──────────────────────────────────────
 function abrirZoomImagen(src, alt){
   // Remove existing
-  var existing = document.getElementById("imgZoomOv");
+  let existing = document.getElementById("imgZoomOv");
   if(existing) existing.remove();
 
-  var ov = document.createElement("div");
+  let ov = document.createElement("div");
   ov.id = "imgZoomOv";
   ov.className = "img-zoom-ov";
   ov.setAttribute("role","dialog");
   ov.setAttribute("aria-label","Imagen ampliada");
 
-  var img = document.createElement("img");
+  let img = document.createElement("img");
   img.src = src;
   img.alt = alt || "Producto";
   img.className = "img-zoom-img";
 
-  var closeBtn = document.createElement("button");
+  let closeBtn = document.createElement("button");
   closeBtn.className = "img-zoom-close";
   closeBtn.innerHTML = "✕";
   closeBtn.setAttribute("aria-label","Cerrar");
@@ -909,7 +888,7 @@ function abrirZoomImagen(src, alt){
   });
 
   // Pinch-to-zoom on mobile (basic)
-  var scale = 1, lastDist = 0;
+  let scale = 1, lastDist = 0;
   ov.addEventListener("touchstart", function(e){
     if(e.touches.length===2) lastDist = Math.hypot(
       e.touches[0].clientX - e.touches[1].clientX,
@@ -918,7 +897,7 @@ function abrirZoomImagen(src, alt){
   }, {passive:true});
   ov.addEventListener("touchmove", function(e){
     if(e.touches.length===2){
-      var dist = Math.hypot(
+      let dist = Math.hypot(
         e.touches[0].clientX - e.touches[1].clientX,
         e.touches[0].clientY - e.touches[1].clientY
       );
@@ -930,10 +909,10 @@ function abrirZoomImagen(src, alt){
 }
 
 function compartirProducto(pid, nom){
-  var p = PRODS.find(function(x){ return x.id === pid; });
-  var pNom = nom || (p ? p.n : "Producto");
-  var url  = window.location.href.split("?")[0];
-  var text = "👀 Mira este producto en NuestroStore:\n*" + pNom + "*";
+  let p = PRODS.find(function(x){ return x.id === pid; });
+  let pNom = nom || (p ? p.n : "Producto");
+  let url  = window.location.href.split("?")[0];
+  let text = "👀 Mira este producto en NuestroStore:\n*" + pNom + "*";
   if(p && p.o) text += "\n💰 " + bs(p.o) + " (antes " + bs(p.p) + ")";
   else if(p)   text += "\n💰 " + bs(p.p);
   text += "\n\n" + url;
@@ -943,7 +922,7 @@ function compartirProducto(pid, nom){
       .catch(function(){});
   } else {
     // Fallback: copy to clipboard
-    var copyText = text;
+    let copyText = text;
     if(navigator.clipboard && navigator.clipboard.writeText){
       navigator.clipboard.writeText(copyText).then(function(){
         toast("🔗 Link copiado al portapapeles","s");
@@ -956,7 +935,7 @@ function compartirProducto(pid, nom){
   }
 }
 function _fallbackCopy(text){
-  var ta = document.createElement("textarea");
+  let ta = document.createElement("textarea");
   ta.value = text;
   ta.style.cssText = "position:fixed;top:-9999px;left:-9999px";
   document.body.appendChild(ta);
@@ -967,17 +946,17 @@ function _fallbackCopy(text){
 }
 
 function verProd(id){
-  var p=PRODS.find(function(x){return x.id===id;});if(!p)return;
+  let p=PRODS.find(function(x){return x.id===id;});if(!p)return;
   document.getElementById("mProdT").textContent=p.n;
-  var imgHtml=p.img?'<img src="'+p.img+'" data-pid="'+p.id+'" style="width:100%;border-radius:12px;margin-bottom:16px;max-height:240px;object-fit:cover;cursor:zoom-in" onclick="(function(el){var pp=PRODS.find(function(x){return x.id===parseInt(el.dataset.pid);});if(pp)abrirZoomImagen(el.src,pp.n);})(this)"/>':
+  let imgHtml=p.img?'<img src="'+p.img+'" data-pid="'+p.id+'" style="width:100%;border-radius:12px;margin-bottom:16px;max-height:240px;object-fit:cover;cursor:zoom-in" onclick="(function(el){let pp=PRODS.find(function(x){return x.id===parseInt(el.dataset.pid);});if(pp)abrirZoomImagen(el.src,pp.n);})(this)"/>':
     '<div style="text-align:center;font-size:6rem;padding:24px 20px;background:linear-gradient(135deg,#fff8e1,#ffe082);border-radius:12px;margin-bottom:16px">'+emojiProd(p)+'</div>';
-  var avg=promedioEstrellas(p.id),cnt=RESENIAS[p.id]?RESENIAS[p.id].length:0;
-  var starsRow=avg>0?'<div style="margin-bottom:14px">'+starsHtml(avg)+' <span style="color:var(--gr);font-size:.85rem">'+avg.toFixed(1)+'/5 ('+cnt+' reseña'+(cnt!==1?'s':'')+')</span></div>':"";
-  var listaRes=RESENIAS[p.id]||[];
-  var agotado=p.st<=0;
-  var resHtml='<div style="margin-top:18px;border-top:2px solid #f0f0f0;padding-top:14px"><div style="font-weight:800;color:var(--na3);margin-bottom:12px">⭐ Reseñas ('+listaRes.length+')</div>';
+  let avg=promedioEstrellas(p.id),cnt=RESENIAS[p.id]?RESENIAS[p.id].length:0;
+  let starsRow=avg>0?'<div style="margin-bottom:14px">'+starsHtml(avg)+' <span style="color:let(--gr);font-size:.85rem">'+avg.toFixed(1)+'/5 ('+cnt+' reseña'+(cnt!==1?'s':'')+')</span></div>':"";
+  let listaRes=RESENIAS[p.id]||[];
+  let agotado=p.st<=0;
+  let resHtml='<div style="margin-top:18px;border-top:2px solid #f0f0f0;padding-top:14px"><div style="font-weight:800;color:let(--na3);margin-bottom:12px">⭐ Reseñas ('+listaRes.length+')</div>';
   if(listaRes.length){resHtml+='<div style="max-height:180px;overflow-y:auto">'+listaRes.map(function(r){return '<div class="resenia-item"><div class="res-header"><span class="res-autor">'+r.uNom+' '+r.uApe[0]+'.</span><span class="res-fecha">'+r.fecha+'</span></div><div class="res-stars">'+starsHtml(r.estrellas)+'</div><div class="res-texto">'+r.comentario+'</div></div>';}).join("")+'</div>';}
-  else resHtml+='<div style="color:var(--gr);font-size:.85rem;text-align:center;padding:12px">Sin reseñas aún.</div>';
+  else resHtml+='<div style="color:let(--gr);font-size:.85rem;text-align:center;padding:12px">Sin reseñas aún.</div>';
   resHtml+='</div>';
   document.getElementById("mProdB").innerHTML=imgHtml+
     '<div class="pcat" style="margin-bottom:6px">'+p.cat+'</div>'+starsRow+
@@ -986,24 +965,24 @@ function verProd(id){
     '</div>'+(agotado?'<div style="background:#ffebee;border-radius:8px;padding:10px 14px;text-align:center;font-weight:800;color:#c62828;margin-bottom:14px">❌ Producto Agotado</div>':
     '<p style="color:#888;font-size:.85rem;margin-bottom:18px">📦 Stock: '+p.st+' unidades</p>'+
     '<button class="bp" onclick="addCart('+p.id+');cerrarModal(\"mProd\")">🛒 Agregar al Carrito</button>')+
-    (usuario?'<button class="wl-btn-lg"'+(enWishlist(p.id)?' style="border-color:#3B82F6;color:#1E3A8A;background:#EFF6FF"':'')+' data-pid="'+p.id+'" onclick="toggleWishlist('+p.id+',event);var b=this;b.style.background=enWishlist('+p.id+')?\"#EFF6FF\":\"#fff\";b.style.color=enWishlist('+p.id+')?\"#1E3A8A\":\"var(--gr2)\";b.innerHTML=enWishlist('+p.id+')?\"💙 En Favoritos\":\"🤍 Guardar en Favoritos\"">'+(enWishlist(p.id)?'💙 En Favoritos':'🤍 Guardar en Favoritos')+'</button>':'')+
+    (usuario?'<button class="wl-btn-lg"'+(enWishlist(p.id)?' style="border-color:#3B82F6;color:#1E3A8A;background:#EFF6FF"':'')+' data-pid="'+p.id+'" onclick="toggleWishlist('+p.id+',event);let b=this;b.style.background=enWishlist('+p.id+')?\"#EFF6FF\":\"#fff\";b.style.color=enWishlist('+p.id+')?\"#1E3A8A\":\"let(--gr2)\";b.innerHTML=enWishlist('+p.id+')?\"💙 En Favoritos\":\"🤍 Guardar en Favoritos\"">'+(enWishlist(p.id)?'💙 En Favoritos':'🤍 Guardar en Favoritos')+'</button>':'')+
     (usuario&&!agotado?'<button class="bs" onclick="abrirResenia('+p.id+')">⭐ Escribir Reseña</button>':'')+
     (usuario?'<button class="bs" onclick="cerrarModal(\"mProd\");abrirRep('+p.id+')">🚨 Reportar Problema</button>':'')+resHtml;
   // Productos relacionados
-  var relacionados = PRODS.filter(function(x){
+  let relacionados = PRODS.filter(function(x){
     return x.id !== p.id && x.cid === p.cid && x.st > 0;
   }).slice(0,4);
-  var relHtml = '';
+  let relHtml = '';
   if(relacionados.length){
     relHtml = '<div style="margin-top:20px;border-top:2px solid #f0f0f0;padding-top:16px">'
-      + '<div style="font-weight:800;color:var(--na3);margin-bottom:12px;font-size:.9rem">🛍️ También te puede gustar</div>'
+      + '<div style="font-weight:800;color:let(--na3);margin-bottom:12px;font-size:.9rem">🛍️ También te puede gustar</div>'
       + '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">'
       + relacionados.map(function(r){
-          var rImg = r.img
+          let rImg = r.img
             ? '<img src="'+r.img+'" style="width:100%;height:80px;object-fit:cover;border-radius:8px;margin-bottom:8px"/>'
             : '<div style="height:80px;border-radius:8px;background:linear-gradient(135deg,#EFF6FF,#DBEAFE);display:flex;align-items:center;justify-content:center;font-size:2rem;margin-bottom:8px">'+emojiProd(r)+'</div>';
-          var rPct = (r.o && r.p > 0) ? Math.round((1-r.o/r.p)*100) : 0;
-          var card = document.createElement("div");
+          let rPct = (r.o && r.p > 0) ? Math.round((1-r.o/r.p)*100) : 0;
+          let card = document.createElement("div");
           card.style.cssText = "background:#fff;border:1.5px solid #E2E8F0;border-radius:12px;padding:10px;cursor:pointer;transition:border-color .18s";
           card.setAttribute("data-relid", r.id);
           card.innerHTML = rImg
@@ -1016,7 +995,7 @@ function verProd(id){
           card.addEventListener("mouseenter", function(){ this.style.borderColor="#93C5FD"; });
           card.addEventListener("mouseleave", function(){ this.style.borderColor="#E2E8F0"; });
           card.addEventListener("click", function(){
-            var rid = parseInt(this.getAttribute("data-relid"));
+            let rid = parseInt(this.getAttribute("data-relid"));
             cerrarModal("mProd");
             setTimeout(function(){ verProd(rid); }, 80);
           });
@@ -1031,23 +1010,23 @@ function verProd(id){
 // ── RESEÑAS ──────────────────────────────────
 function selStar(v){starSelVal=v;document.getElementById("resEstrellas").value=v;document.querySelectorAll("#starSelector .star").forEach(function(s){s.classList.toggle("sel",parseInt(s.getAttribute("data-v"))<=v);});}
 function abrirResenia(pid,nom){
-  if(!nom){var pp=PRODS.find(function(x){return x.id===pid;});nom=pp?pp.n:"Producto";}if(!usuario){toast("Inicia sesión","e");abrirModal("mLogin");return;}document.getElementById("resPid").value=pid;document.getElementById("resProdNom").textContent="📦 "+nom;document.getElementById("resComentario").value="";starSelVal=5;selStar(5);cerrarModal("mProd");abrirModal("mResenia");}
-function enviarResenia(){if(!usuario){toast("Inicia sesión","e");return;}var pid=parseInt(document.getElementById("resPid").value),coment=document.getElementById("resComentario").value.trim();if(!coment){toast("Escribe un comentario","e");return;}api("/resenias","POST",{uid:usuario.id,pid:pid,estrellas:starSelVal,comentario:coment}).then(function(r){if(!r.ok){toast(r.error||"Error","e");return;}toast("¡Reseña publicada! ⭐","s");cerrarModal("mResenia");api("/resenias").then(function(rr){if(rr.ok){RESENIAS={};rr.resenias.forEach(function(res){if(!RESENIAS[res.pid])RESENIAS[res.pid]=[];RESENIAS[res.pid].push(res);});renderInicio();if(paginaActual==="tienda")renderProds();}});});}
+  if(!nom){let pp=PRODS.find(function(x){return x.id===pid;});nom=pp?pp.n:"Producto";}if(!usuario){toast("Inicia sesión","e");abrirModal("mLogin");return;}document.getElementById("resPid").value=pid;document.getElementById("resProdNom").textContent="📦 "+nom;document.getElementById("resComentario").value="";starSelVal=5;selStar(5);cerrarModal("mProd");abrirModal("mResenia");}
+function enviarResenia(){if(!usuario){toast("Inicia sesión","e");return;}let pid=parseInt(document.getElementById("resPid").value),coment=document.getElementById("resComentario").value.trim();if(!coment){toast("Escribe un comentario","e");return;}api("/resenias","POST",{uid:usuario.id,pid:pid,estrellas:starSelVal,comentario:coment}).then(function(r){if(!r.ok){toast(r.error||"Error","e");return;}toast("¡Reseña publicada! ⭐","s");cerrarModal("mResenia");api("/resenias").then(function(rr){if(rr.ok){RESENIAS={};rr.resenias.forEach(function(res){if(!RESENIAS[res.pid])RESENIAS[res.pid]=[];RESENIAS[res.pid].push(res);});renderInicio();if(paginaActual==="tienda")renderProds();}});});}
 
 // ── PERFIL ───────────────────────────────────
-var AVATARES=["😊","🧑","👩","👨","🧑‍💻","👩‍💼","👨‍💼","🧑‍🎨","👩‍🍳","👨‍🔬","🦸","🧙","🐱","🦊","🐸","🌟","🔥","💎","🏆","🚀","🎮","🎨","🎸","⚽","🌈"];
-var perfilAvatarSel="";
+let AVATARES=["😊","🧑","👩","👨","🧑‍💻","👩‍💼","👨‍💼","🧑‍🎨","👩‍🍳","👨‍🔬","🦸","🧙","🐱","🦊","🐸","🌟","🔥","💎","🏆","🚀","🎮","🎨","🎸","⚽","🌈"];
+let perfilAvatarSel="";
 
 function abrirPerfil(){
   if(!usuario){abrirModal("mLogin");return;}
   api("/perfil/"+usuario.id).then(function(r){
     if(!r.ok){toast("Error al cargar perfil","e");return;}
-    var pf=r.perfil;
+    let pf=r.perfil;
     perfilAvatarSel=pf.avatar||"";
-    var avaDisplay=pf.avatar?(pf.avatar.startsWith("data:")||/^\p{Emoji}/u.test(pf.avatar)||pf.avatar.length<=8)?'<span style="font-size:2.5rem">'+pf.avatar+'</span>':'<img src="'+pf.avatar+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />'
+    let avaDisplay=pf.avatar?(pf.avatar.startsWith("data:")||/^\p{Emoji}/u.test(pf.avatar)||pf.avatar.length<=8)?'<span style="font-size:2.5rem">'+pf.avatar+'</span>':'<img src="'+pf.avatar+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />'
       :'<span style="font-size:2.5rem">'+usuario.n[0]+'</span>';
-    var rolLabel={cliente:"👤 Cliente",administrador:"⚙️ Administrador",superadmin:"👑 Super Admin"}[pf.rol]||pf.rol;
-    var html='<div class="perfil-hero">'+
+    let rolLabel={cliente:"👤 Cliente",administrador:"⚙️ Administrador",superadmin:"👑 Super Admin"}[pf.rol]||pf.rol;
+    let html='<div class="perfil-hero">'+
       '<div class="perfil-ava-wrap">'+
         '<div class="perfil-ava" id="perfilAvaPreview">'+avaDisplay+'</div>'+
         '<div class="perfil-ava-edit" onclick="document.getElementById(\"perfilImgInput\").click()">📷</div>'+
@@ -1059,14 +1038,14 @@ function abrirPerfil(){
         '<div class="perfil-rol">'+rolLabel+'</div>'+
       '</div>'+
     '</div>'+
-    '<div style="font-weight:800;font-size:.88rem;color:var(--gr2);margin-bottom:8px">Elige un avatar emoji:</div>'+
+    '<div style="font-weight:800;font-size:.88rem;color:let(--gr2);margin-bottom:8px">Elige un avatar emoji:</div>'+
     '<div class="avatar-grid">'+AVATARES.map(function(av){return '<div class="ava-opt'+(perfilAvatarSel===av?' sel':''  )+'" data-av="'+av+'" onclick="selAvatar(this.getAttribute(\"data-av\"))" title="'+av+'">'+av+'</div>';}).join('')+'</div>'+
     '<div class="f2">'+
       '<div class="fg"><label>Nombre *</label><input class="fc" id="pfNom" value="'+pf.nombre+'"/></div>'+
       '<div class="fg"><label>Apellido *</label><input class="fc" id="pfApe" value="'+pf.apellido+'"/></div>'+
     '</div>'+
     '<div class="fg"><label>Teléfono</label><input class="fc" id="pfTel" type="tel" value="'+(pf.tel||'')+'"/></div>'+
-    '<details style="margin-bottom:14px"><summary style="cursor:pointer;font-weight:700;color:var(--gr);font-size:.88rem;padding:8px 0">🔑 Cambiar contraseña (opcional)</summary>'+
+    '<details style="margin-bottom:14px"><summary style="cursor:pointer;font-weight:700;color:let(--gr);font-size:.88rem;padding:8px 0">🔑 Cambiar contraseña (opcional)</summary>'+
     '<div style="padding-top:10px">'+
     '<div class="fg"><label>Contraseña actual</label><input class="fc" type="password" id="pfOldPw" placeholder="Tu contraseña actual"/></div>'+
     '<div class="fg"><label>Nueva contraseña</label><input class="fc" type="password" id="pfNewPw" placeholder="Mínimo 8 caracteres"/></div>'+
@@ -1074,8 +1053,8 @@ function abrirPerfil(){
     '<div id="pfErr" class="form-err" style="display:none"></div>'+
     '<button class="bp" onclick="guardarPerfil()">💾 Guardar Cambios</button>'+
     '<div style="margin-top:14px;padding-top:14px;border-top:2px solid #f0e4d0">'+
-    '<div style="font-weight:800;font-size:.82rem;color:var(--gr2);margin-bottom:8px">🎵 Reproductor de música</div>'+
-    '<button id="mpPerfilBtn" onclick="mpPerfilToggle()" style="width:100%;padding:11px 14px;border-radius:10px;border:2px solid #e0d0c0;background:#fff8f0;font-weight:700;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;color:var(--na3)">'+mpPerfilBtnLabel()+'</button>'+
+    '<div style="font-weight:800;font-size:.82rem;color:let(--gr2);margin-bottom:8px">🎵 Reproductor de música</div>'+
+    '<button id="mpPerfilBtn" onclick="mpPerfilToggle()" style="width:100%;padding:11px 14px;border-radius:10px;border:2px solid #e0d0c0;background:#fff8f0;font-weight:700;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;color:let(--na3)">'+mpPerfilBtnLabel()+'</button>'+
     '</div>';
     document.getElementById("mPerfilB").innerHTML=html;
     abrirModal("mPerfil");
@@ -1085,19 +1064,19 @@ function abrirPerfil(){
 function selAvatar(av){
   perfilAvatarSel=av;
   document.querySelectorAll(".ava-opt").forEach(function(el){el.classList.toggle("sel",el.textContent===av);});
-  var prev=document.getElementById("perfilAvaPreview");if(prev)prev.innerHTML='<span style="font-size:2.5rem">'+av+'</span>';
+  let prev=document.getElementById("perfilAvaPreview");if(prev)prev.innerHTML='<span style="font-size:2.5rem">'+av+'</span>';
 }
-function cargarAvatarImg(e){var file=e.target.files[0];if(!file)return;var r=new FileReader();r.onload=function(ev){perfilAvatarSel=ev.target.result;var prev=document.getElementById("perfilAvaPreview");if(prev)prev.innerHTML='<img src="'+ev.target.result+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"/>';};r.readAsDataURL(file);}
+function cargarAvatarImg(e){let file=e.target.files[0];if(!file)return;let r=new FileReader();r.onload=function(ev){perfilAvatarSel=ev.target.result;let prev=document.getElementById("perfilAvaPreview");if(prev)prev.innerHTML='<img src="'+ev.target.result+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"/>';};r.readAsDataURL(file);}
 
 function guardarPerfil(){
-  var nom=(document.getElementById("pfNom").value||"").trim();
-  var ape=(document.getElementById("pfApe").value||"").trim();
-  var tel=(document.getElementById("pfTel").value||"").trim();
-  var oldPw=(document.getElementById("pfOldPw").value||"").trim();
-  var newPw=(document.getElementById("pfNewPw").value||"").trim();
-  var errEl=document.getElementById("pfErr");errEl.style.display="none";
+  let nom=(document.getElementById("pfNom").value||"").trim();
+  let ape=(document.getElementById("pfApe").value||"").trim();
+  let tel=(document.getElementById("pfTel").value||"").trim();
+  let oldPw=(document.getElementById("pfOldPw").value||"").trim();
+  let newPw=(document.getElementById("pfNewPw").value||"").trim();
+  let errEl=document.getElementById("pfErr");errEl.style.display="none";
   if(!nom||!ape){errEl.textContent="⚠️ Nombre y apellido requeridos.";errEl.style.display="block";return;}
-  var avatarAEnviar=perfilAvatarSel||"";
+  let avatarAEnviar=perfilAvatarSel||"";
   api("/perfil/"+usuario.id,"PUT",{nombre:nom,apellido:ape,tel:tel,avatar:avatarAEnviar,old_pw:oldPw,nueva_pw:newPw}).then(function(r){
     if(!r.ok){errEl.textContent="❌ "+(r.error||"Error");errEl.style.display="block";return;}
     usuario.n=nom;usuario.a=ape;usuario.avatar=avatarAEnviar;
@@ -1116,12 +1095,12 @@ function guardarPerfil(){
 }
 
 // ── LOGIN / REGISTRO ─────────────────────────
-var _loginAttempts = 0;
-var _loginLocked = false;
+let _loginAttempts = 0;
+let _loginLocked = false;
 function doLogin(){
   if(_loginLocked){ toast("Demasiados intentos. Espera 30 segundos.", "e"); return; }
-  var emailEl=document.getElementById("lEmail"),passEl=document.getElementById("lPass"),errEl=document.getElementById("loginErr"),btnEl=document.getElementById("btnLogin");
-  var email=emailEl.value.trim().toLowerCase(),pass=passEl.value;
+  let emailEl=document.getElementById("lEmail"),passEl=document.getElementById("lPass"),errEl=document.getElementById("loginErr"),btnEl=document.getElementById("btnLogin");
+  let email=emailEl.value.trim().toLowerCase(),pass=passEl.value;
   errEl.style.display="none";
   if(!email||!pass){errEl.textContent="⚠️ Correo y contraseña requeridos.";errEl.style.display="block";return;}
   btnEl.disabled=true;btnEl.textContent="Verificando...";
@@ -1134,9 +1113,9 @@ function doLogin(){
   });
 }
 function doRegistro(){
-  var nom=document.getElementById("rNom").value.trim(),ape=document.getElementById("rApe").value.trim();
-  var email=document.getElementById("rEmail").value.trim().toLowerCase(),pass=document.getElementById("rPass").value;
-  var tel=document.getElementById("rTel").value.trim(),errEl=document.getElementById("regErr");errEl.style.display="none";
+  let nom=document.getElementById("rNom").value.trim(),ape=document.getElementById("rApe").value.trim();
+  let email=document.getElementById("rEmail").value.trim().toLowerCase(),pass=document.getElementById("rPass").value;
+  let tel=document.getElementById("rTel").value.trim(),errEl=document.getElementById("regErr");errEl.style.display="none";
   if(!nom||!ape||!email||!pass){errEl.textContent="⚠️ Completa todos los campos.";errEl.style.display="block";return;}
   if(pass.length<8){errEl.textContent="⚠️ Mínimo 8 caracteres.";errEl.style.display="block";return;}
   api("/registro","POST",{nom:nom,ape:ape,email:email,password:pass,tel:tel}).then(function(r){
@@ -1155,14 +1134,14 @@ function cerrarSesion(){usuario=null;carrito=[];wishlist=[];_mpCargando=false;_m
 // Paso 2: ingresar código de 6 dígitos
 // Paso 3: nueva contraseña
 
-var _resetEmail = "";
-var _resetToken = "";
+let _resetEmail = "";
+let _resetToken = "";
 
 function abrirRecuperarPass(){
   cerrarModal("mLogin");
   _resetEmail = "";
   _resetToken = "";
-  var modal = document.getElementById("mReset");
+  let modal = document.getElementById("mReset");
   if(!modal){
     modal = document.createElement("div");
     modal.id = "mReset";
@@ -1170,7 +1149,7 @@ function abrirRecuperarPass(){
     modal.innerHTML =
       '<div class="mdl" style="max-width:420px;border-radius:20px 20px 0 0;padding:0">'
       + '<div class="mhd" style="padding:18px 20px 14px">'
-      + '<h3 id="resetT" style="font-size:1.05rem;font-weight:800;color:var(--bk)">🔑 Recuperar Contraseña</h3>'
+      + '<h3 id="resetT" style="font-size:1.05rem;font-weight:800;color:let(--bk)">🔑 Recuperar Contraseña</h3>'
       + '<button class="bx" onclick="cerrarModal(\'mReset\')">✕</button>'
       + '</div>'
       + '<div id="resetBody" style="padding:16px 20px 24px"></div>'
@@ -1185,22 +1164,22 @@ function abrirRecuperarPass(){
 function _renderResetStep1(){
   document.getElementById("resetT").textContent = "🔑 Recuperar Contraseña";
   document.getElementById("resetBody").innerHTML =
-    '<p style="color:var(--gr);font-size:.88rem;margin-bottom:16px;line-height:1.5">'
+    '<p style="color:let(--gr);font-size:.88rem;margin-bottom:16px;line-height:1.5">'
     + 'Ingresa tu correo y te enviaremos un código de 6 dígitos para restablecer tu contraseña.</p>'
     + '<div class="fg"><label>Correo electrónico *</label>'
     + '<input class="fc" id="resetEmail" type="email" placeholder="tu@correo.com" autocomplete="email"/></div>'
     + '<div id="resetErr" class="form-err" style="display:none"></div>'
     + '<button class="bp" id="resetBtn1" style="margin-top:12px;width:100%" onclick="solicitarReset()">Enviar código</button>'
     + '<div style="text-align:center;margin-top:12px">'
-    + '<button style="background:none;border:none;color:var(--na);font-size:.85rem;cursor:pointer" onclick="cerrarModal(\'mReset\');abrirLogin()">← Volver al inicio de sesión</button>'
+    + '<button style="background:none;border:none;color:let(--na);font-size:.85rem;cursor:pointer" onclick="cerrarModal(\'mReset\');abrirLogin()">← Volver al inicio de sesión</button>'
     + '</div>';
-  setTimeout(function(){ var el=document.getElementById("resetEmail"); if(el) el.focus(); }, 100);
+  setTimeout(function(){ let el=document.getElementById("resetEmail"); if(el) el.focus(); }, 100);
 }
 
 function solicitarReset(){
-  var email = (document.getElementById("resetEmail").value||"").trim().toLowerCase();
-  var errEl = document.getElementById("resetErr");
-  var btn   = document.getElementById("resetBtn1");
+  let email = (document.getElementById("resetEmail").value||"").trim().toLowerCase();
+  let errEl = document.getElementById("resetErr");
+  let btn   = document.getElementById("resetBtn1");
   errEl.style.display = "none";
   if(!email || !email.includes("@")){ errEl.textContent="⚠️ Correo válido requerido"; errEl.style.display="block"; return; }
   btn.disabled = true; btn.textContent = "Enviando…";
@@ -1214,12 +1193,12 @@ function solicitarReset(){
 
 function _renderResetStep2(devCode){
   document.getElementById("resetT").textContent = "📨 Ingresa el Código";
-  var devNote = devCode
+  let devNote = devCode
     ? '<div style="background:#EFF6FF;border:1.5px solid #93C5FD;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:.84rem;color:#1E3A8A">'
       + '🔧 <strong>Modo dev:</strong> Tu código es <strong style="font-family:monospace;font-size:1rem;letter-spacing:2px">'+devCode+'</strong></div>'
     : '';
   document.getElementById("resetBody").innerHTML =
-    '<p style="color:var(--gr);font-size:.88rem;margin-bottom:14px;line-height:1.5">'
+    '<p style="color:let(--gr);font-size:.88rem;margin-bottom:14px;line-height:1.5">'
     + 'Enviamos un código de 6 dígitos a <strong>'+_resetEmail+'</strong>. Válido por 10 minutos.</p>'
     + devNote
     + '<div class="fg"><label>Código de 6 dígitos *</label>'
@@ -1228,15 +1207,15 @@ function _renderResetStep2(devCode){
     + '<div id="resetErr" class="form-err" style="display:none"></div>'
     + '<button class="bp" id="resetBtn2" style="margin-top:12px;width:100%" onclick="verificarCodigo()">Verificar código</button>'
     + '<div style="text-align:center;margin-top:10px">'
-    + '<button style="background:none;border:none;color:var(--na);font-size:.82rem;cursor:pointer" onclick="_renderResetStep1()">← Cambiar correo</button>'
+    + '<button style="background:none;border:none;color:let(--na);font-size:.82rem;cursor:pointer" onclick="_renderResetStep1()">← Cambiar correo</button>'
     + '</div>';
-  setTimeout(function(){ var el=document.getElementById("resetCode"); if(el) el.focus(); }, 100);
+  setTimeout(function(){ let el=document.getElementById("resetCode"); if(el) el.focus(); }, 100);
 }
 
 function verificarCodigo(){
-  var code  = (document.getElementById("resetCode").value||"").trim();
-  var errEl = document.getElementById("resetErr");
-  var btn   = document.getElementById("resetBtn2");
+  let code  = (document.getElementById("resetCode").value||"").trim();
+  let errEl = document.getElementById("resetErr");
+  let btn   = document.getElementById("resetBtn2");
   errEl.style.display = "none";
   if(!code || code.length !== 6){ errEl.textContent="⚠️ El código tiene 6 dígitos"; errEl.style.display="block"; return; }
   btn.disabled = true; btn.textContent = "Verificando…";
@@ -1251,7 +1230,7 @@ function verificarCodigo(){
 function _renderResetStep3(){
   document.getElementById("resetT").textContent = "🔐 Nueva Contraseña";
   document.getElementById("resetBody").innerHTML =
-    '<p style="color:var(--gr);font-size:.88rem;margin-bottom:14px;line-height:1.5">'
+    '<p style="color:let(--gr);font-size:.88rem;margin-bottom:14px;line-height:1.5">'
     + '¡Código verificado! Elige una nueva contraseña segura.</p>'
     + '<div class="fg"><label>Nueva contraseña *</label>'
     + '<input class="fc" id="resetNewPass" type="password" placeholder="Mínimo 8 caracteres" autocomplete="new-password"/></div>'
@@ -1259,14 +1238,14 @@ function _renderResetStep3(){
     + '<input class="fc" id="resetConfPass" type="password" placeholder="Repite la contraseña" autocomplete="new-password"/></div>'
     + '<div id="resetErr" class="form-err" style="display:none"></div>'
     + '<button class="bp" id="resetBtn3" style="margin-top:12px;width:100%" onclick="confirmarReset()">Cambiar contraseña</button>';
-  setTimeout(function(){ var el=document.getElementById("resetNewPass"); if(el) el.focus(); }, 100);
+  setTimeout(function(){ let el=document.getElementById("resetNewPass"); if(el) el.focus(); }, 100);
 }
 
 function confirmarReset(){
-  var pass1 = document.getElementById("resetNewPass").value;
-  var pass2 = document.getElementById("resetConfPass").value;
-  var errEl = document.getElementById("resetErr");
-  var btn   = document.getElementById("resetBtn3");
+  let pass1 = document.getElementById("resetNewPass").value;
+  let pass2 = document.getElementById("resetConfPass").value;
+  let errEl = document.getElementById("resetErr");
+  let btn   = document.getElementById("resetBtn3");
   errEl.style.display = "none";
   if(!pass1 || pass1.length < 8){ errEl.textContent="⚠️ Mínimo 8 caracteres"; errEl.style.display="block"; return; }
   if(pass1 !== pass2){ errEl.textContent="⚠️ Las contraseñas no coinciden"; errEl.style.display="block"; return; }
@@ -1296,22 +1275,22 @@ function toggleDarkMode(){
   aplicarDarkMode(!DARK_MODE);
 }
 function actualizarUI(){
-  var navIcons=document.getElementById("navIcons"),deskActs=document.getElementById("deskActs"),bt3ico=document.getElementById("bt3ico");
+  let navIcons=document.getElementById("navIcons"),deskActs=document.getElementById("deskActs"),bt3ico=document.getElementById("bt3ico");
   if(usuario){
-    var rol=usuario.rol;
-    var rolLabel={cliente:"Cliente",administrador:"Administrador",superadmin:"Super Admin"}[rol]||rol;
-    var rolEmoji={cliente:"👤",administrador:"⚙️",superadmin:"👑"}[rol]||"👤";
-    var avatarContent=usuario.avatar?(usuario.avatar.startsWith("data:")||/^\p{Emoji}/u.test(usuario.avatar)||usuario.avatar.length<=8)?usuario.avatar:'<img src="'+usuario.avatar+'" style="width:100%;height:100%;object-fit:cover;border-radius:50% 0 0 50%;"/>':(usuario.n[0]);
-    var avatarMobile=usuario.avatar?(usuario.avatar.startsWith("data:")||/^\p{Emoji}/u.test(usuario.avatar)||usuario.avatar.length<=8)?usuario.avatar:'<img src="'+usuario.avatar+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"/>':(usuario.n[0]);
+    let rol=usuario.rol;
+    let rolLabel={cliente:"Cliente",administrador:"Administrador",superadmin:"Super Admin"}[rol]||rol;
+    let rolEmoji={cliente:"👤",administrador:"⚙️",superadmin:"👑"}[rol]||"👤";
+    let avatarContent=usuario.avatar?(usuario.avatar.startsWith("data:")||/^\p{Emoji}/u.test(usuario.avatar)||usuario.avatar.length<=8)?usuario.avatar:'<img src="'+usuario.avatar+'" style="width:100%;height:100%;object-fit:cover;border-radius:50% 0 0 50%;"/>':(usuario.n[0]);
+    let avatarMobile=usuario.avatar?(usuario.avatar.startsWith("data:")||/^\p{Emoji}/u.test(usuario.avatar)||usuario.avatar.length<=8)?usuario.avatar:'<img src="'+usuario.avatar+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"/>':(usuario.n[0]);
     // Panel button según rol
-    var panelBtn="";
+    let panelBtn="";
     if(rol==="administrador"){
       panelBtn='<button class="hdr-panel-btn admin" onclick="abrirPanel()">⚙️ Panel</button>';
     }else if(rol==="superadmin"){
       panelBtn='<button class="hdr-panel-btn superadmin" onclick="abrirPanel()">👑 Panel</button>';
     }
     // Nombre truncado
-    var nombre=usuario.n.split(" ")[0];
+    let nombre=usuario.n.split(" ")[0];
     navIcons.innerHTML=''; // En móvil carrito y cuenta están en el bottom nav
     deskActs.innerHTML=
       '<button class="push-toggle-btn bte" onclick="activarNotificaciones()" title="Activar notificaciones" style="font-size:.75rem;padding:5px 10px;display:'+(pushPuedeActivarse()&&usuario?'flex':'none')+'">'+(pushEstaActivo()?'🔔 Notif. ON':'🔕 Notif. OFF')+'</button>'+
@@ -1347,18 +1326,18 @@ function actualizarUI(){
 // ── FLY TO CART ──────────────────────────────────────────────
 function flyToCart(sourceEl){
   // Find the cart icon position (botnav on mobile, desk on desktop)
-  var cartTarget = document.getElementById("cartBadgeNav")
+  let cartTarget = document.getElementById("cartBadgeNav")
     || document.getElementById("cartBadgeDesk")
     || document.querySelector(".hdr-cart-btn")
     || document.querySelector(".cart-btn");
   if(!cartTarget || !sourceEl) return;
 
   // Get positions
-  var srcRect = sourceEl.getBoundingClientRect();
-  var tgtRect = cartTarget.getBoundingClientRect();
+  let srcRect = sourceEl.getBoundingClientRect();
+  let tgtRect = cartTarget.getBoundingClientRect();
 
   // Create flying dot
-  var dot = document.createElement("div");
+  let dot = document.createElement("div");
   dot.className = "fly-dot";
   dot.innerHTML = "🛒";
   dot.style.cssText = [
@@ -1382,8 +1361,8 @@ function flyToCart(sourceEl){
 
   // Trigger reflow then animate
   void dot.offsetWidth;
-  var tx = tgtRect.left + tgtRect.width/2  - (srcRect.left + srcRect.width/2);
-  var ty = tgtRect.top  + tgtRect.height/2 - (srcRect.top  + srcRect.height/2);
+  let tx = tgtRect.left + tgtRect.width/2  - (srcRect.left + srcRect.width/2);
+  let ty = tgtRect.top  + tgtRect.height/2 - (srcRect.top  + srcRect.height/2);
   dot.style.transition = "transform .55s cubic-bezier(.4,0,.2,1), opacity .55s ease";
   dot.style.transform  = "translate("+tx+"px,"+ty+"px) scale(.3)";
   dot.style.opacity    = "0";
@@ -1404,16 +1383,16 @@ function flyToCart(sourceEl){
 
 
 // ── CUPONES ──────────────────────────────────────────────────
-var cuponActivo = null; // {codigo, tipo, valor, descuento}
+let cuponActivo = null; // {codigo, tipo, valor, descuento}
 
 function aplicarCupon(){
-  var inp = document.getElementById("cuponInput");
-  var btn = document.getElementById("cuponBtn");
-  var msg = document.getElementById("cuponMsg");
+  let inp = document.getElementById("cuponInput");
+  let btn = document.getElementById("cuponBtn");
+  let msg = document.getElementById("cuponMsg");
   if(!inp || !msg) return;
-  var codigo = inp.value.trim().toUpperCase();
+  let codigo = inp.value.trim().toUpperCase();
   if(!codigo){ msg.textContent="Ingresa un código"; msg.className="cupon-msg cupon-err"; return; }
-  var total = carrito.reduce(function(s,x){ return s+x.p*x.qty; }, 0);
+  let total = carrito.reduce(function(s,x){ return s+x.p*x.qty; }, 0);
   btn.disabled = true;
   btn.textContent = "Validando…";
   fetch("/api/cupones/validar?codigo="+encodeURIComponent(codigo)+"&total="+total)
@@ -1443,57 +1422,57 @@ function aplicarCupon(){
 
 function quitarCupon(){
   cuponActivo = null;
-  var inp = document.getElementById("cuponInput");
-  var msg = document.getElementById("cuponMsg");
+  let inp = document.getElementById("cuponInput");
+  let msg = document.getElementById("cuponMsg");
   if(inp) inp.value = "";
   if(msg){ msg.textContent = ""; msg.className = "cupon-msg"; }
   actualizarTotalCarrito();
 }
 
 function actualizarTotalCarrito(){
-  var subtotal = carrito.reduce(function(s,x){ return s+x.p*x.qty; }, 0);
-  var descuento = cuponActivo ? cuponActivo.descuento : 0;
-  var total = subtotal - descuento;
-  var totEl = document.getElementById("cTot");
+  let subtotal = carrito.reduce(function(s,x){ return s+x.p*x.qty; }, 0);
+  let descuento = cuponActivo ? cuponActivo.descuento : 0;
+  let total = subtotal - descuento;
+  let totEl = document.getElementById("cTot");
   if(totEl) totEl.textContent = bs(total);
   // Show/hide discount row
-  var discRow = document.getElementById("cDescRow");
+  let discRow = document.getElementById("cDescRow");
   if(discRow){
     discRow.style.display = descuento > 0 ? "flex" : "none";
-    var discEl = document.getElementById("cDesc");
+    let discEl = document.getElementById("cDesc");
     if(discEl) discEl.textContent = "- " + bs(descuento);
   }
 }
 
 function addCart(id){
   if(!usuario){toast("Inicia sesión para comprar","e");abrirModal("mLogin");return;}
-  var p=PRODS.find(function(x){return x.id===id;});
+  let p=PRODS.find(function(x){return x.id===id;});
   if(!p||p.st<=0){toast("Producto agotado ❌","e");return;}
-  var ex=carrito.find(function(x){return x.id===id;});
-  var cantActual=ex?ex.qty:0;
+  let ex=carrito.find(function(x){return x.id===id;});
+  let cantActual=ex?ex.qty:0;
   if(cantActual>=p.st){toast("Solo hay "+p.st+" unidad"+(p.st!==1?"es":"")+" disponible","e");return;}
   if(ex) ex.qty++;
   else carrito.push({id:p.id,n:p.n,p:(p.o||p.p),qty:1,e:emojiProd(p),img:p.img||null,maxSt:p.st});
   actualizarCarrito();
   toast(p.n+" agregado al carrito 🛒","s");
   // Fly-to-cart desde el botón activo
-  var srcBtn=document.activeElement;
+  let srcBtn=document.activeElement;
   if(srcBtn&&(srcBtn.classList.contains("badd")||srcBtn.classList.contains("bp"))){
     flyToCart(srcBtn);
   } else {
     // Fallback: pulse badges
     ["cartBadgeMobile","cartBadgeDesk","cartBadgeNav"].forEach(function(bid){
-      var el=document.getElementById(bid);
+      let el=document.getElementById(bid);
       if(el){el.classList.remove("badge-pulse");void el.offsetWidth;el.classList.add("badge-pulse");}
     });
   }
 }
 function cambiarQty(id,delta){
-  var ex=carrito.find(function(x){return x.id===id;});
+  let ex=carrito.find(function(x){return x.id===id;});
   if(!ex)return;
-  var p=PRODS.find(function(x){return x.id===id;});
-  var maxSt=p?p.st:(ex.maxSt||999);
-  var nueva=ex.qty+delta;
+  let p=PRODS.find(function(x){return x.id===id;});
+  let maxSt=p?p.st:(ex.maxSt||999);
+  let nueva=ex.qty+delta;
   if(nueva<1){quitarCart(id);return;}
   if(nueva>maxSt){toast("Máximo "+maxSt+" unidad"+(maxSt!==1?"es":"")+" disponibles","e");return;}
   ex.qty=nueva;
@@ -1501,28 +1480,28 @@ function cambiarQty(id,delta){
 }
 function quitarCart(id){carrito=carrito.filter(function(x){return x.id!==id;});actualizarCarrito();}
 function actualizarCarrito(){
-  var total=carrito.reduce(function(s,x){return s+x.p*x.qty;},0),count=carrito.reduce(function(s,x){return s+x.qty;},0);
+  let total=carrito.reduce(function(s,x){return s+x.p*x.qty;},0),count=carrito.reduce(function(s,x){return s+x.qty;},0);
   localStorage.setItem("ns_carrito", JSON.stringify(carrito));
   actualizarTotalCarrito();
   actualizarBadge(count);
-  var c=document.getElementById("cits");if(!c)return;
+  let c=document.getElementById("cits");if(!c)return;
   if(!carrito.length){c.innerHTML='<div class="empty"><div class="eico">🛒</div><h3>Carrito vacío</h3><p>Agrega productos</p></div>';return;}
-  c.innerHTML=carrito.map(function(it){var imgC=it.img?'<img src="'+it.img+'">':(it.e||"📦");return '<div class="cit"><div class="cimg">'+imgC+'</div><div class="cinf"><div class="cnm">'+it.n+'</div><div class="cpr">'+bs(it.p)+'</div><div class="qty-ctrl"><button class="qty-btn" onclick="cambiarQty('+it.id+',-1)">−</button><span style="font-weight:800;font-size:.9rem">'+it.qty+'</span><button class="qty-btn" onclick="cambiarQty('+it.id+',1)">+</button></div></div><button class="cdel" onclick="quitarCart('+it.id+')">🗑️</button></div>';}).join("");
+  c.innerHTML=carrito.map(function(it){let imgC=it.img?'<img src="'+it.img+'">':(it.e||"📦");return '<div class="cit"><div class="cimg">'+imgC+'</div><div class="cinf"><div class="cnm">'+it.n+'</div><div class="cpr">'+bs(it.p)+'</div><div class="qty-ctrl"><button class="qty-btn" onclick="cambiarQty('+it.id+',-1)">−</button><span style="font-weight:800;font-size:.9rem">'+it.qty+'</span><button class="qty-btn" onclick="cambiarQty('+it.id+',1)">+</button></div></div><button class="cdel" onclick="quitarCart('+it.id+')">🗑️</button></div>';}).join("");
 }
-function actualizarBadge(count){var n=count!==undefined?count:carrito.reduce(function(s,x){return s+x.qty;},0);["cartBadgeMobile","cartBadgeDesk","cartBadgeNav"].forEach(function(bid){var el=document.getElementById(bid);if(el){el.textContent=n;el.style.display=n>0?"flex":"none";}});}
+function actualizarBadge(count){let n=count!==undefined?count:carrito.reduce(function(s,x){return s+x.qty;},0);["cartBadgeMobile","cartBadgeDesk","cartBadgeNav"].forEach(function(bid){let el=document.getElementById(bid);if(el){el.textContent=n;el.style.display=n>0?"flex":"none";}});}
 function abrirCarrito(){actualizarCarrito();document.getElementById("csh").classList.add("open");document.getElementById("cov").classList.add("show");document.body.style.overflow="hidden";}
 function cerrarCarrito(){document.getElementById("csh").classList.remove("open");document.getElementById("cov").classList.remove("show");document.body.style.overflow="";}
 function pedido(){
   if(!usuario){toast("Inicia sesión","e");abrirModal("mLogin");return;}
   if(!carrito.length){toast("Carrito vacío","e");return;}
-  var total=carrito.reduce(function(s,x){return s+x.p*x.qty;},0);
-  var resumen=carrito.map(function(it){return "• "+it.n+" × "+it.qty+" = "+bs(it.p*it.qty);}).join("\n");
-  var iva=total*0.19;
+  let total=carrito.reduce(function(s,x){return s+x.p*x.qty;},0);
+  let resumen=carrito.map(function(it){return "• "+it.n+" × "+it.qty+" = "+bs(it.p*it.qty);}).join("\n");
+  let iva=total*0.19;
   if(!confirm("📋 CONFIRMAR PEDIDO\n\n"+resumen+"\n\n─────────────────\nSubtotal: "+bs(total)+"\nIVA (19%): "+bs(iva)+"\nTOTAL: "+bs(total+iva)+"\n\n¿Confirmas la compra?")){return;}
-  var btn=document.querySelector(".btn-pagar");
+  let btn=document.querySelector(".btn-pagar");
   if(btn){btn.disabled=true;btn.textContent="Procesando…";}
     // Include cupon data if active
-  var payload = {uid:usuario.id, items:JSON.parse(JSON.stringify(carrito)), total:total};
+  let payload = {uid:usuario.id, items:JSON.parse(JSON.stringify(carrito)), total:total};
   if(cuponActivo) payload.cupon = {codigo:cuponActivo.codigo, descuento:cuponActivo.descuento};
 
   api("/pedidos","POST",payload).then(function(r){
@@ -1534,15 +1513,15 @@ function pedido(){
       fetch("/api/cupones/usar",{method:"POST",headers:{"Content-Type":"application/json"},
         body:JSON.stringify({codigo:cuponActivo.codigo})});
       cuponActivo=null;
-      var cuponInp=document.getElementById("cuponInput");
+      let cuponInp=document.getElementById("cuponInput");
       if(cuponInp) cuponInp.value="";
-      var cuponMsg=document.getElementById("cuponMsg");
+      let cuponMsg=document.getElementById("cuponMsg");
       if(cuponMsg){cuponMsg.textContent="";cuponMsg.className="cupon-msg";}
     }
 
-    var itemsSnapshot = JSON.parse(JSON.stringify(carrito));
-    var pedidoId = r.pedidoId;
-    var totalFinal = total;
+    let itemsSnapshot = JSON.parse(JSON.stringify(carrito));
+    let pedidoId = r.pedidoId;
+    let totalFinal = total;
     carrito=[];
     actualizarCarrito();
     cerrarCarrito();
@@ -1556,30 +1535,30 @@ function pedido(){
 function generarFactura(){
   if(!usuario){toast("Inicia sesión","e");abrirModal("mLogin");return;}
   if(!carrito.length){toast("Carrito vacío","e");return;}
-  var total=carrito.reduce(function(s,x){return s+x.p*x.qty;},0),iva=total*.16;
-  var numFact="NST-"+new Date().getFullYear()+"-"+String(contFact++).padStart(5,"0");
-  var fecha=new Date().toLocaleDateString("es-CO",{year:"numeric",month:"long",day:"numeric"});
-  var rows=carrito.map(function(it){return '<tr><td>'+(it.e||"📦")+' '+it.n+'</td><td style="text-align:center">'+it.qty+'</td><td style="text-align:right">'+bs(it.p)+'</td><td style="text-align:right;font-weight:700">'+bs(it.p*it.qty)+'</td></tr>';}).join("");
+  let total=carrito.reduce(function(s,x){return s+x.p*x.qty;},0),iva=total*.16;
+  let numFact="NST-"+new Date().getFullYear()+"-"+String(contFact++).padStart(5,"0");
+  let fecha=new Date().toLocaleDateString("es-CO",{year:"numeric",month:"long",day:"numeric"});
+  let rows=carrito.map(function(it){return '<tr><td>'+(it.e||"📦")+' '+it.n+'</td><td style="text-align:center">'+it.qty+'</td><td style="text-align:right">'+bs(it.p)+'</td><td style="text-align:right;font-weight:700">'+bs(it.p*it.qty)+'</td></tr>';}).join("");
   document.getElementById("factBody").innerHTML='<div class="fact-logo"><span>Nuestro</span>Store</div><div class="fact-sub">NIT: 900.123.456-7 · Bogotá, Colombia<br>Teléfono: +57 601 000 0000</div><hr style="border:1px solid #f0f0f0;margin-bottom:16px"/><div class="fact-info"><p><strong>N° Factura:</strong> '+numFact+'</p><p><strong>Fecha:</strong> '+fecha+'</p><p><strong>Cliente:</strong> '+usuario.n+' '+usuario.a+'</p><p><strong>Correo:</strong> '+usuario.email+'</p></div><table class="fact-table"><thead><tr><th>Producto</th><th style="text-align:center">Cant.</th><th style="text-align:right">Precio</th><th style="text-align:right">Total</th></tr></thead><tbody>'+rows+'</tbody></table><div style="text-align:right;font-size:.85rem;color:#555;margin-bottom:4px">Subtotal: '+bs(total)+'</div><div style="text-align:right;font-size:.85rem;color:#555;margin-bottom:4px">IVA (19%): '+bs(iva)+'</div><div class="fact-total">TOTAL A PAGAR: '+bs(total+iva)+'</div><div class="fact-footer">Gracias por su compra · NuestroStore</div>';
   document.getElementById("factOverlay").classList.add("show");document.body.style.overflow="hidden";
 }
 function cerrarFactura(){document.getElementById("factOverlay").classList.remove("show");document.body.style.overflow="";}
-function imprimirFactura(){var v=window.open("","_blank","width=600,height=800");v.document.write('<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><title>Factura NuestroStore</title><link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet"/><style>body{font-family:Nunito,sans-serif;padding:32px;max-width:500px;margin:0 auto;}.fact-logo{font-size:2rem;font-weight:900;color:#E65100;letter-spacing:2px;text-align:center;}.fact-logo span{color:#1A1A1A;}.fact-sub{text-align:center;color:#757575;font-size:.8rem;margin-bottom:16px;}.fact-info{background:#f8f8f8;border-radius:8px;padding:12px;margin-bottom:14px;font-size:.85rem;}.fact-info strong{color:#E65100;}.fact-table{width:100%;border-collapse:collapse;margin-bottom:14px;font-size:.85rem;}.fact-table th{background:#E65100;color:#fff;padding:8px 10px;text-align:left;}.fact-table td{padding:7px 10px;border-bottom:1px solid #f0f0f0;}.fact-total{text-align:right;font-size:1.1rem;font-weight:900;color:#E65100;padding:10px 0;border-top:2px solid #E65100;}.fact-footer{text-align:center;color:#757575;font-size:.75rem;margin-top:14px;padding-top:10px;border-top:1px solid #f0f0f0;}@media print{button{display:none;}}</style></head><body>'+document.getElementById("factBody").innerHTML+'<button onclick="window.print()" style="width:100%;padding:12px;background:#E65100;color:#fff;border:none;border-radius:8px;font-weight:900;font-size:1rem;cursor:pointer;margin-top:12px">🖨️ Imprimir / PDF</button></body></html>');v.document.close();}
+function imprimirFactura(){let v=window.open("","_blank","width=600,height=800");v.document.write('<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><title>Factura NuestroStore</title><link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet"/><style>body{font-family:Nunito,sans-serif;padding:32px;max-width:500px;margin:0 auto;}.fact-logo{font-size:2rem;font-weight:900;color:#E65100;letter-spacing:2px;text-align:center;}.fact-logo span{color:#1A1A1A;}.fact-sub{text-align:center;color:#757575;font-size:.8rem;margin-bottom:16px;}.fact-info{background:#f8f8f8;border-radius:8px;padding:12px;margin-bottom:14px;font-size:.85rem;}.fact-info strong{color:#E65100;}.fact-table{width:100%;border-collapse:collapse;margin-bottom:14px;font-size:.85rem;}.fact-table th{background:#E65100;color:#fff;padding:8px 10px;text-align:left;}.fact-table td{padding:7px 10px;border-bottom:1px solid #f0f0f0;}.fact-total{text-align:right;font-size:1.1rem;font-weight:900;color:#E65100;padding:10px 0;border-top:2px solid #E65100;}.fact-footer{text-align:center;color:#757575;font-size:.75rem;margin-top:14px;padding-top:10px;border-top:1px solid #f0f0f0;}@media print{button{display:none;}}</style></head><body>'+document.getElementById("factBody").innerHTML+'<button onclick="window.print()" style="width:100%;padding:12px;background:#E65100;color:#fff;border:none;border-radius:8px;font-weight:900;font-size:1rem;cursor:pointer;margin-top:12px">🖨️ Imprimir / PDF</button></body></html>');v.document.close();}
 
 // ── REPORTE ──────────────────────────────────
-function abrirRep(pid){if(!usuario){toast("Inicia sesión","e");abrirModal("mLogin");return;}document.getElementById("rPid").value=pid||0;document.getElementById("rDesc").value="";var sel=document.getElementById("rProdSel");if(sel)sel.innerHTML='<option value="0">-- General --</option>'+PRODS.map(function(p){return '<option value="'+p.id+'"'+(p.id==pid?' selected':'')+'>'+(emojiProd(p))+' '+p.n+'</option>';}).join("");abrirModal("mRep");}
-function enviarRep(){if(!usuario){toast("Inicia sesión","e");return;}var desc=document.getElementById("rDesc").value.trim(),tipo=document.getElementById("rTipo").value,sel=document.getElementById("rProdSel"),pid=sel?parseInt(sel.value)||0:0;if(!desc){toast("Describe el problema","e");return;}api("/reportes","POST",{uid:usuario.id,pid:pid,tipo:tipo,desc:desc}).then(function(r){if(!r.ok){toast("Error","e");return;}document.getElementById("rDesc").value="";cerrarModal("mRep");toast("✅ Reporte enviado","s");});}
+function abrirRep(pid){if(!usuario){toast("Inicia sesión","e");abrirModal("mLogin");return;}document.getElementById("rPid").value=pid||0;document.getElementById("rDesc").value="";let sel=document.getElementById("rProdSel");if(sel)sel.innerHTML='<option value="0">-- General --</option>'+PRODS.map(function(p){return '<option value="'+p.id+'"'+(p.id==pid?' selected':'')+'>'+(emojiProd(p))+' '+p.n+'</option>';}).join("");abrirModal("mRep");}
+function enviarRep(){if(!usuario){toast("Inicia sesión","e");return;}let desc=document.getElementById("rDesc").value.trim(),tipo=document.getElementById("rTipo").value,sel=document.getElementById("rProdSel"),pid=sel?parseInt(sel.value)||0:0;if(!desc){toast("Describe el problema","e");return;}api("/reportes","POST",{uid:usuario.id,pid:pid,tipo:tipo,desc:desc}).then(function(r){if(!r.ok){toast("Error","e");return;}document.getElementById("rDesc").value="";cerrarModal("mRep");toast("✅ Reporte enviado","s");});}
 
 // ── RESPONDER REPORTE (mejorado) ─────────────
 function abrirRespRep(rid){
-  var rep=REPORTES.find(function(r){return r.id===rid;});if(!rep)return;
-  var estLabel={pendiente:"⏳ Pendiente",en_revision:"🔄 En Revisión",resuelto:"✅ Resuelto"}[rep.estado]||rep.estado;
-  var estCls={pendiente:"rep-est-pendiente",en_revision:"rep-est-revision",resuelto:"rep-est-resuelto"}[rep.estado]||"";
-  var userAva=(rep.uAvatar&&rep.uAvatar.length<8)?rep.uAvatar:(rep.uNom||"U")[0];
-  var html='<div class="rep-card" style="margin-bottom:0;border:none">'+
+  let rep=REPORTES.find(function(r){return r.id===rid;});if(!rep)return;
+  let estLabel={pendiente:"⏳ Pendiente",en_revision:"🔄 En Revisión",resuelto:"✅ Resuelto"}[rep.estado]||rep.estado;
+  let estCls={pendiente:"rep-est-pendiente",en_revision:"rep-est-revision",resuelto:"rep-est-resuelto"}[rep.estado]||"";
+  let userAva=(rep.uAvatar&&rep.uAvatar.length<8)?rep.uAvatar:(rep.uNom||"U")[0];
+  let html='<div class="rep-card" style="margin-bottom:0;border:none">'+
     '<div class="rep-card-head">'+
       '<div class="rep-user-ava">'+userAva+'</div>'+
-      '<div><strong style="font-size:.9rem">'+rep.uNom+'</strong><br><small style="color:var(--gr)">'+rep.fecha+'</small></div>'+
+      '<div><strong style="font-size:.9rem">'+rep.uNom+'</strong><br><small style="color:let(--gr)">'+rep.fecha+'</small></div>'+
       '<span class="rep-tipo-badge">'+rep.tipo+'</span>'+
       '<span class="rep-est-badge '+estCls+'">'+estLabel+'</span>'+
     '</div>'+
@@ -1602,7 +1581,7 @@ function abrirRespRep(rid){
   document.getElementById("mRespRepB").innerHTML=html;
   abrirModal("mRespRep");
 }
-function enviarRespuesta(){var rid=parseInt(document.getElementById("respRepId").value),resp=document.getElementById("respRepTxt").value.trim(),est=document.getElementById("respRepEst").value;if(!resp){toast("Escribe una respuesta","e");return;}var admin=usuario?usuario.n+" "+usuario.a:"Admin";api("/reportes/"+rid+"/responder","POST",{respuesta:resp,estado:est,admin:admin}).then(function(r){if(!r.ok){toast("Error","e");return;}cerrarModal("mRespRep");toast("Respuesta enviada ✅","s");renderAdminTab();if(usuario&&usuario.rol==="superadmin"){invalidateSCache(["reportes"]);renderSuperTab();}});}
+function enviarRespuesta(){let rid=parseInt(document.getElementById("respRepId").value),resp=document.getElementById("respRepTxt").value.trim(),est=document.getElementById("respRepEst").value;if(!resp){toast("Escribe una respuesta","e");return;}let admin=usuario?usuario.n+" "+usuario.a:"Admin";api("/reportes/"+rid+"/responder","POST",{respuesta:resp,estado:est,admin:admin}).then(function(r){if(!r.ok){toast("Error","e");return;}cerrarModal("mRespRep");toast("Respuesta enviada ✅","s");renderAdminTab();if(usuario&&usuario.rol==="superadmin"){invalidateSCache(["reportes"]);renderSuperTab();}});}
 
 // ── PANEL CLIENTE ────────────────────────────
 // ── GLOBAL ONCLICK HELPERS (sin argumentos = sin problemas de comillas) ──
@@ -1617,17 +1596,17 @@ function cerrarRegBtn(){ cerrarModal("mReg"); }
 
 function abrirCuentaCliente(){
   document.getElementById("panT").textContent="👤 Mi Cuenta";
-  var pb=document.getElementById("panB");
-  var userAva=usuario.avatar?(usuario.avatar.length<8?usuario.avatar:'<img src="'+usuario.avatar+'" style="width:52px;height:52px;object-fit:cover;border-radius:50%"/>'):(usuario.n[0]);
-  pb.innerHTML='<div style="background:linear-gradient(135deg,var(--na3),var(--na2));border-radius:14px;padding:18px;color:#fff;margin-bottom:20px;display:flex;align-items:center;gap:14px">'+
-    '<div style="width:52px;height:52px;border-radius:50%;background:var(--am);color:var(--na3);display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:900;flex-shrink:0;overflow:hidden">'+userAva+'</div>'+
+  let pb=document.getElementById("panB");
+  let userAva=usuario.avatar?(usuario.avatar.length<8?usuario.avatar:'<img src="'+usuario.avatar+'" style="width:52px;height:52px;object-fit:cover;border-radius:50%"/>'):(usuario.n[0]);
+  pb.innerHTML='<div style="background:linear-gradient(135deg,let(--na3),let(--na2));border-radius:14px;padding:18px;color:#fff;margin-bottom:20px;display:flex;align-items:center;gap:14px">'+
+    '<div style="width:52px;height:52px;border-radius:50%;background:let(--am);color:let(--na3);display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:900;flex-shrink:0;overflow:hidden">'+userAva+'</div>'+
     '<div><div style="font-weight:800;font-size:1.1rem">'+usuario.n+' '+usuario.a+'</div><div style="opacity:.85;font-size:.85rem">'+usuario.email+'</div>'+
-    '<span style="background:var(--am);color:var(--na3);padding:2px 10px;border-radius:50px;font-size:.72rem;font-weight:900;margin-top:4px;display:inline-block">👤 Cliente</span></div></div>'+
+    '<span style="background:let(--am);color:let(--na3);padding:2px 10px;border-radius:50px;font-size:.72rem;font-weight:900;margin-top:4px;display:inline-block">👤 Cliente</span></div></div>'+
     '<div style="display:flex;gap:8px;margin-bottom:12px">'+
       '<button class="bp" style="flex:1;font-size:.85rem;padding:10px" onclick="panelEditarPerfil()">✏️ Editar Perfil</button>'+
       '<button class="bs" style="flex:1;font-size:.85rem;padding:10px;margin-top:0" onclick="panelSalir()">🚪 Salir</button>'+
     '</div>'+
-    '<button onclick="mpPanelToggle()" id="mpPanelBtn" style="width:100%;margin-bottom:18px;padding:10px 14px;border-radius:10px;border:2px solid #e0d0c0;background:#fff8f0;font-weight:800;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;color:var(--na3)">'+mpPanelBtnLabel()+'</button>'+
+    '<button onclick="mpPanelToggle()" id="mpPanelBtn" style="width:100%;margin-bottom:18px;padding:10px 14px;border-radius:10px;border:2px solid #e0d0c0;background:#fff8f0;font-weight:800;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;color:let(--na3)">'+mpPanelBtnLabel()+'</button>'+
     '<div class="tabs"><button class="tab on" onclick="cTabN(this,2)">🛍️ Mis Compras</button><button class="tab" onclick="cTabN(this,5)">💙 Favoritos</button><button class="tab" onclick="cTabN(this,6)">💬 Chat</button><button class="tab" onclick="cTabN(this,1)">🚨 Reportes</button><button class="tab" onclick="cTabN(this,3)">📋 Historial</button><button class="tab" onclick="cTabN(this,4)">⭐ Reseñas</button></div>'+
     '<div id="cTabBody"></div>';
   cTabN(pb.querySelector(".tab"),2);
@@ -1650,7 +1629,7 @@ function _renderChatTab(c){
   _chatCargarMensajes();
   if(_chatTimer) clearInterval(_chatTimer);
   _chatTimer = setInterval(function(){
-    var box = document.getElementById('chatPanelBox');
+    let box = document.getElementById('chatPanelBox');
     if(!box){ clearInterval(_chatTimer); _chatTimer=null; return; }
     _chatCargarMensajes(true);
   }, 4000);
@@ -1660,11 +1639,11 @@ function _chatCargarMensajes(silencioso){
   fetch('/api/chat?uid='+usuario.id)
     .then(function(r){ return r.json(); })
     .then(function(r){
-      var box = document.getElementById('chatPanelBox');
+      let box = document.getElementById('chatPanelBox');
       if(!box || !r.ok) return;
-      var msgs = r.mensajes || [];
-      var wasEmpty = box.querySelector('.chat-empty-state') !== null;
-      var atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 40;
+      let msgs = r.mensajes || [];
+      let wasEmpty = box.querySelector('.chat-empty-state') !== null;
+      let atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 40;
       if(!msgs.length){
         if(wasEmpty) return; // Already showing empty state
         box.innerHTML = '<div class="chat-empty-state"><div style="font-size:2.5rem">💬</div><div class="chat-empty-title">Soporte en vivo</div><div class="chat-empty-sub">¿Tienes alguna pregunta? Escríbenos, respondemos en menos de 24h.</div></div>';
@@ -1672,7 +1651,7 @@ function _chatCargarMensajes(silencioso){
       }
       // Rebuild messages
       box.innerHTML = msgs.map(function(m){
-        var esCliente = m.remitente === 'cliente';
+        let esCliente = m.remitente === 'cliente';
         return '<div class="chat-msg-row '+(esCliente?'chat-msg-row-client':'chat-msg-row-support')+'">'
           + '<div class="chat-bubble '+(esCliente?'chat-bubble-client':'chat-bubble-support')+'">'
           + _escapeHtml(m.mensaje)
@@ -1690,21 +1669,21 @@ function _chatLimpiarAlCerrar(){
 }
 
 function _enviarMsgPanel(){
-  var inp = document.getElementById('chatPanelInput');
-  var btn = document.getElementById('chatSendBtn');
+  let inp = document.getElementById('chatPanelInput');
+  let btn = document.getElementById('chatSendBtn');
   if(!inp) return;
-  var msg = inp.value.trim();
+  let msg = inp.value.trim();
   if(!msg) return;
   inp.value = '';
   inp.disabled = true;
   if(btn) btn.disabled = true;
 
   // Optimistic UI: show message immediately
-  var box = document.getElementById('chatPanelBox');
+  let box = document.getElementById('chatPanelBox');
   if(box){
-    var emptyState = box.querySelector('.chat-empty-state');
+    let emptyState = box.querySelector('.chat-empty-state');
     if(emptyState) box.innerHTML = '';
-    var row = document.createElement('div');
+    let row = document.createElement('div');
     row.className = 'chat-msg-row chat-msg-row-client';
     row.innerHTML = '<div class="chat-bubble chat-bubble-client">'+_escapeHtml(msg)+'</div>'
       + '<div class="chat-msg-time">Tú · enviando…</div>';
@@ -1733,9 +1712,9 @@ function _enviarMsgPanel(){
 }
 
 
-  var inp = document.getElementById("chatPanelInput");
+  let inp = document.getElementById("chatPanelInput");
   if(!inp) return;
-  var msg = inp.value.trim();
+  let msg = inp.value.trim();
   if(!msg) return;
   inp.value = "";
   fetch("/api/chat",{
@@ -1746,13 +1725,13 @@ function _enviarMsgPanel(){
     if(r.ok){
       // Refresh panel
       fetch("/api/chat?uid="+usuario.id).then(function(r){return r.json();}).then(function(r){
-        var box = document.getElementById("chatPanelBox");
+        let box = document.getElementById("chatPanelBox");
         if(!box||!r.ok) return;
-        var msgs = r.mensajes||[];
+        let msgs = r.mensajes||[];
         box.innerHTML = "";
         msgs.forEach(function(m){
-          var ec = m.remitente==="cliente";
-          var div = document.createElement("div");
+          let ec = m.remitente==="cliente";
+          let div = document.createElement("div");
           div.style.cssText = "display:flex;flex-direction:column;"+(ec?"align-items:flex-end":"align-items:flex-start");
           div.innerHTML =
             '<div style="max-width:82%;background:'+(ec?"linear-gradient(135deg,#1E3A8A,#2563EB)":"#F1F5F9")
@@ -1760,7 +1739,7 @@ function _enviarMsgPanel(){
             +';padding:9px 13px;border-radius:'+(ec?"14px 4px 14px 14px":"4px 14px 14px 14px")
             +';font-size:.86rem;line-height:1.5">'
             +_escapeHtml(m.mensaje)+'</div>'
-            +'<div style="font-size:.68rem;color:var(--gr);margin-top:2px">'
+            +'<div style="font-size:.68rem;color:let(--gr);margin-top:2px">'
             +(ec?"Tú":"Soporte")+' · '+(m.fecha||"").slice(11,16)+'</div>';
           box.appendChild(div);
         });
@@ -1771,8 +1750,8 @@ function _enviarMsgPanel(){
 
 function cTabN(btn,t){
   document.querySelectorAll("#panB .tab").forEach(function(b){b.classList.remove("on");});btn.classList.add("on");
-  var c=document.getElementById("cTabBody");
-  c.innerHTML='<div style="text-align:center;padding:24px;color:var(--gr)">Cargando…</div>';
+  let c=document.getElementById("cTabBody");
+  c.innerHTML='<div style="text-align:center;padding:24px;color:let(--gr)">Cargando…</div>';
   if(t===1){api("/mis-reportes/"+usuario.id).then(function(r){if(r.ok)REPORTES=r.reportes;c.innerHTML=renderMisReportes(REPORTES);});}
   else if(t===2){api("/mis-pedidos/"+usuario.id).then(function(r){if(r.ok)PEDIDOS=r.pedidos;c.innerHTML=renderMisPedidos(PEDIDOS);});}
   else if(t===3){
@@ -1780,21 +1759,21 @@ function cTabN(btn,t){
       if(res[0].ok)PEDIDOS=res[0].pedidos;if(res[1].ok)REPORTES=res[1].reportes;
       c.innerHTML=renderHistorial(PEDIDOS,REPORTES);
     });
-  } else if(t===5){ c.innerHTML=renderWishlist(); } else if(t===6){ _renderChatTab(c); } else{api("/resenias").then(function(r){if(!r.ok){c.innerHTML='<div class="empty"><div class="eico">⭐</div><h3>Sin reseñas</h3></div>';return;}var mis=r.resenias.filter(function(x){return x.uid===usuario.id;});if(!mis.length){c.innerHTML='<div class="empty"><div class="eico">⭐</div><h3>Sin reseñas aún</h3></div>';return;}c.innerHTML='<div style="display:flex;flex-direction:column;gap:10px">'+mis.map(function(res){var pn=(PRODS.find(function(p){return p.id===res.pid;})||{n:"Producto"}).n;return '<div style="border:2px solid #f0f0f0;border-radius:12px;padding:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><strong style="color:var(--na3)">'+pn+'</strong><span style="color:#f59e0b">'+starsHtml(res.estrellas)+'</span></div><p style="font-size:.88rem;color:#444">'+res.comentario+'</p><small style="color:var(--gr)">'+res.fecha+'</small></div>';}).join("")+'</div>';});}
+  } else if(t===5){ c.innerHTML=renderWishlist(); } else if(t===6){ _renderChatTab(c); } else{api("/resenias").then(function(r){if(!r.ok){c.innerHTML='<div class="empty"><div class="eico">⭐</div><h3>Sin reseñas</h3></div>';return;}let mis=r.resenias.filter(function(x){return x.uid===usuario.id;});if(!mis.length){c.innerHTML='<div class="empty"><div class="eico">⭐</div><h3>Sin reseñas aún</h3></div>';return;}c.innerHTML='<div style="display:flex;flex-direction:column;gap:10px">'+mis.map(function(res){let pn=(PRODS.find(function(p){return p.id===res.pid;})||{n:"Producto"}).n;return '<div style="border:2px solid #f0f0f0;border-radius:12px;padding:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><strong style="color:let(--na3)">'+pn+'</strong><span style="color:#f59e0b">'+starsHtml(res.estrellas)+'</span></div><p style="font-size:.88rem;color:#444">'+res.comentario+'</p><small style="color:let(--gr)">'+res.fecha+'</small></div>';}).join("")+'</div>';});}
 }
 
 function renderMisReportes(lista){
   if(!lista||!lista.length)return '<div class="empty"><div class="eico">📋</div><h3>Sin reportes</h3><p>¿Encontraste un problema? Avísanos.</p></div><button class="bp" style="margin-top:12px" onclick="cerrarModal(\"mProd\");abrirRep(0)">+ Enviar Reporte</button>';
   return '<div style="display:flex;flex-direction:column;gap:10px">'+lista.map(function(r){
-    var col=r.estado==="resuelto"?"#2e7d32":r.estado==="en_revision"?"#1565c0":"#e65100";
-    var lbl=r.estado==="resuelto"?"✅ Resuelto":r.estado==="en_revision"?"🔄 En revisión":"⏳ Pendiente";
-    var bg=r.estado==="resuelto"?"#e8f5e9":r.estado==="en_revision"?"#e3f2fd":"#fff3e0";
+    let col=r.estado==="resuelto"?"#2e7d32":r.estado==="en_revision"?"#1565c0":"#e65100";
+    let lbl=r.estado==="resuelto"?"✅ Resuelto":r.estado==="en_revision"?"🔄 En revisión":"⏳ Pendiente";
+    let bg=r.estado==="resuelto"?"#e8f5e9":r.estado==="en_revision"?"#e3f2fd":"#fff3e0";
     return '<div style="border:2px solid '+col+'33;border-radius:14px;padding:14px;background:'+bg+'22">'+
       '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">'+
         '<div style="width:36px;height:36px;border-radius:10px;background:'+col+'22;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0">🚨</div>'+
         '<div style="flex:1;min-width:0">'+
-          '<strong style="font-size:.88rem;color:var(--bk)">'+r.pNom+'</strong>'+
-          '<div style="font-size:.74rem;color:var(--gr)">📅 '+r.fecha+' · 🏷️ '+r.tipo+'</div>'+
+          '<strong style="font-size:.88rem;color:let(--bk)">'+r.pNom+'</strong>'+
+          '<div style="font-size:.74rem;color:let(--gr)">📅 '+r.fecha+' · 🏷️ '+r.tipo+'</div>'+
         '</div>'+
         '<span style="background:'+col+'22;color:'+col+';padding:3px 10px;border-radius:50px;font-size:.72rem;font-weight:900">'+lbl+'</span>'+
       '</div>'+
@@ -1803,7 +1782,7 @@ function renderMisReportes(lista){
         '<div style="font-size:.72rem;font-weight:900;color:'+col+';margin-bottom:4px">💬 Respuesta del equipo · '+(r.respFecha||"")+'</div>'+
         '<div style="font-size:.83rem;color:#333;line-height:1.55">'+r.respuesta+'</div>'+
       '</div>':
-      '<div style="font-size:.75rem;color:var(--gr);margin-top:6px;font-style:italic">⏳ Esperando respuesta del equipo…</div>')+
+      '<div style="font-size:.75rem;color:let(--gr);margin-top:6px;font-style:italic">⏳ Esperando respuesta del equipo…</div>')+
     '</div>';
   }).join("")+'</div><button class="bp" style="margin-top:14px" onclick="cerrarModal(\"mProd\");abrirRep(0)">+ Nuevo Reporte</button>';
 }
@@ -1813,14 +1792,14 @@ function renderMisPedidos(lista){
     '<div class="empty">'+
     '<div class="eico">🛍️</div>'+
     '<h3>'+t("sinPedidos")+'</h3>'+
-    '<p style="color:var(--gr);font-size:.88rem;margin:8px 0 16px">Tus compras aparecerán aquí</p>'+
+    '<p style="color:let(--gr);font-size:.88rem;margin:8px 0 16px">Tus compras aparecerán aquí</p>'+
     '<button class="btn-hero-2" style="margin-top:4px;font-size:.85rem" onclick="cerrarModal(\"mPanel\");irPagina(\"tienda\")">🛍️ '+t("verTienda")+'</button>'+
     '</div>'
   );
-  var totalGastado=lista.reduce(function(s,p){return s+(p.total||0);},0);
-  var totalItems=lista.reduce(function(s,p){return s+(p.items?p.items.reduce(function(a,i){return a+(i.qty||1);},0):0);},0);
+  let totalGastado=lista.reduce(function(s,p){return s+(p.total||0);},0);
+  let totalItems=lista.reduce(function(s,p){return s+(p.items?p.items.reduce(function(a,i){return a+(i.qty||1);},0):0);},0);
   // Stats strip
-  var stats=(
+  let stats=(
     '<div class="historial-stats">'+
       '<div class="hstat-card hstat-orange">'+
         '<div class="hstat-n">'+lista.length+'</div>'+
@@ -1837,7 +1816,7 @@ function renderMisPedidos(lista){
     '</div>'
   );
   // Search/filter bar
-  var filtro=(
+  let filtro=(
     '<div class="historial-filtro">'+
       '<input class="fc historial-search" id="histSearch" placeholder="🔍 Buscar en mis compras…" oninput="filtrarHistorial(this.value)" style="margin:0;font-size:.85rem"/>'+
       '<select class="historial-select" id="histEstado" onchange="filtrarHistorial(document.getElementById(\'histSearch\').value)">'+
@@ -1850,14 +1829,14 @@ function renderMisPedidos(lista){
     '</div>'
   );
   // Pedido cards
-  var cards=lista.map(function(ped,idx){
-    var estadoColor={procesado:"#2e7d32",enviado:"#1565c0",entregado:"#7b1fa2",cancelado:"#c62828"}[ped.estado]||"#2e7d32";
-    var estadoBg={procesado:"#e8f5e9",enviado:"#e3f2fd",entregado:"#f3e5f5",cancelado:"#ffebee"}[ped.estado]||"#e8f5e9";
-    var estadoLabel={procesado:t("procesado"),enviado:t("enviado"),entregado:t("entregado"),cancelado:t("cancelado")}[ped.estado]||t("procesado");
-    var subtotal=ped.total||0;
-    var iva=subtotal*0.16;
-    var totalConIva=subtotal+iva;
-    var items=ped.items||[];
+  let cards=lista.map(function(ped,idx){
+    let estadoColor={procesado:"#2e7d32",enviado:"#1565c0",entregado:"#7b1fa2",cancelado:"#c62828"}[ped.estado]||"#2e7d32";
+    let estadoBg={procesado:"#e8f5e9",enviado:"#e3f2fd",entregado:"#f3e5f5",cancelado:"#ffebee"}[ped.estado]||"#e8f5e9";
+    let estadoLabel={procesado:t("procesado"),enviado:t("enviado"),entregado:t("entregado"),cancelado:t("cancelado")}[ped.estado]||t("procesado");
+    let subtotal=ped.total||0;
+    let iva=subtotal*0.16;
+    let totalConIva=subtotal+iva;
+    let items=ped.items||[];
     return(
       '<div class="historial-card" data-estado="'+ped.estado+'" data-search="'+
         items.map(function(i){return i.n;}).join(" ").toLowerCase()+' '+ped.id+'"'+
@@ -1871,8 +1850,8 @@ function renderMisPedidos(lista){
         '</div>'+
         '<div class="historial-items">'+
           items.slice(0,4).map(function(it){
-            var p=PRODS.find(function(x){return x.id===it.id;})||{};
-            var imgEl=it.img||p.img
+            let p=PRODS.find(function(x){return x.id===it.id;})||{};
+            let imgEl=it.img||p.img
               ?'<img src="'+(it.img||p.img)+'" class="hitem-img"/>'
               :'<div class="hitem-emoji">'+(it.e||"📦")+'</div>';
             return(
@@ -1904,14 +1883,14 @@ function renderMisPedidos(lista){
 }
 
 function filtrarHistorial(q){
-  var estado=document.getElementById("histEstado");
-  var estVal=estado?estado.value:"";
-  var ql=(q||"").toLowerCase();
+  let estado=document.getElementById("histEstado");
+  let estVal=estado?estado.value:"";
+  let ql=(q||"").toLowerCase();
   document.querySelectorAll(".historial-card").forEach(function(card){
-    var search=card.getAttribute("data-search")||"";
-    var cardEst=card.getAttribute("data-estado")||"";
-    var matchQ=!ql||search.indexOf(ql)>=0;
-    var matchE=!estVal||cardEst===estVal;
+    let search=card.getAttribute("data-search")||"";
+    let cardEst=card.getAttribute("data-estado")||"";
+    let matchQ=!ql||search.indexOf(ql)>=0;
+    let matchE=!estVal||cardEst===estVal;
     card.style.display=(matchQ&&matchE)?"":"none";
   });
 }
@@ -1922,50 +1901,50 @@ function abrirRepDesdePedido(pedId){
 }
 
 function verFacturaPedido(idx){
-  var pedidos=PEDIDOS;
+  let pedidos=PEDIDOS;
   if(!pedidos||!pedidos[idx])return;
-  var ped=pedidos[idx];
+  let ped=pedidos[idx];
   carrito=ped.items.map(function(it){return{id:it.id,n:it.n,p:it.p,qty:it.qty||1,e:it.e,img:it.img};});
   generarFactura(ped.id);
 }
 
 
 function renderHistorial(pedidos,reportes){
-  var eventos=[];
+  let eventos=[];
   (pedidos||[]).forEach(function(p){eventos.push({tipo:"pedido",fecha:p.fecha,data:p});});
   (reportes||[]).forEach(function(r){eventos.push({tipo:"reporte",fecha:r.fecha,data:r});});
   eventos.sort(function(a,b){return (b.fecha||"").localeCompare(a.fecha||"");});
   if(!eventos.length)return '<div class="empty"><div class="eico">📋</div><h3>Sin historial</h3><p>Tus compras y reportes aparecerán aquí.</p></div>';
   return '<div style="position:relative">'+
-    '<div style="position:absolute;left:18px;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--na2),var(--am));border-radius:2px;z-index:0"></div>'+
+    '<div style="position:absolute;left:18px;top:0;bottom:0;width:2px;background:linear-gradient(180deg,let(--na2),let(--am));border-radius:2px;z-index:0"></div>'+
     '<div style="display:flex;flex-direction:column;gap:12px;padding-left:44px;position:relative;z-index:1">'+
     eventos.map(function(ev){
-      var isPedido=ev.tipo==="pedido";var d=ev.data;
-      var dot=isPedido?
-        '<div style="position:absolute;left:-30px;top:14px;width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,var(--na3),var(--na2));border:3px solid #fff;box-shadow:0 2px 8px rgba(255,109,0,.3);display:flex;align-items:center;justify-content:center;font-size:.6rem">🛒</div>':
+      let isPedido=ev.tipo==="pedido";let d=ev.data;
+      let dot=isPedido?
+        '<div style="position:absolute;left:-30px;top:14px;width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,let(--na3),let(--na2));border:3px solid #fff;box-shadow:0 2px 8px rgba(255,109,0,.3);display:flex;align-items:center;justify-content:center;font-size:.6rem">🛒</div>':
         '<div style="position:absolute;left:-30px;top:14px;width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,#1565c0,#42a5f5);border:3px solid #fff;box-shadow:0 2px 8px rgba(21,101,192,.3);display:flex;align-items:center;justify-content:center;font-size:.6rem">🚨</div>';
       if(isPedido){
-        var estadoLabel={procesado:"✅ Procesado",enviado:"🚚 Enviado",entregado:"📦 Entregado",cancelado:"❌ Cancelado"}[d.estado]||"✅ Procesado";
-        var nItems=d.items?d.items.reduce(function(s,i){return s+(i.qty||1);},0):0;
+        let estadoLabel={procesado:"✅ Procesado",enviado:"🚚 Enviado",entregado:"📦 Entregado",cancelado:"❌ Cancelado"}[d.estado]||"✅ Procesado";
+        let nItems=d.items?d.items.reduce(function(s,i){return s+(i.qty||1);},0):0;
         return '<div style="position:relative;background:#fff;border:1.5px solid #f0e6d6;border-radius:14px;padding:14px">'+dot+
           '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">'+
-            '<div><div style="font-weight:900;font-size:.88rem;color:var(--na3)">Pedido #'+d.id+'</div>'+
-            '<div style="font-size:.74rem;color:var(--gr)">📅 '+d.fecha+'</div></div>'+
+            '<div><div style="font-weight:900;font-size:.88rem;color:let(--na3)">Pedido #'+d.id+'</div>'+
+            '<div style="font-size:.74rem;color:let(--gr)">📅 '+d.fecha+'</div></div>'+
             '<span style="background:#e8f5e9;color:#2e7d32;padding:2px 9px;border-radius:50px;font-size:.7rem;font-weight:900">'+estadoLabel+'</span>'+
           '</div>'+
           '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
-            d.items.slice(0,3).map(function(it){return '<div style="background:#faf5f0;border-radius:8px;padding:4px 8px;font-size:.75rem;font-weight:700;color:var(--bk)">'+(it.e||"📦")+' '+it.n+' ×'+it.qty+'</div>';}).join("")+
-            (d.items.length>3?'<div style="background:#f5f5f5;border-radius:8px;padding:4px 8px;font-size:.75rem;color:var(--gr)">+'+(d.items.length-3)+' más</div>':'')+
+            d.items.slice(0,3).map(function(it){return '<div style="background:#faf5f0;border-radius:8px;padding:4px 8px;font-size:.75rem;font-weight:700;color:let(--bk)">'+(it.e||"📦")+' '+it.n+' ×'+it.qty+'</div>';}).join("")+
+            (d.items.length>3?'<div style="background:#f5f5f5;border-radius:8px;padding:4px 8px;font-size:.75rem;color:let(--gr)">+'+(d.items.length-3)+' más</div>':'')+
           '</div>'+
-          '<div style="margin-top:8px;font-weight:900;font-size:.9rem;color:var(--na3);text-align:right">'+bs(d.total+d.total*0.16)+'</div>'+
+          '<div style="margin-top:8px;font-weight:900;font-size:.9rem;color:let(--na3);text-align:right">'+bs(d.total+d.total*0.16)+'</div>'+
         '</div>';
       } else {
-        var col=d.estado==="resuelto"?"#2e7d32":d.estado==="en_revision"?"#1565c0":"#e65100";
-        var lbl=d.estado==="resuelto"?"✅ Resuelto":d.estado==="en_revision"?"🔄 En revisión":"⏳ Pendiente";
+        let col=d.estado==="resuelto"?"#2e7d32":d.estado==="en_revision"?"#1565c0":"#e65100";
+        let lbl=d.estado==="resuelto"?"✅ Resuelto":d.estado==="en_revision"?"🔄 En revisión":"⏳ Pendiente";
         return '<div style="position:relative;background:#fff;border:1.5px solid #dbeafe;border-radius:14px;padding:14px">'+dot+
           '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">'+
             '<div><div style="font-weight:900;font-size:.88rem;color:#1565c0">Reporte: '+d.pNom+'</div>'+
-            '<div style="font-size:.74rem;color:var(--gr)">📅 '+d.fecha+' · 🏷️ '+d.tipo+'</div></div>'+
+            '<div style="font-size:.74rem;color:let(--gr)">📅 '+d.fecha+' · 🏷️ '+d.tipo+'</div></div>'+
             '<span style="background:'+col+'22;color:'+col+';padding:2px 9px;border-radius:50px;font-size:.7rem;font-weight:900">'+lbl+'</span>'+
           '</div>'+
           '<div style="font-size:.82rem;color:#555;line-height:1.5;background:#f0f4ff;border-radius:8px;padding:8px 10px">'+(d.desc||d.descripcion||"")+'</div>'+
@@ -1979,7 +1958,7 @@ function renderHistorial(pedidos,reportes){
 
 // ── PANEL ────────────────────────────────────
 function abrirIdiomaMoneda(){
-  var modal = document.getElementById("mIdiomaMoneda");
+  let modal = document.getElementById("mIdiomaMoneda");
   if(!modal){
     modal = document.createElement("div");
     modal.id = "mIdiomaMoneda";
@@ -1988,7 +1967,7 @@ function abrirIdiomaMoneda(){
     modal.addEventListener("click", function(e){ if(e.target===modal) cerrarModal("mIdiomaMoneda"); });
   }
 
-  var curOpts = [
+  let curOpts = [
     {code:"COP", sym:"COP$",  name:"Peso Colombiano",    flag:"🇨🇴", sub:"Colombia"},
     {code:"USD", sym:"$",     name:"Dólar",              flag:"🇺🇸", sub:"Estados Unidos"},
     {code:"COP", sym:"COP$",  name:"Peso Colombiano",    flag:"🇨🇴", sub:"Colombia"},
@@ -1999,8 +1978,8 @@ function abrirIdiomaMoneda(){
     {code:"BRL", sym:"R$",    name:"Real Brasileño",     flag:"🇧🇷", sub:"Brasil"}
   ];
 
-  var curHTML = curOpts.map(function(c){
-    var isSel = CURRENCY===c.code;
+  let curHTML = curOpts.map(function(c){
+    let isSel = CURRENCY===c.code;
     return(
       '<button class="ilm-cur-opt'+(isSel?" ilm-sel":"")+
         '" data-cur="'+c.code+'" onclick="setCurrency(this.dataset.cur);actualizarLangUI()">'+
@@ -2049,11 +2028,11 @@ function abrirIdiomaMoneda(){
 function actualizarLangUI(){
   // Update currency buttons in modal
   document.querySelectorAll(".ilm-cur-opt").forEach(function(b){
-    var isSel = b.dataset.cur===CURRENCY;
+    let isSel = b.dataset.cur===CURRENCY;
     b.classList.toggle("ilm-sel", isSel);
-    var check = b.querySelector(".ilm-check");
+    let check = b.querySelector(".ilm-check");
     if(isSel && !check){
-      var sp=document.createElement("span");sp.className="ilm-check";sp.textContent="✓";b.appendChild(sp);
+      let sp=document.createElement("span");sp.className="ilm-check";sp.textContent="✓";b.appendChild(sp);
     } else if(!isSel && check){
       check.remove();
     }
@@ -2061,30 +2040,30 @@ function actualizarLangUI(){
 }
 
 function abrirPanel(){if(!usuario){abrirModal("mLogin");return;}if(usuario.rol==="administrador"){document.getElementById("panT").textContent="⚙️ Panel Administrador";buildAdmin();abrirModal("mPanel");}else if(usuario.rol==="superadmin"){document.getElementById("panT").textContent="👑 Super Administrador";buildSuper();abrirModal("mPanel");}else{abrirCuentaCliente();}}
-function buildAdmin(){var pb=document.getElementById("panB");var userAvaAdmin=usuario.avatar?(usuario.avatar.startsWith("data:")||/^\p{Emoji}/u.test(usuario.avatar)||usuario.avatar.length<=8)?usuario.avatar:'<img src="'+usuario.avatar+'" style="width:32px;height:32px;object-fit:cover;border-radius:50%"/>':(usuario.n[0]);pb.innerHTML='<div class="panel-user-bar">'+'<div class="pub-ava">'+userAvaAdmin+'</div>'+'<div class="pub-info"><div class="pub-name">'+usuario.n+' '+usuario.a+'</div><div class="pub-role">⚙️ Administrador</div></div>'+'<div class="pub-actions">'+'<button class="pub-btn pub-btn-edit" onclick="panelEditarPerfil()">✏️ Perfil</button>'+'<button class="pub-btn pub-btn-exit" onclick="panelSalir()">🚪 Salir</button>'+'</div></div>'+'<div class="tabs"><button class="tab'+(aTab==="productos"?" on":"")+'" onclick="setATab(\'productos\',this)">📦 Productos</button><button class="tab'+(aTab==="agregar"?" on":"")+'" onclick="setATab(\'agregar\',this)">'+(editId?"💾 Editar":"➕ Añadir")+'</button><button class="tab'+(aTab==="categorias"?" on":"")+'" onclick="setATab(\'categorias\',this)">🏷️ Categorías</button><button class="tab'+(aTab==="reportes"?" on":"")+'" onclick="setATab(\'reportes\',this)">🚨 Reportes</button><button class="tab'+(aTab==="mensajes"?" on":"")+'" onclick="setATab(\'mensajes\',this)" id="tabMensajesAdmin">📬 Mensajes</button></div><div id="aTB"></div>';renderAdminTab();}
+function buildAdmin(){let pb=document.getElementById("panB");let userAvaAdmin=usuario.avatar?(usuario.avatar.startsWith("data:")||/^\p{Emoji}/u.test(usuario.avatar)||usuario.avatar.length<=8)?usuario.avatar:'<img src="'+usuario.avatar+'" style="width:32px;height:32px;object-fit:cover;border-radius:50%"/>':(usuario.n[0]);pb.innerHTML='<div class="panel-user-bar">'+'<div class="pub-ava">'+userAvaAdmin+'</div>'+'<div class="pub-info"><div class="pub-name">'+usuario.n+' '+usuario.a+'</div><div class="pub-role">⚙️ Administrador</div></div>'+'<div class="pub-actions">'+'<button class="pub-btn pub-btn-edit" onclick="panelEditarPerfil()">✏️ Perfil</button>'+'<button class="pub-btn pub-btn-exit" onclick="panelSalir()">🚪 Salir</button>'+'</div></div>'+'<div class="tabs"><button class="tab'+(aTab==="productos"?" on":"")+'" onclick="setATab(\'productos\',this)">📦 Productos</button><button class="tab'+(aTab==="agregar"?" on":"")+'" onclick="setATab(\'agregar\',this)">'+(editId?"💾 Editar":"➕ Añadir")+'</button><button class="tab'+(aTab==="categorias"?" on":"")+'" onclick="setATab(\'categorias\',this)">🏷️ Categorías</button><button class="tab'+(aTab==="reportes"?" on":"")+'" onclick="setATab(\'reportes\',this)">🚨 Reportes</button><button class="tab'+(aTab==="mensajes"?" on":"")+'" onclick="setATab(\'mensajes\',this)" id="tabMensajesAdmin">📬 Mensajes</button></div><div id="aTB"></div>';renderAdminTab();}
 function setATab(t,btn){aTab=t;document.querySelectorAll("#panB .tab").forEach(function(b){b.classList.remove("on");});btn.classList.add("on");renderAdminTab();}
 function renderAdminTab(){api("/reportes").then(function(r){if(r.ok){REPORTES=r.reportes;_renderAdminTab();}else _renderAdminTab();});}
 function _renderAdminTab(){
-  var c=document.getElementById("aTB");if(!c)return;
+  let c=document.getElementById("aTB");if(!c)return;
   if(aTab==="productos"){
     c.innerHTML='<div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap"><button class="bte" onclick="exportarCSV(\'productos\')">⬇ CSV Productos</button><button class="bte" onclick="exportarCSV(\'pedidos\')">⬇ CSV Pedidos</button><button class="bte" onclick="exportarCSV(\'usuarios\')">⬇ CSV Usuarios</button></div><div class="tw"><table><thead><tr><th>Img</th><th>Nombre</th><th>Precio</th><th>Stock</th><th>Acc.</th></tr></thead><tbody>'+
-      PRODS.map(function(p){var thumb=p.img?'<img src="'+p.img+'" style="width:44px;height:44px;object-fit:cover;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,.1)"/>':'<div style="width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#EFF6FF,#DBEAFE);display:flex;align-items:center;justify-content:center;font-size:1.4rem">'+emojiProd(p)+'</div>';var stBg=p.st<=0?'#FEF2F2':p.st<=10?'#FFFBEB':'#F0FDF4';var stColor=p.st<=0?'#DC2626':p.st<=10?'#D97706':'#16A34A';var stIcon=p.st<=0?' 🚫':p.st<=10?' ⚠️':'';var ofBadge=p.o?'<span style="background:#EFF6FF;color:#1E40AF;font-size:.65rem;font-weight:800;padding:2px 7px;border-radius:50px;margin-left:5px">OFERTA</span>':'';return '<tr>'+'<td>'+thumb+'</td>'+'<td><div style="font-weight:700;font-size:.88rem">'+p.n+ofBadge+'</div><small style="color:#94A3B8;font-size:.72rem">'+p.cat+'</small></td>'+'<td><span style="font-weight:800;color:#1E3A8A;font-family:Bebas Neue,cursive;font-size:1rem">'+bs(p.o||p.p)+'</span>'+(p.o?'<br><small style="color:#94A3B8;text-decoration:line-through;font-size:.72rem">'+bs(p.p)+'</small>':'')+'</td>'+'<td><span style="background:'+stBg+';color:'+stColor+';font-weight:800;font-size:.82rem;padding:4px 10px;border-radius:8px">'+p.st+stIcon+'</span></td>'+'<td style="white-space:nowrap">'+'<button class="bte" onclick="editP('+p.id+')" title="Editar">✏️</button>'+'<button class="btd" onclick="elimP('+p.id+')" title="Eliminar">🗑️</button>'+(p.img?'<button class="btd" title="Quitar foto" onclick="elimFoto('+p.id+')">🖼️</button>':'')+'</td></tr>';}).join('')+'</tbody></table></div>';
+      PRODS.map(function(p){let thumb=p.img?'<img src="'+p.img+'" style="width:44px;height:44px;object-fit:cover;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,.1)"/>':'<div style="width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#EFF6FF,#DBEAFE);display:flex;align-items:center;justify-content:center;font-size:1.4rem">'+emojiProd(p)+'</div>';let stBg=p.st<=0?'#FEF2F2':p.st<=10?'#FFFBEB':'#F0FDF4';let stColor=p.st<=0?'#DC2626':p.st<=10?'#D97706':'#16A34A';let stIcon=p.st<=0?' 🚫':p.st<=10?' ⚠️':'';let ofBadge=p.o?'<span style="background:#EFF6FF;color:#1E40AF;font-size:.65rem;font-weight:800;padding:2px 7px;border-radius:50px;margin-left:5px">OFERTA</span>':'';return '<tr>'+'<td>'+thumb+'</td>'+'<td><div style="font-weight:700;font-size:.88rem">'+p.n+ofBadge+'</div><small style="color:#94A3B8;font-size:.72rem">'+p.cat+'</small></td>'+'<td><span style="font-weight:800;color:#1E3A8A;font-family:Bebas Neue,cursive;font-size:1rem">'+bs(p.o||p.p)+'</span>'+(p.o?'<br><small style="color:#94A3B8;text-decoration:line-through;font-size:.72rem">'+bs(p.p)+'</small>':'')+'</td>'+'<td><span style="background:'+stBg+';color:'+stColor+';font-weight:800;font-size:.82rem;padding:4px 10px;border-radius:8px">'+p.st+stIcon+'</span></td>'+'<td style="white-space:nowrap">'+'<button class="bte" onclick="editP('+p.id+')" title="Editar">✏️</button>'+'<button class="btd" onclick="elimP('+p.id+')" title="Eliminar">🗑️</button>'+(p.img?'<button class="btd" title="Quitar foto" onclick="elimFoto('+p.id+')">🖼️</button>':'')+'</td></tr>';}).join('')+'</tbody></table></div>';
   }else if(aTab==="agregar"){
-    var imgPv=(newPF.img||imgTempAdmin)?'<img src="'+(imgTempAdmin||newPF.img)+'" class="img-preview" id="imgPrev"/>':'<div id="imgPrev" style="display:none"></div>';
-    var quitarFotoBtn=(editId&&(newPF.img||imgTempAdmin))?'<button class="btd" style="margin-top:6px;font-size:.8rem" onclick="quitarFotoFormAdmin()">🖼️✕ Quitar foto actual</button>':'';
-    c.innerHTML='<div class="f2"><div class="fg"><label>Nombre *</label><input class="fc" id="nNom" value="'+(newPF.n||"")+'"/></div><div class="fg"><label>Categoría</label><select class="fc" id="nCat">'+CATS.filter(function(x){return x.id>0;}).map(function(x){return '<option value="'+x.id+'"'+(x.id===newPF.cat?" selected":"")+'>'+x.n+'</option>';}).join("")+'</select></div></div><div class="fg"><label>Descripción</label><textarea class="fc" id="nDesc" rows="3" style="resize:vertical">'+(newPF.d||"")+'</textarea></div><div class="f2"><div class="fg"><label>Precio (COP$) *</label><input class="fc" type="number" id="nPrecio" value="'+(newPF.p||"")+'" step="0.01"/></div><div class="fg"><label>Precio Oferta</label><input class="fc" type="number" id="nOferta" value="'+(newPF.o||"")+'" step="0.01"/></div></div><div class="f2"><div class="fg"><label>Stock *</label><input class="fc" type="number" id="nStock" value="'+(newPF.st||"")+'"/></div><div class="fg"><label>¿Destacado?</label><select class="fc" id="nDest"><option value="false">No</option><option value="true"'+(newPF.dest?" selected":"")+'>Sí ⭐</option></select></div></div><div class="fg"><label>📷 Foto</label>'+imgPv+quitarFotoBtn+'<div class="img-upload-area"><input type="file" accept="image/*" onchange="cargarImgProd(event)"/><span style="font-size:2rem;display:block;margin-bottom:6px">📷</span><span style="font-size:.85rem;color:var(--gr)">'+(newPF.img||imgTempAdmin?"Cambiar foto":"Subir foto")+'</span></div></div><button class="bp" onclick="guardarProd()">'+(editId?"💾 Guardar Cambios":"➕ Crear Producto")+'</button>'+(editId?'<button class="bs" onclick="cancelEdit()">Cancelar</button>':"");
+    let imgPv=(newPF.img||imgTempAdmin)?'<img src="'+(imgTempAdmin||newPF.img)+'" class="img-preview" id="imgPrev"/>':'<div id="imgPrev" style="display:none"></div>';
+    let quitarFotoBtn=(editId&&(newPF.img||imgTempAdmin))?'<button class="btd" style="margin-top:6px;font-size:.8rem" onclick="quitarFotoFormAdmin()">🖼️✕ Quitar foto actual</button>':'';
+    c.innerHTML='<div class="f2"><div class="fg"><label>Nombre *</label><input class="fc" id="nNom" value="'+(newPF.n||"")+'"/></div><div class="fg"><label>Categoría</label><select class="fc" id="nCat">'+CATS.filter(function(x){return x.id>0;}).map(function(x){return '<option value="'+x.id+'"'+(x.id===newPF.cat?" selected":"")+'>'+x.n+'</option>';}).join("")+'</select></div></div><div class="fg"><label>Descripción</label><textarea class="fc" id="nDesc" rows="3" style="resize:vertical">'+(newPF.d||"")+'</textarea></div><div class="f2"><div class="fg"><label>Precio (COP$) *</label><input class="fc" type="number" id="nPrecio" value="'+(newPF.p||"")+'" step="0.01"/></div><div class="fg"><label>Precio Oferta</label><input class="fc" type="number" id="nOferta" value="'+(newPF.o||"")+'" step="0.01"/></div></div><div class="f2"><div class="fg"><label>Stock *</label><input class="fc" type="number" id="nStock" value="'+(newPF.st||"")+'"/></div><div class="fg"><label>¿Destacado?</label><select class="fc" id="nDest"><option value="false">No</option><option value="true"'+(newPF.dest?" selected":"")+'>Sí ⭐</option></select></div></div><div class="fg"><label>📷 Foto</label>'+imgPv+quitarFotoBtn+'<div class="img-upload-area"><input type="file" accept="image/*" onchange="cargarImgProd(event)"/><span style="font-size:2rem;display:block;margin-bottom:6px">📷</span><span style="font-size:.85rem;color:let(--gr)">'+(newPF.img||imgTempAdmin?"Cambiar foto":"Subir foto")+'</span></div></div><button class="bp" onclick="guardarProd()">'+(editId?"💾 Guardar Cambios":"➕ Crear Producto")+'</button>'+(editId?'<button class="bs" onclick="cancelEdit()">Cancelar</button>':"");
   }else if(aTab==="categorias"){
     _renderCategorias(c);
   }else{
     if(!REPORTES.length){c.innerHTML='<div class="empty"><div class="eico">✅</div><h3>Sin reportes</h3></div>';return;}
     c.innerHTML='<div style="display:flex;flex-direction:column;gap:0">'+REPORTES.map(function(r){
-      var estCls={pendiente:"rep-est-pendiente",en_revision:"rep-est-revision",resuelto:"rep-est-resuelto"}[r.estado]||"";
-      var estLabel={pendiente:"⏳ Pendiente",en_revision:"🔄 Revisión",resuelto:"✅ Resuelto"}[r.estado]||r.estado;
-      var userAva=(r.uNom||"U")[0];
+      let estCls={pendiente:"rep-est-pendiente",en_revision:"rep-est-revision",resuelto:"rep-est-resuelto"}[r.estado]||"";
+      let estLabel={pendiente:"⏳ Pendiente",en_revision:"🔄 Revisión",resuelto:"✅ Resuelto"}[r.estado]||r.estado;
+      let userAva=(r.uNom||"U")[0];
       return '<div class="rep-card">'+
         '<div class="rep-card-head">'+
           '<div class="rep-user-ava">'+userAva+'</div>'+
-          '<div><strong style="font-size:.88rem">'+r.uNom+'</strong><br><small style="color:var(--gr)">'+r.fecha+'</small></div>'+
+          '<div><strong style="font-size:.88rem">'+r.uNom+'</strong><br><small style="color:let(--gr)">'+r.fecha+'</small></div>'+
           '<span class="rep-tipo-badge">'+r.tipo+'</span>'+
           '<span class="rep-est-badge '+estCls+'">'+estLabel+'</span>'+
         '</div>'+
@@ -2100,21 +2079,21 @@ function _renderAdminTab(){
   if(aTab==="mensajes"){
     function _renderMensajesAdmin(msgs){
       if(!msgs.length){c.innerHTML='<div class="empty"><div class="eico">📬</div><h3>Sin mensajes</h3><p>Aún no hay mensajes de contacto.</p></div>';return;}
-      var noLeidos=msgs.filter(function(m){return !m.leido;}).length;
+      let noLeidos=msgs.filter(function(m){return !m.leido;}).length;
       c.innerHTML=(noLeidos?'<div style="margin-bottom:12px;background:#fff3e0;border:1.5px solid #ffb74d;border-radius:10px;padding:10px 14px;font-size:.85rem;font-weight:800;color:#e65100">🔔 '+noLeidos+' mensaje'+(noLeidos!==1?"s":"")+" sin leer</div>":"")+
       '<div style="display:flex;flex-direction:column;gap:10px">'+msgs.map(function(m){
-        var badge=m.leido?'<span style="background:#e8f5e9;color:#2e7d32;font-size:.7rem;font-weight:800;padding:3px 9px;border-radius:50px">✅ Leído</span>':'<span style="background:#fff3e0;color:#e65100;font-size:.7rem;font-weight:800;padding:3px 9px;border-radius:50px">🔔 Nuevo</span>';
-        var asuntoLabel={"pedido":"📦 Pedido","producto":"🛍️ Producto","devolucion":"↩️ Devolución","pago":"💳 Pago","envio":"🚚 Envío","queja":"😟 Queja","otro":"💬 Otro"}[m.asunto]||m.asunto;
-        var prioBadge=m.prioridad?'<span class="prio-badge-'+(m.prioridad||"normal")+"'>"+(m.prioridad==="urgente"?"🔴 Urgente":m.prioridad==="informativo"?"🔵 Info":"🟢 Normal")+"</span>":"";
+        let badge=m.leido?'<span style="background:#e8f5e9;color:#2e7d32;font-size:.7rem;font-weight:800;padding:3px 9px;border-radius:50px">✅ Leído</span>':'<span style="background:#fff3e0;color:#e65100;font-size:.7rem;font-weight:800;padding:3px 9px;border-radius:50px">🔔 Nuevo</span>';
+        let asuntoLabel={"pedido":"📦 Pedido","producto":"🛍️ Producto","devolucion":"↩️ Devolución","pago":"💳 Pago","envio":"🚚 Envío","queja":"😟 Queja","otro":"💬 Otro"}[m.asunto]||m.asunto;
+        let prioBadge=m.prioridad?'<span class="prio-badge-'+(m.prioridad||"normal")+"'>"+(m.prioridad==="urgente"?"🔴 Urgente":m.prioridad==="informativo"?"🔵 Info":"🟢 Normal")+"</span>":"";
         return '<div class="msg-card'+(m.leido?'':' unread')+'">'+
           '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">'+
             '<div class="msg-avatar">'+(m.nombre||"?")[0].toUpperCase()+'</div>'+
-            '<div style="flex:1;min-width:0"><strong style="font-size:.86rem">'+m.nombre+'</strong><br><small style="color:var(--gr)">'+m.email+(m.tel?' · '+m.tel:'')+'</small></div>'+
-            badge+prioBadge+'<span style="background:#f5f5f5;color:var(--na3);font-size:.7rem;font-weight:800;padding:3px 9px;border-radius:50px">'+asuntoLabel+'</span>'+
+            '<div style="flex:1;min-width:0"><strong style="font-size:.86rem">'+m.nombre+'</strong><br><small style="color:let(--gr)">'+m.email+(m.tel?' · '+m.tel:'')+'</small></div>'+
+            badge+prioBadge+'<span style="background:#f5f5f5;color:let(--na3);font-size:.7rem;font-weight:800;padding:3px 9px;border-radius:50px">'+asuntoLabel+'</span>'+
           '</div>'+
-          '<div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:10px 12px;font-size:.84rem;color:var(--bk);line-height:1.6;margin-bottom:8px">'+m.mensaje+'</div>'+
+          '<div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:10px 12px;font-size:.84rem;color:let(--bk);line-height:1.6;margin-bottom:8px">'+m.mensaje+'</div>'+
           '<div style="display:flex;gap:8px;align-items:center;justify-content:space-between">'+
-            '<small style="color:var(--gr)">'+m.fecha+'</small>'+
+            '<small style="color:let(--gr)">'+m.fecha+'</small>'+
             '<div style="display:flex;gap:6px">'+
               (!m.leido?'<button class="bte" onclick="marcarMensajeLeido('+m.id+')">✅ Leído</button>':'')+
               '<a class="bte" href="mailto:'+m.email+'?subject=Re: '+m.asunto+'" style="text-decoration:none">📧 Responder</a>'+
@@ -2134,8 +2113,8 @@ function _renderAdminTab(){
   }
 }
 function _renderCategorias(c){api("/categorias").then(function(r){
-  var cats=r.ok?r.categorias:[];
-  var html='';
+  let cats=r.ok?r.categorias:[];
+  let html='';
   html+='<div class="cat-create-box">';
   html+='<div class="admin-form-title">➕ Nueva Categoría</div>';
   html+='<div class="f2">';
@@ -2149,7 +2128,7 @@ function _renderCategorias(c){api("/categorias").then(function(r){
   } else {
     html+='<div class="tw"><table><thead><tr><th>Emoji</th><th>Nombre</th><th>Prods.</th><th>Acción</th></tr></thead><tbody>';
     cats.forEach(function(cat){
-      var prodCount=PRODS.filter(function(p){return p.cid===cat.id;}).length;
+      let prodCount=PRODS.filter(function(p){return p.cid===cat.id;}).length;
       html+='<tr>';
       html+='<td style="font-size:1.3rem;text-align:center">'+cat.emoji+'</td>';
       html+='<td><strong style="font-size:.88rem">'+cat.nombre+'</strong></td>';
@@ -2162,24 +2141,24 @@ function _renderCategorias(c){api("/categorias").then(function(r){
   c.innerHTML=html;
 });}
 
-function crearCategoria(){var nom=(document.getElementById("catNom").value||"").trim(),emoji=(document.getElementById("catEmoji").value||"🏷️").trim();if(!nom){toast("Nombre requerido","e");return;}api("/categorias","POST",{nombre:nom,emoji:emoji}).then(function(r){if(!r.ok){toast(r.error||"Error","e");return;}toast("Categoría '"+nom+"' creada ✅","s");document.getElementById("catNom").value="";document.getElementById("catEmoji").value="";cargarDatos();_renderAdminTab();});}
+function crearCategoria(){let nom=(document.getElementById("catNom").value||"").trim(),emoji=(document.getElementById("catEmoji").value||"🏷️").trim();if(!nom){toast("Nombre requerido","e");return;}api("/categorias","POST",{nombre:nom,emoji:emoji}).then(function(r){if(!r.ok){toast(r.error||"Error","e");return;}toast("Categoría '"+nom+"' creada ✅","s");document.getElementById("catNom").value="";document.getElementById("catEmoji").value="";cargarDatos();_renderAdminTab();});}
 function elimCategoria(id,nom){
-  if(nom===undefined){var cc=CATS.find(function(x){return x.id===id;});nom=cc?cc.nombre:("#"+id);}if(!confirm("¿Eliminar '"+nom+"'?"))return;api("/categorias/"+id,"DELETE").then(function(r){if(!r.ok){toast(r.error||"No se puede eliminar","e");return;}toast("Eliminada","i");cargarDatos();_renderAdminTab();});}
-function elimFoto(pid){if(!confirm("¿Eliminar foto?"))return;api("/productos/"+pid+"/foto","PUT").then(function(r){if(!r.ok){toast("Error","e");return;}var p=PRODS.find(function(x){return x.id===pid;});if(p)p.img=null;toast("Foto eliminada ✅","s");cargarDatos();_renderAdminTab();});}
-function quitarFotoFormAdmin(){if(!editId)return;if(!confirm("¿Quitar la foto de este producto?"))return;api("/productos/"+editId+"/foto","PUT").then(function(r){if(!r.ok){toast("Error al quitar foto","e");return;}var p=PRODS.find(function(x){return x.id===editId;});if(p)p.img=null;imgTempAdmin=null;newPF.img=null;toast("Foto quitada ✅","s");cargarDatos();aTab="agregar";buildAdmin();});}
-function quitarFotoFormSuper(){if(!spEditId)return;if(!confirm("¿Quitar la foto de este producto?"))return;api("/productos/"+spEditId+"/foto","PUT").then(function(r){if(!r.ok){toast("Error al quitar foto","e");return;}var p=PRODS.find(function(x){return x.id===spEditId;});if(p)p.img=null;imgTempSuper=null;spNewPF.img=null;toast("Foto quitada ✅","s");cargarDatos();sprodTab("add",document.getElementById("spTabAdd"));});}
-function cargarImgProd(e){var file=e.target.files[0];if(!file)return;var r=new FileReader();r.onload=function(ev){imgTempAdmin=ev.target.result;var prev=document.getElementById("imgPrev");if(prev){prev.src=imgTempAdmin;prev.style.display="block";prev.className="img-preview";}};r.readAsDataURL(file);}
-function editP(id){var p=PRODS.find(function(x){return x.id===id;});if(!p)return;editId=id;imgTempAdmin=p.img||null;newPF={n:p.n,d:p.d,p:p.p,o:p.o||"",st:p.st,cat:p.cid,dest:p.dest,img:p.img||null};aTab="agregar";buildAdmin();}
+  if(nom===undefined){let cc=CATS.find(function(x){return x.id===id;});nom=cc?cc.nombre:("#"+id);}if(!confirm("¿Eliminar '"+nom+"'?"))return;api("/categorias/"+id,"DELETE").then(function(r){if(!r.ok){toast(r.error||"No se puede eliminar","e");return;}toast("Eliminada","i");cargarDatos();_renderAdminTab();});}
+function elimFoto(pid){if(!confirm("¿Eliminar foto?"))return;api("/productos/"+pid+"/foto","PUT").then(function(r){if(!r.ok){toast("Error","e");return;}let p=PRODS.find(function(x){return x.id===pid;});if(p)p.img=null;toast("Foto eliminada ✅","s");cargarDatos();_renderAdminTab();});}
+function quitarFotoFormAdmin(){if(!editId)return;if(!confirm("¿Quitar la foto de este producto?"))return;api("/productos/"+editId+"/foto","PUT").then(function(r){if(!r.ok){toast("Error al quitar foto","e");return;}let p=PRODS.find(function(x){return x.id===editId;});if(p)p.img=null;imgTempAdmin=null;newPF.img=null;toast("Foto quitada ✅","s");cargarDatos();aTab="agregar";buildAdmin();});}
+function quitarFotoFormSuper(){if(!spEditId)return;if(!confirm("¿Quitar la foto de este producto?"))return;api("/productos/"+spEditId+"/foto","PUT").then(function(r){if(!r.ok){toast("Error al quitar foto","e");return;}let p=PRODS.find(function(x){return x.id===spEditId;});if(p)p.img=null;imgTempSuper=null;spNewPF.img=null;toast("Foto quitada ✅","s");cargarDatos();sprodTab("add",document.getElementById("spTabAdd"));});}
+function cargarImgProd(e){let file=e.target.files[0];if(!file)return;let r=new FileReader();r.onload=function(ev){imgTempAdmin=ev.target.result;let prev=document.getElementById("imgPrev");if(prev){prev.src=imgTempAdmin;prev.style.display="block";prev.className="img-preview";}};r.readAsDataURL(file);}
+function editP(id){let p=PRODS.find(function(x){return x.id===id;});if(!p)return;editId=id;imgTempAdmin=p.img||null;newPF={n:p.n,d:p.d,p:p.p,o:p.o||"",st:p.st,cat:p.cid,dest:p.dest,img:p.img||null};aTab="agregar";buildAdmin();}
 function cancelEdit(){editId=null;imgTempAdmin=null;newPF={n:"",d:"",p:"",o:"",st:"",cat:1,dest:false,img:null};aTab="productos";buildAdmin();}
-function guardarProd(){var n=document.getElementById("nNom").value.trim(),pr=parseFloat(document.getElementById("nPrecio").value),st=parseInt(document.getElementById("nStock").value);if(!n||isNaN(pr)||isNaN(st)){toast("Completa los campos","e");return;}var cid=parseInt(document.getElementById("nCat").value),cat=CATS.find(function(c){return c.id===cid;}),catN=cat?cat.n.replace(/^\S+\s/,""):"General";var o=parseFloat(document.getElementById("nOferta").value)||null,dest=document.getElementById("nDest").value==="true",desc=document.getElementById("nDesc").value;var img=imgTempAdmin||(editId?(PRODS.find(function(p){return p.id===editId;})||{}).img:null)||null;var wasEdit=editId;api(editId?"/productos/"+editId:"/productos",editId?"PUT":"POST",{n:n,d:desc,p:pr,o:o,st:st,cat:catN,cid:cid,dest:dest,img:img}).then(function(r){if(!r.ok){toast("Error","e");return;}editId=null;imgTempAdmin=null;newPF={n:"",d:"",p:"",o:"",st:"",cat:1,dest:false,img:null};toast(wasEdit?"Actualizado ✅":"¡Creado! ✅","s");cargarDatos();aTab="productos";buildAdmin();});}
+function guardarProd(){let n=document.getElementById("nNom").value.trim(),pr=parseFloat(document.getElementById("nPrecio").value),st=parseInt(document.getElementById("nStock").value);if(!n||isNaN(pr)||isNaN(st)){toast("Completa los campos","e");return;}let cid=parseInt(document.getElementById("nCat").value),cat=CATS.find(function(c){return c.id===cid;}),catN=cat?cat.n.replace(/^\S+\s/,""):"General";let o=parseFloat(document.getElementById("nOferta").value)||null,dest=document.getElementById("nDest").value==="true",desc=document.getElementById("nDesc").value;let img=imgTempAdmin||(editId?(PRODS.find(function(p){return p.id===editId;})||{}).img:null)||null;let wasEdit=editId;api(editId?"/productos/"+editId:"/productos",editId?"PUT":"POST",{n:n,d:desc,p:pr,o:o,st:st,cat:catN,cid:cid,dest:dest,img:img}).then(function(r){if(!r.ok){toast("Error","e");return;}editId=null;imgTempAdmin=null;newPF={n:"",d:"",p:"",o:"",st:"",cat:1,dest:false,img:null};toast(wasEdit?"Actualizado ✅":"¡Creado! ✅","s");cargarDatos();aTab="productos";buildAdmin();});}
 function elimP(id){if(!confirm("¿Eliminar?"))return;api("/productos/"+id,"DELETE").then(function(r){if(!r.ok){toast("Error","e");return;}toast("Eliminado","i");cargarDatos();buildAdmin();});}
 
 // ── SUPERADMIN ───────────────────────────────
 
 function _notifBanner(count, singular, plural, color, borderColor, action, actionLabel) {
   if(count <= 0) return '';
-  var noun = count !== 1 ? plural : singular;
-  var banner = '<div class="notif-banner notif-banner-warn">';
+  let noun = count !== 1 ? plural : singular;
+  let banner = '<div class="notif-banner notif-banner-warn">';
   banner += '<span style="font-size:1.1rem">⚠️</span>';
   banner += '<span>Tienes <strong>' + count + '</strong> ' + noun;
   if(action) banner += '. <span style="cursor:pointer;text-decoration:underline;color:#1E40AF" onclick="'+action+'">'+actionLabel+'</span>';
@@ -2190,7 +2169,7 @@ function _notifBanner(count, singular, plural, color, borderColor, action, actio
 function marcarMensajeLeido(id){
   api("/contactos/"+id+"/leer","PUT").then(function(r){
     if(!r.ok){toast("Error al marcar","e");return;}
-    var m=CONTACTOS.find(function(x){return x.id===id;});
+    let m=CONTACTOS.find(function(x){return x.id===id;});
     if(m)m.leido=true;
     toast("Mensaje marcado como leído ✅","s");
     invalidateSCache(["contactos"]);renderSuperTab();
@@ -2207,11 +2186,11 @@ function eliminarMensaje(id){
 }
 
 function crearCupon(){
-  var cod=document.getElementById("cpCod").value.trim().toUpperCase();
-  var tipo=document.getElementById("cpTipo").value;
-  var val=parseFloat(document.getElementById("cpVal").value);
-  var min=parseFloat(document.getElementById("cpMin").value)||0;
-  var usos=parseInt(document.getElementById("cpUsos").value)||100;
+  let cod=document.getElementById("cpCod").value.trim().toUpperCase();
+  let tipo=document.getElementById("cpTipo").value;
+  let val=parseFloat(document.getElementById("cpVal").value);
+  let min=parseFloat(document.getElementById("cpMin").value)||0;
+  let usos=parseInt(document.getElementById("cpUsos").value)||100;
   if(!cod||isNaN(val)||val<=0){toast("Completa código y valor","e");return;}
   api("/cupones","POST",{codigo:cod,tipo:tipo,valor:val,min_compra:min,usos_max:usos}).then(function(r){
     if(!r.ok){toast(r.error||"Error","e");return;}
@@ -2230,8 +2209,8 @@ function elimCupon(id){
 }
 
 // ── CHAT ADMIN — Superadmin panel ────────────────────────────
-var _adminChatUid     = null;  // Currently open conversation UID
-var _adminChatTimer   = null;  // Polling timer
+let _adminChatUid     = null;  // Currently open conversation UID
+let _adminChatTimer   = null;  // Polling timer
 
 function _renderSuperChats(c){
   c.innerHTML = '<div class="tab-loading"></div>';
@@ -2243,15 +2222,15 @@ function _adminCargarChats(c){
     .then(function(r){ return r.json(); })
     .then(function(r){
       if(!r.ok){ c.innerHTML='<div class="empty"><div class="eico">💬</div><h3>Error cargando chats</h3></div>'; return; }
-      var chats = r.chats || [];
+      let chats = r.chats || [];
       if(!chats.length){
         c.innerHTML = '<div class="empty"><div class="eico">💬</div><h3>Sin conversaciones</h3><p>Cuando los clientes escriban aparecerán aquí.</p></div>';
         return;
       }
-      var listaHtml = '<div class="admin-chat-layout">'
+      let listaHtml = '<div class="admin-chat-layout">'
         + '<div class="admin-chat-list" id="adminChatList">'
         + chats.map(function(ch){
-            var sinLeer = ch.sinLeer > 0;
+            let sinLeer = ch.sinLeer > 0;
             return '<div class="admin-chat-item'+(sinLeer?' admin-chat-item-unread':'')+'" '
               + 'onclick="_adminAbrirChat('+ch.uid+',\''+_escapeHtml(ch.uNom)+'\',\''+_escapeHtml(ch.uEmail)+'\')" '
               + 'data-uid="'+ch.uid+'">'
@@ -2281,12 +2260,12 @@ function _adminAbrirChat(uid, nom, email){
   document.querySelectorAll('.admin-chat-item').forEach(function(el){
     el.classList.toggle('admin-chat-item-active', parseInt(el.dataset.uid) === uid);
   });
-  var conv = document.getElementById('adminChatConv');
+  let conv = document.getElementById('adminChatConv');
   if(!conv) return;
   conv.innerHTML =
     '<div class="admin-chat-conv-header">'
     + '  <div class="admin-chat-ava">'+nom[0].toUpperCase()+'</div>'
-    + '  <div><div style="font-weight:700;font-size:.9rem">'+_escapeHtml(nom)+'</div><div style="font-size:.72rem;color:var(--gr)">'+_escapeHtml(email)+'</div></div>'
+    + '  <div><div style="font-weight:700;font-size:.9rem">'+_escapeHtml(nom)+'</div><div style="font-size:.72rem;color:let(--gr)">'+_escapeHtml(email)+'</div></div>'
     + '  <button class="btd" style="margin-left:auto;font-size:.72rem" onclick="_adminEliminarChat('+uid+')">🗑️ Cerrar chat</button>'
     + '</div>'
     + '<div class="admin-chat-messages" id="adminChatMessages"><div class="tab-loading"></div></div>'
@@ -2309,16 +2288,16 @@ function _adminCargarMensajes(uid, silencioso){
   fetch('/api/chat?uid='+uid)
     .then(function(r){ return r.json(); })
     .then(function(r){
-      var box = document.getElementById('adminChatMessages');
+      let box = document.getElementById('adminChatMessages');
       if(!box || !r.ok) return;
-      var msgs = r.mensajes || [];
-      var atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 40;
+      let msgs = r.mensajes || [];
+      let atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 40;
       if(!msgs.length){
-        box.innerHTML = '<div style="text-align:center;padding:30px;color:var(--gr);font-size:.88rem">Sin mensajes aún</div>';
+        box.innerHTML = '<div style="text-align:center;padding:30px;color:let(--gr);font-size:.88rem">Sin mensajes aún</div>';
         return;
       }
       box.innerHTML = msgs.map(function(m){
-        var esCliente = m.remitente === 'cliente';
+        let esCliente = m.remitente === 'cliente';
         return '<div class="chat-msg-row '+(esCliente?'chat-msg-row-support':'chat-msg-row-client')+'">'
           + '<div class="chat-bubble '+(esCliente?'chat-bubble-support':'chat-bubble-client')+'">'
           + _escapeHtml(m.mensaje)+'</div>'
@@ -2327,16 +2306,16 @@ function _adminCargarMensajes(uid, silencioso){
       }).join('');
       if(atBottom || !silencioso) box.scrollTop = box.scrollHeight;
       // Clear unread badge for this user
-      var item = document.querySelector('.admin-chat-item[data-uid="'+uid+'"]');
-      if(item){ item.classList.remove('admin-chat-item-unread'); var badge=item.querySelector('.admin-chat-badge');if(badge)badge.remove(); }
+      let item = document.querySelector('.admin-chat-item[data-uid="'+uid+'"]');
+      if(item){ item.classList.remove('admin-chat-item-unread'); let badge=item.querySelector('.admin-chat-badge');if(badge)badge.remove(); }
     });
 }
 
 function _adminEnviarRespuesta(){
   if(!_adminChatUid) return;
-  var inp = document.getElementById('adminChatInput');
+  let inp = document.getElementById('adminChatInput');
   if(!inp) return;
-  var msg = inp.value.trim();
+  let msg = inp.value.trim();
   if(!msg) return;
   inp.value = ''; inp.disabled = true;
   fetch('/api/chat', {
@@ -2362,20 +2341,20 @@ function _adminEliminarChat(uid){
         toast('Chat eliminado','i');
         if(_adminChatTimer){clearInterval(_adminChatTimer);_adminChatTimer=null;}
         _adminChatUid = null;
-        var c = document.getElementById('sTB');
+        let c = document.getElementById('sTB');
         if(c) _renderSuperChats(c);
       }
     });
 }
 
-function buildSuper(){var pb=document.getElementById("panB");var userAvaSuper=usuario.avatar?(usuario.avatar.startsWith("data:")||/^\p{Emoji}/u.test(usuario.avatar)||usuario.avatar.length<=8)?usuario.avatar:'<img src="'+usuario.avatar+'" style="width:32px;height:32px;object-fit:cover;border-radius:50%"/>':(usuario.n[0]);var userBar='<div class="panel-user-bar">'+'<div class="pub-ava">'+userAvaSuper+'</div>'+'<div class="pub-info"><div class="pub-name">'+usuario.n+' '+usuario.a+'</div><div class="pub-role">👑 Super Admin</div></div>'+'<div class="pub-actions">'+'<button class="pub-btn pub-btn-edit" onclick="panelEditarPerfil()">✏️ Perfil</button>'+'<button class="pub-btn pub-btn-exit" onclick="panelSalir()">🚪 Salir</button>'+'</div></div>';var tbs=[{k:"stats",l:"📊 Stats"},{k:"users",l:"👥 Usuarios"},{k:"prods",l:"📦 Productos"},{k:"categorias",l:"🏷️ Categorías"},{k:"reportes",l:"🚨 Reportes"},{k:"mensajes",l:"📬 Mensajes",id:"tabMensajesSuper"},{k:"cadmin",l:"➕ Admin"},{k:"cupones",l:"🎫 Cupones"},{k:"chat",l:"💬 Chat"},{k:"push",l:"🔔 Push"},{k:"logs",l:"📋 Logs"}];var html=tbs.map(function(t){var id=t.id?' id="'+t.id+'"':'';var on=' onclick="setSTab(\''+t.k+'\',this)"';return '<button class="tab'+(sTab===t.k?' on':'')+'"'+id+on+'>'+t.l+'</button>';}).join("");pb.innerHTML=userBar+'<div class="tabs">'+html+'</div><div id="sTB"></div>';
+function buildSuper(){let pb=document.getElementById("panB");let userAvaSuper=usuario.avatar?(usuario.avatar.startsWith("data:")||/^\p{Emoji}/u.test(usuario.avatar)||usuario.avatar.length<=8)?usuario.avatar:'<img src="'+usuario.avatar+'" style="width:32px;height:32px;object-fit:cover;border-radius:50%"/>':(usuario.n[0]);let userBar='<div class="panel-user-bar">'+'<div class="pub-ava">'+userAvaSuper+'</div>'+'<div class="pub-info"><div class="pub-name">'+usuario.n+' '+usuario.a+'</div><div class="pub-role">👑 Super Admin</div></div>'+'<div class="pub-actions">'+'<button class="pub-btn pub-btn-edit" onclick="panelEditarPerfil()">✏️ Perfil</button>'+'<button class="pub-btn pub-btn-exit" onclick="panelSalir()">🚪 Salir</button>'+'</div></div>';let tbs=[{k:"stats",l:"📊 Stats"},{k:"users",l:"👥 Usuarios"},{k:"prods",l:"📦 Productos"},{k:"categorias",l:"🏷️ Categorías"},{k:"reportes",l:"🚨 Reportes"},{k:"mensajes",l:"📬 Mensajes",id:"tabMensajesSuper"},{k:"cadmin",l:"➕ Admin"},{k:"cupones",l:"🎫 Cupones"},{k:"chat",l:"💬 Chat"},{k:"push",l:"🔔 Push"},{k:"logs",l:"📋 Logs"}];let html=tbs.map(function(t){let id=t.id?' id="'+t.id+'"':'';let on=' onclick="setSTab(\''+t.k+'\',this)"';return '<button class="tab'+(sTab===t.k?' on':'')+'"'+id+on+'>'+t.l+'</button>';}).join("");pb.innerHTML=userBar+'<div class="tabs">'+html+'</div><div id="sTB"></div>';
 // Al abrir el panel siempre refrescar la pestaña stats
 if(sTab==="stats")invalidateSCache(["prods","users","reportes","contactos"]);
 renderSuperTab();}
 function setSTab(t,btn){sTab=t;if(_adminChatTimer){clearInterval(_adminChatTimer);_adminChatTimer=null;}_adminChatUid=null;document.querySelectorAll("#panB .tab").forEach(function(b){b.classList.remove("on");});btn.classList.add("on");renderSuperTab();}
 // Cache de timestamps para las APIs del superadmin (0 = nunca cargado)
-var _sCache={prods:0,users:0,reportes:0,logs:0,contactos:0};
-var _sCacheTTL=30000; // 30 segundos
+let _sCache={prods:0,users:0,reportes:0,logs:0,contactos:0};
+let _sCacheTTL=30000; // 30 segundos
 
 function _sNeedsRefresh(key){return Date.now()-_sCache[key]>_sCacheTTL;}
 function _sMarkFresh(key){_sCache[key]=Date.now();}
@@ -2385,13 +2364,13 @@ function invalidateSCache(keys){
 
 function renderSuperTab(){
   // Show spinner immediately
-  var c=document.getElementById("sTB");
+  let c=document.getElementById("sTB");
   if(c&&!c.innerHTML.trim()){
     c.innerHTML='<div class="tab-loading"></div>';
   }
 
   // Build fetch list based on active tab + staleness
-  var fetches=[];
+  let fetches=[];
 
   if(sTab==="stats"){
     // Stats needs everything except logs
@@ -2424,7 +2403,7 @@ function renderSuperTab(){
 
 // ── EXPORTAR CSV ─────────────────────────────────────────────
 function exportarCSV(tipo){
-  var rows = [], nombre = "";
+  let rows = [], nombre = "";
 
   if(tipo === "productos"){
     nombre = "productos_nuestrostore.csv";
@@ -2445,7 +2424,7 @@ function exportarCSV(tipo){
     api("/todos-pedidos").then(function(r){
       if(!r.ok){ toast("Error al cargar pedidos","e"); return; }
       r.pedidos.forEach(function(p){
-        var items = (p.items||[]).map(function(i){ return i.n+"×"+i.qty; }).join(" | ");
+        let items = (p.items||[]).map(function(i){ return i.n+"×"+i.qty; }).join(" | ");
         rows.push([p.id, p.uNom, p.uEmail, p.total, p.estado, (p.fecha||"").slice(0,16), items]);
       });
       _descargarCSV(rows, nombre);
@@ -2458,16 +2437,16 @@ function exportarCSV(tipo){
 
 function _descargarCSV(rows, nombre){
   if(!rows.length){ toast("Sin datos para exportar","e"); return; }
-  var csv = rows.map(function(row){
+  let csv = rows.map(function(row){
     return row.map(function(cell){
-      var s = String(cell==null?"":cell).replace(/"/g,'""');
+      let s = String(cell==null?"":cell).replace(/"/g,'""');
       return s.indexOf(",")>=0||s.indexOf('"')>=0||s.indexOf("\n")>=0 ? '"'+s+'"' : s;
     }).join(",");
   }).join("\r\n");
   // Add UTF-8 BOM for Excel
-  var blob = new Blob(["\uFEFF"+csv], {type:"text/csv;charset=utf-8;"});
-  var url = URL.createObjectURL(blob);
-  var a = document.createElement("a");
+  let blob = new Blob(["\uFEFF"+csv], {type:"text/csv;charset=utf-8;"});
+  let url = URL.createObjectURL(blob);
+  let a = document.createElement("a");
   a.href = url; a.download = nombre;
   document.body.appendChild(a); a.click();
   document.body.removeChild(a);
@@ -2476,18 +2455,18 @@ function _descargarCSV(rows, nombre){
 }
 
 // ── GRÁFICA DE VENTAS ─────────────────────────────────────────
-var _ventasChart = null;
-var _chartPeriodo = "dias"; // "dias" | "semanas"
+let _ventasChart = null;
+let _chartPeriodo = "dias"; // "dias" | "semanas"
 
 function renderVentasChart(){
   // Add chart HTML if not present
-  var c = document.getElementById("sTB");
+  let c = document.getElementById("sTB");
   if(!c) return;
 
   // Inject chart container after sgrid
-  var existing = document.getElementById("ventasChartWrap");
+  let existing = document.getElementById("ventasChartWrap");
   if(!existing){
-    var wrap = document.createElement("div");
+    let wrap = document.createElement("div");
     wrap.id = "ventasChartWrap";
     wrap.innerHTML =
       '<div class="vchart-header">'
@@ -2510,7 +2489,7 @@ function renderVentasChart(){
 
   api("/todos-pedidos").then(function(r){
     if(!r.ok) return;
-    var pedidos = r.pedidos || [];
+    let pedidos = r.pedidos || [];
     _dibujarChart(pedidos, _chartPeriodo);
   });
 }
@@ -2527,20 +2506,20 @@ function cambiarPeriodo(periodo, btn){
 function _dibujarChart(pedidos, periodo){
   // Destroy previous instance
   if(_ventasChart){ _ventasChart.destroy(); _ventasChart = null; }
-  var canvas = document.getElementById("ventasCanvas");
+  let canvas = document.getElementById("ventasCanvas");
   if(!canvas) return;
 
   // Aggregate data
-  var labels = [], totales = [], counts = [];
+  let labels = [], totales = [], counts = [];
 
   if(periodo === "dias"){
     // Last 7 days
-    for(var i=6; i>=0; i--){
-      var d = new Date(); d.setDate(d.getDate()-i);
-      var key = d.toISOString().slice(0,10); // YYYY-MM-DD
-      var dayStr = d.toLocaleDateString("es-CO",{weekday:"short",day:"numeric"});
+    for(let i=6; i>=0; i--){
+      let d = new Date(); d.setDate(d.getDate()-i);
+      let key = d.toISOString().slice(0,10); // YYYY-MM-DD
+      let dayStr = d.toLocaleDateString("es-CO",{weekday:"short",day:"numeric"});
       labels.push(dayStr);
-      var dayPedidos = pedidos.filter(function(p){
+      let dayPedidos = pedidos.filter(function(p){
         return (p.fecha||"").slice(0,10) === key;
       });
       totales.push(dayPedidos.reduce(function(s,p){ return s+(p.total||0); }, 0));
@@ -2548,16 +2527,16 @@ function _dibujarChart(pedidos, periodo){
     }
   } else {
     // Last 4 weeks (Mon-Sun)
-    var now = new Date();
-    for(var w=3; w>=0; w--){
-      var wStart = new Date(now);
+    let now = new Date();
+    for(let w=3; w>=0; w--){
+      let wStart = new Date(now);
       wStart.setDate(now.getDate() - now.getDay() + 1 - w*7);
-      var wEnd = new Date(wStart); wEnd.setDate(wStart.getDate()+6);
-      var wLabel = wStart.toLocaleDateString("es-CO",{day:"numeric",month:"short"})
+      let wEnd = new Date(wStart); wEnd.setDate(wStart.getDate()+6);
+      let wLabel = wStart.toLocaleDateString("es-CO",{day:"numeric",month:"short"})
         + " - " + wEnd.toLocaleDateString("es-CO",{day:"numeric",month:"short"});
       labels.push(wLabel);
-      var wPedidos = pedidos.filter(function(p){
-        var pDate = new Date((p.fecha||"").slice(0,10));
+      let wPedidos = pedidos.filter(function(p){
+        let pDate = new Date((p.fecha||"").slice(0,10));
         return pDate >= wStart && pDate <= wEnd;
       });
       totales.push(wPedidos.reduce(function(s,p){ return s+(p.total||0); }, 0));
@@ -2567,10 +2546,10 @@ function _dibujarChart(pedidos, periodo){
 
   // Load Chart.js if not loaded
   function drawChart(){
-    var isDark = document.documentElement.classList.contains("dark");
-    var gridColor = isDark ? "rgba(255,255,255,.08)" : "rgba(0,0,0,.06)";
-    var textColor = isDark ? "#94A3B8" : "#64748B";
-    var maxTotal = Math.max.apply(null, totales.concat([1]));
+    let isDark = document.documentElement.classList.contains("dark");
+    let gridColor = isDark ? "rgba(255,255,255,.08)" : "rgba(0,0,0,.06)";
+    let textColor = isDark ? "#94A3B8" : "#64748B";
+    let maxTotal = Math.max.apply(null, totales.concat([1]));
 
     _ventasChart = new Chart(canvas, {
       type: "bar",
@@ -2637,7 +2616,7 @@ function _dibujarChart(pedidos, periodo){
   if(typeof Chart !== "undefined"){
     drawChart();
   } else {
-    var s = document.createElement("script");
+    let s = document.createElement("script");
     s.src = "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js";
     s.onload = drawChart;
     document.head.appendChild(s);
@@ -2645,14 +2624,14 @@ function _dibujarChart(pedidos, periodo){
 }
 
 function _renderSuperTab(){
-  var c=document.getElementById("sTB");if(!c)return;
+  let c=document.getElementById("sTB");if(!c)return;
   if(sTab==="stats"){
-    var cl=USUARIOS.filter(function(u){return u.rol==="cliente";}).length;
-    var ad=USUARIOS.filter(function(u){return u.rol==="administrador";}).length;
-    var sinLeer=CONTACTOS.filter(function(m){return !m.leido;}).length;
-    var pendientes=REPORTES.filter(function(r){return r.estado==="pendiente";}).length;
-    var agotados=PRODS.filter(function(p){return p.st<=0;}).length;
-    var enOferta=PRODS.filter(function(p){return p.o&&p.o<p.p&&p.st>0;}).length;
+    let cl=USUARIOS.filter(function(u){return u.rol==="cliente";}).length;
+    let ad=USUARIOS.filter(function(u){return u.rol==="administrador";}).length;
+    let sinLeer=CONTACTOS.filter(function(m){return !m.leido;}).length;
+    let pendientes=REPORTES.filter(function(r){return r.estado==="pendiente";}).length;
+    let agotados=PRODS.filter(function(p){return p.st<=0;}).length;
+    let enOferta=PRODS.filter(function(p){return p.o&&p.o<p.p&&p.st>0;}).length;
     c.innerHTML='<div class="sgrid">'+
       '<div class="sc"><div class="sn">'+cl+'</div><div class="sl">👥 Clientes</div></div>'+
       '<div class="sc"><div class="sn">'+ad+'</div><div class="sl">⚙️ Admins</div></div>'+
@@ -2668,7 +2647,7 @@ function _renderSuperTab(){
     // Load chart after DOM is painted
     setTimeout(renderVentasChart, 80);
   }else if(sTab==="users"){
-    c.innerHTML='<div class="tw"><table><thead><tr><th>Nombre</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>'+USUARIOS.map(function(u){var bc=u.rol==="superadmin"?"bsu":u.rol==="administrador"?"ba":"bc";return '<tr><td><div style="display:flex;align-items:center;gap:8px"><div style="width:30px;height:30px;border-radius:50%;background:var(--am);color:var(--na3);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.8rem;flex-shrink:0">'+(u.n[0])+'</div><div><strong>'+u.n+' '+u.a+'</strong><br><small style="color:var(--gr)">'+u.email+'</small></div></div></td><td><span class="bdg '+bc+'">'+u.rol+'</span></td><td><span class="bdg '+(u.act?"bok":"bno")+'">'+(u.act?"✅":"❌")+'</span></td><td>'+(u.rol!=="superadmin"?'<select onchange="cambiarRol('+u.id+',this.value)" style="padding:3px 6px;border:1px solid #ddd;border-radius:5px;font-size:.75rem"><option value="cliente"'+(u.rol==="cliente"?" selected":"")+'>Cliente</option><option value="administrador"'+(u.rol==="administrador"?" selected":"")+'>Admin</option></select><button class="'+(u.act?"btd":"btok")+'" onclick="togUser('+u.id+')">'+(u.act?"🚫":"✅")+'</button>':'<em style="color:var(--gr);font-size:.8rem">Propietario</em>')+'</td></tr>';}).join("")+'</tbody></table></div>';
+    c.innerHTML='<div class="tw"><table><thead><tr><th>Nombre</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>'+USUARIOS.map(function(u){let bc=u.rol==="superadmin"?"bsu":u.rol==="administrador"?"ba":"bc";return '<tr><td><div style="display:flex;align-items:center;gap:8px"><div style="width:30px;height:30px;border-radius:50%;background:let(--am);color:let(--na3);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.8rem;flex-shrink:0">'+(u.n[0])+'</div><div><strong>'+u.n+' '+u.a+'</strong><br><small style="color:let(--gr)">'+u.email+'</small></div></div></td><td><span class="bdg '+bc+'">'+u.rol+'</span></td><td><span class="bdg '+(u.act?"bok":"bno")+'">'+(u.act?"✅":"❌")+'</span></td><td>'+(u.rol!=="superadmin"?'<select onchange="cambiarRol('+u.id+',this.value)" style="padding:3px 6px;border:1px solid #ddd;border-radius:5px;font-size:.75rem"><option value="cliente"'+(u.rol==="cliente"?" selected":"")+'>Cliente</option><option value="administrador"'+(u.rol==="administrador"?" selected":"")+'>Admin</option></select><button class="'+(u.act?"btd":"btok")+'" onclick="togUser('+u.id+')">'+(u.act?"🚫":"✅")+'</button>':'<em style="color:let(--gr);font-size:.8rem">Propietario</em>')+'</td></tr>';}).join("")+'</tbody></table></div>';
   }else if(sTab==="prods"){
     c.innerHTML='<div class="tabs" style="margin-bottom:14px"><button class="tab on" id="spTabList" onclick="sprodTab(\'list\',this)">📋 Lista</button><button class="tab" id="spTabAdd" onclick="sprodTab(\'add\',this)">➕ Agregar</button></div><div id="spBody"></div>';
     sprodTab("list",document.getElementById("spTabList"));
@@ -2677,11 +2656,11 @@ function _renderSuperTab(){
   }else if(sTab==="reportes"){
     if(!REPORTES.length){c.innerHTML='<div class="empty"><div class="eico">✅</div><h3>Sin reportes</h3></div>';return;}
     c.innerHTML='<div style="display:flex;flex-direction:column;gap:0">'+REPORTES.map(function(r){
-      var estCls={pendiente:"rep-est-pendiente",en_revision:"rep-est-revision",resuelto:"rep-est-resuelto"}[r.estado]||"";
-      var estLabel={pendiente:"⏳ Pendiente",en_revision:"🔄 Revisión",resuelto:"✅ Resuelto"}[r.estado]||r.estado;
-      var ua=(r.uNom||"U")[0];
+      let estCls={pendiente:"rep-est-pendiente",en_revision:"rep-est-revision",resuelto:"rep-est-resuelto"}[r.estado]||"";
+      let estLabel={pendiente:"⏳ Pendiente",en_revision:"🔄 Revisión",resuelto:"✅ Resuelto"}[r.estado]||r.estado;
+      let ua=(r.uNom||"U")[0];
       return '<div class="rep-card">'+
-        '<div class="rep-card-head"><div class="rep-user-ava">'+ua+'</div><div><strong style="font-size:.88rem">'+r.uNom+'</strong><br><small style="color:var(--gr)">'+r.fecha+'</small></div><span class="rep-tipo-badge">'+r.tipo+'</span><span class="rep-est-badge '+estCls+'">'+estLabel+'</span></div>'+
+        '<div class="rep-card-head"><div class="rep-user-ava">'+ua+'</div><div><strong style="font-size:.88rem">'+r.uNom+'</strong><br><small style="color:let(--gr)">'+r.fecha+'</small></div><span class="rep-tipo-badge">'+r.tipo+'</span><span class="rep-est-badge '+estCls+'">'+estLabel+'</span></div>'+
         '<div class="rep-card-body">'+(r.pNom&&r.pNom!=="General"?'<div class="rep-prod-tag">📦 '+r.pNom+'</div><br>':'')+
         '<div class="rep-desc-box">'+(r.desc||r.descripcion||"")+'</div>'+
         (r.respuesta?'<div class="rep-respuesta-box"><strong>💬 Respuesta ('+( r.respFecha||"")+'):</strong>'+r.respuesta+'</div>':'')+
@@ -2690,21 +2669,21 @@ function _renderSuperTab(){
     }).join("")+'</div>';
   }else if(sTab==="mensajes"){
     if(!CONTACTOS.length){c.innerHTML='<div class="empty"><div class="eico">📬</div><h3>Sin mensajes</h3><p>Aún no hay mensajes de contacto.</p></div>';return;}
-    var noLeidos=CONTACTOS.filter(function(m){return !m.leido;}).length;
-    c.innerHTML='<div style="margin-bottom:12px;display:flex;align-items:center;gap:10px"><strong style="font-size:.9rem">📬 Bandeja de entrada</strong>'+(noLeidos?'<span style="background:linear-gradient(135deg,var(--na3),var(--na2));color:#fff;font-size:.72rem;font-weight:900;padding:3px 10px;border-radius:50px">'+noLeidos+' nuevo'+(noLeidos>1?'s':'')+'</span>':'')+'</div>'+
+    let noLeidos=CONTACTOS.filter(function(m){return !m.leido;}).length;
+    c.innerHTML='<div style="margin-bottom:12px;display:flex;align-items:center;gap:10px"><strong style="font-size:.9rem">📬 Bandeja de entrada</strong>'+(noLeidos?'<span style="background:linear-gradient(135deg,let(--na3),let(--na2));color:#fff;font-size:.72rem;font-weight:900;padding:3px 10px;border-radius:50px">'+noLeidos+' nuevo'+(noLeidos>1?'s':'')+'</span>':'')+'</div>'+
     '<div style="display:flex;flex-direction:column;gap:10px">'+CONTACTOS.map(function(m){
-      var badge=m.leido?'<span style="background:#e8f5e9;color:#2e7d32;font-size:.7rem;font-weight:800;padding:3px 9px;border-radius:50px">✅ Leído</span>':'<span style="background:#fff3e0;color:#e65100;font-size:.7rem;font-weight:800;padding:3px 9px;border-radius:50px">🔔 Nuevo</span>';
-      var asuntoLabel={"pedido":"📦 Pedido","producto":"🛍️ Producto","devolucion":"↩️ Devolución","pago":"💳 Pago","envio":"🚚 Envío","queja":"😟 Queja","otro":"💬 Otro"}[m.asunto]||m.asunto;
-        var prioBadge=m.prioridad?'<span class="prio-badge-'+(m.prioridad||"normal")+"'>"+(m.prioridad==="urgente"?"🔴 Urgente":m.prioridad==="informativo"?"🔵 Info":"🟢 Normal")+"</span>":"";
+      let badge=m.leido?'<span style="background:#e8f5e9;color:#2e7d32;font-size:.7rem;font-weight:800;padding:3px 9px;border-radius:50px">✅ Leído</span>':'<span style="background:#fff3e0;color:#e65100;font-size:.7rem;font-weight:800;padding:3px 9px;border-radius:50px">🔔 Nuevo</span>';
+      let asuntoLabel={"pedido":"📦 Pedido","producto":"🛍️ Producto","devolucion":"↩️ Devolución","pago":"💳 Pago","envio":"🚚 Envío","queja":"😟 Queja","otro":"💬 Otro"}[m.asunto]||m.asunto;
+        let prioBadge=m.prioridad?'<span class="prio-badge-'+(m.prioridad||"normal")+"'>"+(m.prioridad==="urgente"?"🔴 Urgente":m.prioridad==="informativo"?"🔵 Info":"🟢 Normal")+"</span>":"";
       return '<div class="msg-card'+(m.leido?'':' unread')+'">'+
         '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">'+
           '<div class="msg-avatar">'+(m.nombre||"?")[0].toUpperCase()+'</div>'+
-          '<div style="flex:1;min-width:0"><strong style="font-size:.88rem">'+m.nombre+'</strong><br><small style="color:var(--gr)">'+m.email+(m.tel?' · '+m.tel:'')+'</small></div>'+
-          badge+prioBadge+'<span style="background:#f5f5f5;color:var(--na3);font-size:.7rem;font-weight:800;padding:3px 9px;border-radius:50px">'+asuntoLabel+'</span>'+
+          '<div style="flex:1;min-width:0"><strong style="font-size:.88rem">'+m.nombre+'</strong><br><small style="color:let(--gr)">'+m.email+(m.tel?' · '+m.tel:'')+'</small></div>'+
+          badge+prioBadge+'<span style="background:#f5f5f5;color:let(--na3);font-size:.7rem;font-weight:800;padding:3px 9px;border-radius:50px">'+asuntoLabel+'</span>'+
         '</div>'+
-        '<div style="background:#faf5f0;border-radius:10px;padding:10px 12px;font-size:.85rem;color:var(--bk);line-height:1.55;margin-bottom:8px">'+m.mensaje+'</div>'+
+        '<div style="background:#faf5f0;border-radius:10px;padding:10px 12px;font-size:.85rem;color:let(--bk);line-height:1.55;margin-bottom:8px">'+m.mensaje+'</div>'+
         '<div style="display:flex;gap:8px;align-items:center;justify-content:space-between">'+
-          '<small style="color:var(--gr)">'+m.fecha+'</small>'+
+          '<small style="color:let(--gr)">'+m.fecha+'</small>'+
           '<div style="display:flex;gap:6px">'+
             (!m.leido?'<button class="bte" onclick="marcarMensajeLeido('+m.id+')">✅ Marcar leído</button>':'')+
             '<a class="bte" href="mailto:'+m.email+'?subject=Re: '+m.asunto+'" style="text-decoration:none">📧 Responder</a>'+
@@ -2716,8 +2695,8 @@ function _renderSuperTab(){
   }else if(sTab==="cupones"){
     api("/cupones").then(function(r){
       if(!r.ok){c.innerHTML='<div class="empty"><div class="eico">🎫</div><h3>Error cargando cupones</h3></div>';return;}
-      var cps=r.cupones||[];
-      var form='<div style="background:#EFF6FF;border:1.5px solid #93C5FD;border-radius:14px;padding:16px;margin-bottom:16px">'
+      let cps=r.cupones||[];
+      let form='<div style="background:#EFF6FF;border:1.5px solid #93C5FD;border-radius:14px;padding:16px;margin-bottom:16px">'
         +'<div class="admin-form-title">➕ Nuevo Cupón</div>'
         +'<div class="f2">'
         +'<div class="fg"><label>Código *</label><input class="fc" id="cpCod" placeholder="VERANO20" style="text-transform:uppercase"/></div>'
@@ -2730,10 +2709,10 @@ function _renderSuperTab(){
         +'<div class="fg"><label>Usos máximos</label><input class="fc" type="number" id="cpUsos" value="100"/></div>'
         +'<button class="bp" onclick="crearCupon()">🎫 Crear Cupón</button>'
         +'</div>';
-      var tabla=cps.length
+      let tabla=cps.length
         ?'<div class="tw"><table><thead><tr><th>Código</th><th>Tipo</th><th>Valor</th><th>Usos</th><th>Estado</th><th></th></tr></thead><tbody>'
         +cps.map(function(cp){
-          var val=cp.tipo==="porcentaje"?cp.valor+"%":"COP$ "+cp.valor.toLocaleString();
+          let val=cp.tipo==="porcentaje"?cp.valor+"%":"COP$ "+cp.valor.toLocaleString();
           return '<tr><td><strong>'+cp.codigo+'</strong></td><td>'+cp.tipo+'</td><td>'+val+'</td><td>'+cp.usos_actual+"/"+cp.usos_max+'</td>'
             +'<td><span class="bdg '+(cp.activo?"bok":"bno")+'">'+( cp.activo?"Activo":"Inactivo")+'</span></td>'
             +'<td><button class="btd" onclick="elimCupon('+cp.id+')">🗑️</button></td></tr>';
@@ -2744,22 +2723,29 @@ function _renderSuperTab(){
   }else if(sTab==="cadmin"){
     c.innerHTML='<div style="max-width:480px"><div class="f2"><div class="fg"><label>Nombre *</label><input class="fc" id="aNom" placeholder="Nombre"/></div><div class="fg"><label>Apellido *</label><input class="fc" id="aApe" placeholder="Apellido"/></div></div><div class="fg"><label>Email *</label><input class="fc" type="email" id="aEmail" placeholder="correo@ejemplo.com"/></div><div class="fg"><label>Contraseña *</label><input class="fc" type="password" id="aPass" placeholder="Mínimo 8 caracteres"/></div><button class="bp" onclick="crearAdmin()">➕ Crear Administrador</button></div>';
   }else{
-    c.innerHTML='<div class="tw"><table><thead><tr><th>Fecha</th><th>Usuario</th><th>Acción</th><th>Detalle</th></tr></thead><tbody>'+LOGS.map(function(l){return '<tr><td style="color:var(--gr);font-size:.78rem;white-space:nowrap">'+l.f+'</td><td><strong>'+l.u+'</strong></td><td><code style="background:#f5f5f5;padding:2px 7px;border-radius:4px;font-size:.75rem">'+l.ac+'</code></td><td style="color:#555;font-size:.85rem">'+l.d+'</td></tr>';}).join("")+'</tbody></table></div>';
+    c.innerHTML='<div class="tw"><table><thead><tr><th>Fecha</th><th>Usuario</th><th>Acción</th><th>Detalle</th></tr></thead><tbody>'+LOGS.map(function(l){return '<tr><td style="color:let(--gr);font-size:.78rem;white-space:nowrap">'+l.f+'</td><td><strong>'+l.u+'</strong></td><td><code style="background:#f5f5f5;padding:2px 7px;border-radius:4px;font-size:.75rem">'+l.ac+'</code></td><td style="color:#555;font-size:.85rem">'+l.d+'</td></tr>';}).join("")+'</tbody></table></div>';
   }
 }
-function sprodTab(t,btn){document.querySelectorAll("#sTB .tabs .tab").forEach(function(b){b.classList.remove("on");});btn.classList.add("on");var sb=document.getElementById("spBody");if(!sb)return;if(t==="list"){sb.innerHTML='<div class="tw"><table><thead><tr><th>Img</th><th>Nombre</th><th>Precio</th><th>Stock</th><th>Acc.</th></tr></thead><tbody>'+PRODS.map(function(p){var thumb=p.img?'<img src="'+p.img+'" style="width:38px;height:38px;object-fit:cover;border-radius:6px;"/>':'<span style="font-size:1.3rem">'+emojiProd(p)+'</span>';var sc=p.st<=0?"#c62828":p.st<=10?"#f57f17":"#2e7d32";return '<tr><td>'+thumb+'</td><td><strong>'+p.n+'</strong><br><small style="color:var(--gr)">'+p.cat+'</small></td><td style="color:var(--na3);font-weight:700">'+bs(p.o||p.p)+'</td><td style="color:'+sc+';font-weight:800">'+p.st+(p.st<=0?" 🚫":p.st<=10?" ⚠️":"")+'</td><td><button class="bte" onclick="spEdit('+p.id+')">✏️</button><button class="btd" onclick="spElim('+p.id+')">🗑️</button>'+(p.img?'<button class="btd" style="background:#e3f2fd;color:#1565c0" onclick="elimFotoSp('+p.id+')">🖼️✕</button>':'')+'</td></tr>';}).join("")+'</tbody></table></div>';}else{var imgPv=(imgTempSuper||spNewPF.img)?'<img src="'+(imgTempSuper||spNewPF.img)+'" class="img-preview" id="spImgPrev"/>':'<div id="spImgPrev" style="display:none"></div>';var quitarFotoBtnSp=(spEditId&&(spNewPF.img||imgTempSuper))?'<button class="btd" style="margin-top:6px;font-size:.8rem" onclick="quitarFotoFormSuper()">🖼️✕ Quitar foto actual</button>':'';sb.innerHTML='<div class="f2"><div class="fg"><label>Nombre *</label><input class="fc" id="spNom" value="'+(spNewPF.n||"")+'"/></div><div class="fg"><label>Categoría</label><select class="fc" id="spCat">'+CATS.filter(function(c){return c.id>0;}).map(function(c){return '<option value="'+c.id+'"'+(c.id===spNewPF.cat?" selected":"")+'>'+c.n+'</option>';}).join("")+'</select></div></div><div class="fg"><label>Descripción</label><textarea class="fc" id="spDesc" rows="2" style="resize:vertical">'+(spNewPF.d||"")+'</textarea></div><div class="f2"><div class="fg"><label>Precio *</label><input class="fc" type="number" id="spPrecio" value="'+(spNewPF.p||"")+'" step="0.01"/></div><div class="fg"><label>Precio Oferta</label><input class="fc" type="number" id="spOferta" value="'+(spNewPF.o||"")+'" step="0.01"/></div></div><div class="f2"><div class="fg"><label>Stock *</label><input class="fc" type="number" id="spStock" value="'+(spNewPF.st||"")+'"/></div><div class="fg"><label>¿Destacado?</label><select class="fc" id="spDest"><option value="false">No</option><option value="true"'+(spNewPF.dest?" selected":"")+'>Sí ⭐</option></select></div></div><div class="fg"><label>📷 Foto</label>'+imgPv+quitarFotoBtnSp+'<div class="img-upload-area"><input type="file" accept="image/*" onchange="cargarImgSuper(event)"/><span style="font-size:2rem;display:block;margin-bottom:6px">📷</span><span style="font-size:.85rem;color:var(--gr)">'+(imgTempSuper||spNewPF.img?"Cambiar foto":"Subir foto")+'</span></div></div><button class="bp" onclick="spGuardar()">'+(spEditId?"💾 Guardar":"➕ Crear Producto")+'</button>'+(spEditId?'<button class="bs" onclick="spCancelar()">Cancelar</button>':"");}}
-function cargarImgSuper(e){var file=e.target.files[0];if(!file)return;var r=new FileReader();r.onload=function(ev){imgTempSuper=ev.target.result;var prev=document.getElementById("spImgPrev");if(prev){prev.src=imgTempSuper;prev.style.display="block";prev.className="img-preview";}};r.readAsDataURL(file);}
-function spEdit(id){var p=PRODS.find(function(x){return x.id===id;});if(!p)return;spEditId=id;imgTempSuper=p.img||null;spNewPF={n:p.n,d:p.d,p:p.p,o:p.o||"",st:p.st,cat:p.cid,dest:p.dest,img:p.img||null};sprodTab("add",document.getElementById("spTabAdd"));}
+function sprodTab(t,btn){document.querySelectorAll("#sTB .tabs .tab").forEach(function(b){b.classList.remove("on");});btn.classList.add("on");let sb=document.getElementById("spBody");if(!sb)return;if(t==="list"){sb.innerHTML='<div class="tw"><table><thead><tr><th>Img</th><th>Nombre</th><th>Precio</th><th>Stock</th><th>Acc.</th></tr></thead><tbody>'+PRODS.map(function(p){let thumb=p.img?'<img src="'+p.img+'" style="width:38px;height:38px;object-fit:cover;border-radius:6px;"/>':'<span style="font-size:1.3rem">'+emojiProd(p)+'</span>';let sc=p.st<=0?"#c62828":p.st<=10?"#f57f17":"#2e7d32";return '<tr><td>'+thumb+'</td><td><strong>'+p.n+'</strong><br><small style="color:let(--gr)">'+p.cat+'</small></td><td style="color:let(--na3);font-weight:700">'+bs(p.o||p.p)+'</td><td style="color:'+sc+';font-weight:800">'+p.st+(p.st<=0?" 🚫":p.st<=10?" ⚠️":"")+'</td><td><button class="bte" onclick="spEdit('+p.id+')">✏️</button><button class="btd" onclick="spElim('+p.id+')">🗑️</button>'+(p.img?'<button class="btd" style="background:#e3f2fd;color:#1565c0" onclick="elimFotoSp('+p.id+')">🖼️✕</button>':'')+'</td></tr>';}).join("")+'</tbody></table></div>';}else{let imgPv=(imgTempSuper||spNewPF.img)?'<img src="'+(imgTempSuper||spNewPF.img)+'" class="img-preview" id="spImgPrev"/>':'<div id="spImgPrev" style="display:none"></div>';let quitarFotoBtnSp=(spEditId&&(spNewPF.img||imgTempSuper))?'<button class="btd" style="margin-top:6px;font-size:.8rem" onclick="quitarFotoFormSuper()">🖼️✕ Quitar foto actual</button>':'';sb.innerHTML='<div class="f2"><div class="fg"><label>Nombre *</label><input class="fc" id="spNom" value="'+(spNewPF.n||"")+'"/></div><div class="fg"><label>Categoría</label><select class="fc" id="spCat">'+CATS.filter(function(c){return c.id>0;}).map(function(c){return '<option value="'+c.id+'"'+(c.id===spNewPF.cat?" selected":"")+'>'+c.n+'</option>';}).join("")+'</select></div></div><div class="fg"><label>Descripción</label><textarea class="fc" id="spDesc" rows="2" style="resize:vertical">'+(spNewPF.d||"")+'</textarea></div><div class="f2"><div class="fg"><label>Precio *</label><input class="fc" type="number" id="spPrecio" value="'+(spNewPF.p||"")+'" step="0.01"/></div><div class="fg"><label>Precio Oferta</label><input class="fc" type="number" id="spOferta" value="'+(spNewPF.o||"")+'" step="0.01"/></div></div><div class="f2"><div class="fg"><label>Stock *</label><input class="fc" type="number" id="spStock" value="'+(spNewPF.st||"")+'"/></div><div class="fg"><label>¿Destacado?</label><select class="fc" id="spDest"><option value="false">No</option><option value="true"'+(spNewPF.dest?" selected":"")+'>Sí ⭐</option></select></div></div><div class="fg"><label>📷 Foto</label>'+imgPv+quitarFotoBtnSp+'<div class="img-upload-area"><input type="file" accept="image/*" onchange="cargarImgSuper(event)"/><span style="font-size:2rem;display:block;margin-bottom:6px">📷</span><span style="font-size:.85rem;color:let(--gr)">'+(imgTempSuper||spNewPF.img?"Cambiar foto":"Subir foto")+'</span></div></div><button class="bp" onclick="spGuardar()">'+(spEditId?"💾 Guardar":"➕ Crear Producto")+'</button>'+(spEditId?'<button class="bs" onclick="spCancelar()">Cancelar</button>':"");}}
+function cargarImgSuper(e){let file=e.target.files[0];if(!file)return;let r=new FileReader();r.onload=function(ev){imgTempSuper=ev.target.result;let prev=document.getElementById("spImgPrev");if(prev){prev.src=imgTempSuper;prev.style.display="block";prev.className="img-preview";}};r.readAsDataURL(file);}
+function spEdit(id){let p=PRODS.find(function(x){return x.id===id;});if(!p)return;spEditId=id;imgTempSuper=p.img||null;spNewPF={n:p.n,d:p.d,p:p.p,o:p.o||"",st:p.st,cat:p.cid,dest:p.dest,img:p.img||null};sprodTab("add",document.getElementById("spTabAdd"));}
 function spCancelar(){spEditId=null;imgTempSuper=null;spNewPF={n:"",d:"",p:"",o:"",st:"",cat:1,dest:false,img:null};sprodTab("list",document.getElementById("spTabList"));}
-function spGuardar(){var n=document.getElementById("spNom").value.trim(),pr=parseFloat(document.getElementById("spPrecio").value),st=parseInt(document.getElementById("spStock").value);if(!n||isNaN(pr)||isNaN(st)){toast("Completa campos","e");return;}var cid=parseInt(document.getElementById("spCat").value),cat=CATS.find(function(c){return c.id===cid;}),catN=cat?cat.n.replace(/^\S+\s/,""):"General";var o=parseFloat(document.getElementById("spOferta").value)||null,dest=document.getElementById("spDest").value==="true",desc=document.getElementById("spDesc").value;var img=imgTempSuper||(spEditId?(PRODS.find(function(p){return p.id===spEditId;})||{}).img:null)||null;var wasEdit=spEditId;api(spEditId?"/productos/"+spEditId:"/productos",spEditId?"PUT":"POST",{n:n,d:desc,p:pr,o:o,st:st,cat:catN,cid:cid,dest:dest,img:img}).then(function(r){if(!r.ok){toast("Error","e");return;}spEditId=null;imgTempSuper=null;spNewPF={n:"",d:"",p:"",o:"",st:"",cat:1,dest:false,img:null};toast(wasEdit?"Actualizado ✅":"¡Creado! ✅","s");invalidateSCache(["prods"]);cargarDatos();sprodTab("list",document.getElementById("spTabList"));});}
+function spGuardar(){let n=document.getElementById("spNom").value.trim(),pr=parseFloat(document.getElementById("spPrecio").value),st=parseInt(document.getElementById("spStock").value);if(!n||isNaN(pr)||isNaN(st)){toast("Completa campos","e");return;}let cid=parseInt(document.getElementById("spCat").value),cat=CATS.find(function(c){return c.id===cid;}),catN=cat?cat.n.replace(/^\S+\s/,""):"General";let o=parseFloat(document.getElementById("spOferta").value)||null,dest=document.getElementById("spDest").value==="true",desc=document.getElementById("spDesc").value;let img=imgTempSuper||(spEditId?(PRODS.find(function(p){return p.id===spEditId;})||{}).img:null)||null;let wasEdit=spEditId;api(spEditId?"/productos/"+spEditId:"/productos",spEditId?"PUT":"POST",{n:n,d:desc,p:pr,o:o,st:st,cat:catN,cid:cid,dest:dest,img:img}).then(function(r){if(!r.ok){toast("Error","e");return;}spEditId=null;imgTempSuper=null;spNewPF={n:"",d:"",p:"",o:"",st:"",cat:1,dest:false,img:null};toast(wasEdit?"Actualizado ✅":"¡Creado! ✅","s");invalidateSCache(["prods"]);cargarDatos();sprodTab("list",document.getElementById("spTabList"));});}
 function spElim(id){if(!confirm("¿Eliminar?"))return;api("/productos/"+id,"DELETE").then(function(r){if(!r.ok){toast("Error","e");return;}toast("Eliminado","i");invalidateSCache(["prods"]);cargarDatos();sprodTab("list",document.getElementById("spTabList"));});}
-function elimFotoSp(pid){if(!confirm("¿Eliminar foto?"))return;api("/productos/"+pid+"/foto","PUT").then(function(r){if(!r.ok){toast("Error","e");return;}var p=PRODS.find(function(x){return x.id===pid;});if(p)p.img=null;toast("Foto eliminada ✅","s");cargarDatos();sprodTab("list",document.getElementById("spTabList"));});}
+function elimFotoSp(pid){if(!confirm("¿Eliminar foto?"))return;api("/productos/"+pid+"/foto","PUT").then(function(r){if(!r.ok){toast("Error","e");return;}let p=PRODS.find(function(x){return x.id===pid;});if(p)p.img=null;toast("Foto eliminada ✅","s");cargarDatos();sprodTab("list",document.getElementById("spTabList"));});}
 function cambiarRol(id,rol){api("/usuarios/"+id+"/rol","PUT",{rol:rol}).then(function(r){if(!r.ok){toast("Error","e");return;}toast("Rol actualizado → "+rol,"s");invalidateSCache(["users"]);renderSuperTab();});}
 function togUser(id){api("/usuarios/"+id+"/toggle","PUT").then(function(r){if(!r.ok){toast("Error","e");return;}toast("Estado actualizado","i");invalidateSCache(["users"]);renderSuperTab();});}
-function crearAdmin(){var n=document.getElementById("aNom").value.trim(),a=document.getElementById("aApe").value.trim(),e=document.getElementById("aEmail").value.trim().toLowerCase(),p=document.getElementById("aPass").value;if(!n||!a||!e||!p){toast("Completa todo","e");return;}if(p.length<8){toast("Contraseña mínimo 8","e");return;}api("/usuarios/admin","POST",{n:n,a:a,email:e,password:p}).then(function(r){if(!r.ok){toast(r.error||"Error","e");return;}toast("Admin "+n+" creado 👑","s");invalidateSCache(["users"]);sTab="users";buildSuper();});}
+function crearAdmin(){let n=document.getElementById("aNom").value.trim(),a=document.getElementById("aApe").value.trim(),e=document.getElementById("aEmail").value.trim().toLowerCase(),p=document.getElementById("aPass").value;if(!n||!a||!e||!p){toast("Completa todo","e");return;}if(p.length<8){toast("Contraseña mínimo 8","e");return;}api("/usuarios/admin","POST",{n:n,a:a,email:e,password:p}).then(function(r){if(!r.ok){toast(r.error||"Error","e");return;}toast("Admin "+n+" creado 👑","s");invalidateSCache(["users"]);sTab="users";buildSuper();});}
 
 // ── INIT ─────────────────────────────────────
 document.addEventListener("DOMContentLoaded",function(){
+  // Mark active nav links
+  document.querySelectorAll('.dnav-btn,.btab').forEach(el => {
+    if(el.getAttribute('href') === window.location.pathname){
+      el.classList.add('active','on');
+    }
+  });
+
   document.querySelectorAll(".anioActual").forEach(function(el){el.textContent=new Date().getFullYear();});
 
   // Overlay: cerrar al tocar fuera del modal
@@ -2768,12 +2754,12 @@ document.addEventListener("DOMContentLoaded",function(){
   });
 
   // Login: Enter key navigation
-  var lPass=document.getElementById("lPass"),lEmail=document.getElementById("lEmail");
+  let lPass=document.getElementById("lPass"),lEmail=document.getElementById("lEmail");
   if(lPass)lPass.addEventListener("keydown",function(e){if(e.key==="Enter")doLogin();});
   if(lEmail)lEmail.addEventListener("keydown",function(e){if(e.key==="Enter")lPass&&lPass.focus();});
 
   // Header scroll effect
-  var hdr=document.getElementById("hdr");
+  let hdr=document.getElementById("hdr");
   if(hdr){window.addEventListener("scroll",function(){hdr.classList.toggle("scrolled",window.scrollY>10);},{passive:true});}
 
   _loadSearchHistory();
@@ -2783,13 +2769,13 @@ document.addEventListener("DOMContentLoaded",function(){
   aplicarDarkMode(DARK_MODE); // Apply saved dark mode preference
   irPagina("inicio");
   // Show loading skeleton while data loads
-  var pI = document.getElementById("pInicio");
+  let pI = document.getElementById("pInicio");
   if(pI && !PRODS.length){
-    var sk = document.getElementById("skeletonLoader");
+    let sk = document.getElementById("skeletonLoader");
     if(!sk){
       sk = document.createElement("div");
       sk.id = "skeletonLoader";
-      sk.style.cssText = "padding:60px 20px;text-align:center;color:var(--na3);font-size:1.1rem;font-weight:700;";
+      sk.style.cssText = "padding:60px 20px;text-align:center;color:let(--na3);font-size:1.1rem;font-weight:700;";
       sk.innerHTML = '<div style="font-size:3rem;margin-bottom:16px;animation:spin 1s linear infinite">🔄</div>Cargando productos...';
       pI.prepend(sk);
     }
@@ -2797,17 +2783,17 @@ document.addEventListener("DOMContentLoaded",function(){
 
   // Restaurar carrito desde localStorage
   try{
-    var carritoGuardado = localStorage.getItem("ns_carrito");
+    let carritoGuardado = localStorage.getItem("ns_carrito");
     if(carritoGuardado) carrito = JSON.parse(carritoGuardado);
   }catch(e){ carrito = []; }
   // Restaurar wishlist
   cargarWishlist();
 
   // Restaurar sesión desde localStorage al recargar
-  var guardado = localStorage.getItem("ns_usuario");
+  let guardado = localStorage.getItem("ns_usuario");
   if(guardado){
     try{
-      var u = JSON.parse(guardado);
+      let u = JSON.parse(guardado);
       // PASO 1: Restaurar sesión INMEDIATAMENTE desde localStorage
       // Validar que los datos son coherentes
       if(!u.id||!u.n||!u.rol){localStorage.removeItem('ns_usuario');cargarDatos();return;}
@@ -2848,7 +2834,7 @@ document.addEventListener("DOMContentLoaded",function(){
 // ══════════════════════════════════════════════════════
 //  REPRODUCTOR DE MÚSICA FLOTANTE — NuestroStore Music
 // ══════════════════════════════════════════════════════
-var mp = {
+let mp = {
   audio: null,
   playlist: [],       // [{name, dur, url, objUrl}]
   current: -1,
@@ -2869,7 +2855,7 @@ function mpInit(){
   mp.audio.addEventListener("timeupdate", mpOnTimeUpdate);
   mp.audio.addEventListener("ended", mpOnEnded);
   mp.audio.addEventListener("loadedmetadata", function(){
-    var item = mp.playlist[mp.current];
+    let item = mp.playlist[mp.current];
     if(item) item.dur = mpFmtTime(mp.audio.duration);
     mpRenderPlaylist();
     mpUpdateDur();
@@ -2880,7 +2866,7 @@ function mpInit(){
   });
 
   // Arrastrar barra de progreso
-  var pb = document.getElementById("mpProgressBg");
+  let pb = document.getElementById("mpProgressBg");
   if(pb){
     pb.addEventListener("mousedown", function(e){ mp.dragging=true; mpSeek(e); });
     pb.addEventListener("touchstart", function(e){ mp.dragging=true; mpSeekTouch(e); }, {passive:true});
@@ -2891,7 +2877,7 @@ function mpInit(){
   }
 
   // Actualizar gradiente del slider de volumen en tiempo real
-  var vs = document.getElementById("mpVolSlider");
+  let vs = document.getElementById("mpVolSlider");
   if(vs) vs.addEventListener("input", function(){ mpUpdateVolGradient(); });
 
   mpUpdateVolGradient();
@@ -2899,8 +2885,8 @@ function mpInit(){
 
 // ── Actualizar reproductor según sesión ──
 function mpRefreshAuth(){
-  var panel = document.getElementById("mpPanel");
-  var wrap  = document.getElementById("musicPlayer");
+  let panel = document.getElementById("mpPanel");
+  let wrap  = document.getElementById("musicPlayer");
   if(!panel || !wrap) return;
 
   if(usuario){
@@ -2948,12 +2934,12 @@ function mpRefreshAuth(){
         '</div>'
       ].join("");
       // Re-bind progress bar events
-      var pb = document.getElementById("mpProgressBg");
+      let pb = document.getElementById("mpProgressBg");
       if(pb){
         pb.addEventListener("mousedown", function(e){ mp.dragging=true; mpSeek(e); });
         pb.addEventListener("touchstart", function(e){ mp.dragging=true; mpSeekTouch(e); }, {passive:true});
       }
-      var vs = document.getElementById("mpVolSlider");
+      let vs = document.getElementById("mpVolSlider");
       if(vs){ vs.value = mp.volume; vs.addEventListener("input", function(){ mpUpdateVolGradient(); }); }
       mpUpdateVolGradient();
     }
@@ -2968,18 +2954,18 @@ function mpRefreshAuth(){
 
 // ── Abrir/colapsar panel ──
 function mpToggle(){
-  var wrap = document.getElementById("musicPlayer");
+  let wrap = document.getElementById("musicPlayer");
   if(!wrap) return;
   // Si no hay usuario, mostrar estado bloqueado en lugar del panel
   if(!usuario){
-    var panel = document.getElementById("mpPanel");
+    let panel = document.getElementById("mpPanel");
     if(panel){
       wrap.classList.toggle("mp-collapsed");
       mpRenderLocked();
     }
     return;
   }
-  var wasCollapsed = wrap.classList.contains("mp-collapsed");
+  let wasCollapsed = wrap.classList.contains("mp-collapsed");
   wrap.classList.toggle("mp-collapsed");
   // Al abrir el panel, mostrar canciones si ya están cargadas
   if(wasCollapsed && mp.playlist.length > 0){
@@ -2990,7 +2976,7 @@ function mpToggle(){
 
 // ── Mostrar mensaje de "inicia sesión" en el panel ──
 function mpRenderLocked(){
-  var panel = document.getElementById("mpPanel");
+  let panel = document.getElementById("mpPanel");
   if(!panel || usuario) return;
   if(document.getElementById("musicPlayer").classList.contains("mp-collapsed")) return;
   panel.innerHTML = [
@@ -3012,38 +2998,38 @@ function mpRenderLocked(){
 // ── Ocultar completamente el reproductor ──
 // ── Etiqueta del botón de música en el panel de perfil ──
 function mpPerfilBtnLabel(){
-  var wrap = document.getElementById("musicPlayer");
-  var hidden = wrap && wrap.classList.contains("mp-hidden");
+  let wrap = document.getElementById("musicPlayer");
+  let hidden = wrap && wrap.classList.contains("mp-hidden");
   if(hidden){
     return '<span>Reproductor oculto</span><span style="font-size:.75rem;background:#e8f5e9;color:#2e7d32;padding:2px 8px;border-radius:50px">Mostrar</span>';
   }
-  return '<span>Reproductor visible</span><span style="font-size:.75rem;background:#fff0e0;color:var(--na3);padding:2px 8px;border-radius:50px">Ocultar</span>';
+  return '<span>Reproductor visible</span><span style="font-size:.75rem;background:#fff0e0;color:let(--na3);padding:2px 8px;border-radius:50px">Ocultar</span>';
 }
 
 function mpPerfilToggle(){
-  var wrap = document.getElementById("musicPlayer");
+  let wrap = document.getElementById("musicPlayer");
   if(!wrap) return;
   if(wrap.classList.contains("mp-hidden")){
     mpShow();
   } else {
     mpHide();
   }
-  var btn = document.getElementById("mpPerfilBtn");
+  let btn = document.getElementById("mpPerfilBtn");
   if(btn) btn.innerHTML = mpPerfilBtnLabel();
 }
 
 function mpPanelBtnLabel(){
-  var wrap = document.getElementById("musicPlayer");
-  var hidden = wrap && wrap.classList.contains("mp-hidden");
+  let wrap = document.getElementById("musicPlayer");
+  let hidden = wrap && wrap.classList.contains("mp-hidden");
   if(hidden){
     return '<span>🎵 Reproductor de música</span><span style="font-size:.75rem;background:#e8f5e9;color:#2e7d32;padding:2px 8px;border-radius:50px">Mostrar</span>';
   }
-  return '<span>🎵 Reproductor de música</span><span style="font-size:.75rem;background:#fff0e0;color:var(--na3);padding:2px 8px;border-radius:50px">Ocultar</span>';
+  return '<span>🎵 Reproductor de música</span><span style="font-size:.75rem;background:#fff0e0;color:let(--na3);padding:2px 8px;border-radius:50px">Ocultar</span>';
 }
 
 // ── Alternar visibilidad del reproductor desde el perfil ──
 function mpPanelToggle(){
-  var wrap = document.getElementById("musicPlayer");
+  let wrap = document.getElementById("musicPlayer");
   if(!wrap) return;
   if(wrap.classList.contains("mp-hidden")){
     mpShow();
@@ -3051,12 +3037,12 @@ function mpPanelToggle(){
     mpHide();
   }
   // Actualizar el botón en tiempo real
-  var btn = document.getElementById("mpPanelBtn");
+  let btn = document.getElementById("mpPanelBtn");
   if(btn) btn.innerHTML = mpPanelBtnLabel();
 }
 
 function mpHide(){
-  var wrap = document.getElementById("musicPlayer");
+  let wrap = document.getElementById("musicPlayer");
   if(!wrap) return;
   wrap.classList.add("mp-hidden");
   wrap.classList.add("mp-collapsed");
@@ -3065,7 +3051,7 @@ function mpHide(){
 
 // ── Mostrar de nuevo el reproductor ──
 function mpShow(){
-  var wrap = document.getElementById("musicPlayer");
+  let wrap = document.getElementById("musicPlayer");
   if(!wrap) return;
   wrap.classList.remove("mp-hidden");
 }
@@ -3073,45 +3059,45 @@ function mpShow(){
 // ── Abrir selector de archivos (solo si hay sesión) ──
 function mpAddFiles(){
   if(!usuario){ toast("Inicia sesión para agregar música","e"); abrirModal("mLogin"); return; }
-  var fi = document.getElementById("mpFileInput");
+  let fi = document.getElementById("mpFileInput");
   if(fi) fi.click();
 }
 
 // ── Cargar archivos seleccionados ──
 function mpLoadFiles(e){
-  var files = Array.from(e.target.files || []);
+  let files = Array.from(e.target.files || []);
   if(!files.length) return;
 
-  var pending = 0, added = 0;
+  let pending = 0, added = 0;
   files.forEach(function(f){
     if(!f.type.startsWith("audio/") && !/\.(mp3|wav|ogg|flac|aac|m4a|opus|weba)$/i.test(f.name)) return;
     pending++;
-    var name = f.name.replace(/\.[^.]+$/, "");
-    var reader = new FileReader();
+    let name = f.name.replace(/\.[^.]+$/, "");
+    let reader = new FileReader();
     reader.onload = function(ev){
-      var b64 = ev.target.result; // data:audio/...;base64,...
+      let b64 = ev.target.result; // data:audio/...;base64,...
       // Guardar en BD si hay usuario
       if(usuario){
         api("/musica/"+usuario.id, "POST", {nombre:name, datos:b64, duracion:"--"}).then(function(r){
           if(r.ok){
-            var objUrl = URL.createObjectURL(f);
+            let objUrl = URL.createObjectURL(f);
             mp.playlist.push({id:r.id, name:name, dur:"—", url:objUrl, objUrl:objUrl, b64:b64});
           } else {
             // Sin BD, usar solo en memoria
-            var objUrl = URL.createObjectURL(f);
+            let objUrl = URL.createObjectURL(f);
             mp.playlist.push({name:name, dur:"—", url:objUrl, objUrl:objUrl});
           }
           added++;
           pending--;
           if(pending === 0) mpLoadFilesDone(added);
         }).catch(function(){
-          var objUrl = URL.createObjectURL(f);
+          let objUrl = URL.createObjectURL(f);
           mp.playlist.push({name:name, dur:"—", url:objUrl, objUrl:objUrl});
           added++; pending--;
           if(pending === 0) mpLoadFilesDone(added);
         });
       } else {
-        var objUrl = URL.createObjectURL(f);
+        let objUrl = URL.createObjectURL(f);
         mp.playlist.push({name:name, dur:"—", url:objUrl, objUrl:objUrl});
         added++; pending--;
         if(pending === 0) mpLoadFilesDone(added);
@@ -3133,8 +3119,8 @@ function mpLoadFilesDone(added){
 }
 
 // ── Cargar playlist desde BD al iniciar sesión ──
-var _mpCargando = false;
-var _mpYaCargo = false;
+let _mpCargando = false;
+let _mpYaCargo = false;
 function mpCargarDesdeDB(){
   if(!usuario) return;
   if(_mpCargando) return; // evitar llamadas simultáneas
@@ -3146,26 +3132,26 @@ function mpCargarDesdeDB(){
     mp.playlist.forEach(function(item){ if(item.objUrl) URL.revokeObjectURL(item.objUrl); });
     mp.playlist = [];
     mp.current = -1;
-    var tracks = r.tracks;
-    var loaded = 0;
+    let tracks = r.tracks;
+    let loaded = 0;
     tracks.forEach(function(t){
       // Cargar datos del track
       api("/musica/"+usuario.id+"/"+t.id).then(function(tr){
         if(!tr.ok) return;
-        var b64 = tr.track.datos;
+        let b64 = tr.track.datos;
         // Convertir base64 a blob URL
         try{
-          var arr = b64.split(","), mime = arr[0].match(/:(.*?);/)[1];
-          var bstr = atob(arr[1]), n = bstr.length, u8 = new Uint8Array(n);
+          let arr = b64.split(","), mime = arr[0].match(/:(.*?);/)[1];
+          let bstr = atob(arr[1]), n = bstr.length, u8 = new Uint8Array(n);
           while(n--){ u8[n] = bstr.charCodeAt(n); }
-          var blob = new Blob([u8], {type:mime});
-          var objUrl = URL.createObjectURL(blob);
+          let blob = new Blob([u8], {type:mime});
+          let objUrl = URL.createObjectURL(blob);
           mp.playlist.push({id:t.id, name:t.nombre, dur:t.duracion||"—", url:objUrl, objUrl:objUrl});
         }catch(ex){ return; }
         loaded++;
         if(loaded === tracks.length){
           // Solo mostrar UI si el panel está abierto
-          var w = document.getElementById("musicPlayer");
+          let w = document.getElementById("musicPlayer");
           if(w && !w.classList.contains("mp-collapsed")){
             mpShowPlayer();
             mpRenderPlaylist();
@@ -3192,7 +3178,7 @@ function mpPlay(idx){
   if(idx < 0 || idx >= mp.playlist.length) return;
   mp.current = idx;
 
-  var item = mp.playlist[idx];
+  let item = mp.playlist[idx];
   mp.audio.src = item.url;
   mp.audio.load();
   mp.audio.play().then(function(){
@@ -3228,7 +3214,7 @@ function mpTogglePlay(){
 // ── Siguiente ──
 function mpNext(){
   if(!mp.playlist.length) return;
-  var next;
+  let next;
   if(mp.shuffle){
     mp.shuffleIdx = (mp.shuffleIdx + 1) % mp.shuffleOrder.length;
     next = mp.shuffleOrder[mp.shuffleIdx];
@@ -3243,7 +3229,7 @@ function mpPrev(){
   if(!mp.playlist.length) return;
   // Si llevamos más de 3s, rebobinar en lugar de ir atrás
   if(mp.audio.currentTime > 3){ mp.audio.currentTime = 0; return; }
-  var prev;
+  let prev;
   if(mp.shuffle){
     mp.shuffleIdx = (mp.shuffleIdx - 1 + mp.shuffleOrder.length) % mp.shuffleOrder.length;
     prev = mp.shuffleOrder[mp.shuffleIdx];
@@ -3273,14 +3259,14 @@ function mpOnEnded(){
 // ── Shuffle ──
 function mpToggleShuffle(){
   mp.shuffle = !mp.shuffle;
-  var btn = document.getElementById("mpShuffleBtn");
+  let btn = document.getElementById("mpShuffleBtn");
   if(btn) btn.classList.toggle("active", mp.shuffle);
   if(mp.shuffle){
     // Generar orden aleatorio
     mp.shuffleOrder = mp.playlist.map(function(_,i){return i;});
-    for(var i = mp.shuffleOrder.length - 1; i > 0; i--){
-      var j = Math.floor(Math.random() * (i+1));
-      var tmp = mp.shuffleOrder[i]; mp.shuffleOrder[i]=mp.shuffleOrder[j]; mp.shuffleOrder[j]=tmp;
+    for(let i = mp.shuffleOrder.length - 1; i > 0; i--){
+      let j = Math.floor(Math.random() * (i+1));
+      let tmp = mp.shuffleOrder[i]; mp.shuffleOrder[i]=mp.shuffleOrder[j]; mp.shuffleOrder[j]=tmp;
     }
     mp.shuffleIdx = mp.shuffleOrder.indexOf(mp.current);
     if(mp.shuffleIdx < 0) mp.shuffleIdx = 0;
@@ -3292,7 +3278,7 @@ function mpToggleShuffle(){
 
 // ── Repeat ──
 function mpToggleRepeat(){
-  var btn = document.getElementById("mpRepeatBtn");
+  let btn = document.getElementById("mpRepeatBtn");
   if(mp.repeat === false){
     mp.repeat = "all";
     if(btn){ btn.classList.add("active"); btn.textContent = "↻"; btn.title = "Repetir todo"; }
@@ -3310,11 +3296,11 @@ function mpToggleRepeat(){
 
 // ── Seek ──
 function mpSeek(e){
-  var bg = document.getElementById("mpProgressBg");
+  let bg = document.getElementById("mpProgressBg");
   if(!bg) return;
-  var rect = bg.getBoundingClientRect();
-  var x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
-  var pct = x / rect.width;
+  let rect = bg.getBoundingClientRect();
+  let x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+  let pct = x / rect.width;
   if(mp.audio.duration){ mp.audio.currentTime = pct * mp.audio.duration; }
 }
 function mpSeekTouch(e){
@@ -3324,11 +3310,11 @@ function mpSeekTouch(e){
 // ── Actualizar barra de progreso ──
 function mpOnTimeUpdate(){
   if(mp.dragging) return;
-  var fill = document.getElementById("mpProgressFill");
-  var thumb = document.getElementById("mpThumb");
-  var cur = document.getElementById("mpCurTime");
+  let fill = document.getElementById("mpProgressFill");
+  let thumb = document.getElementById("mpThumb");
+  let cur = document.getElementById("mpCurTime");
   if(!fill || !mp.audio.duration) return;
-  var pct = (mp.audio.currentTime / mp.audio.duration) * 100;
+  let pct = (mp.audio.currentTime / mp.audio.duration) * 100;
   fill.style.width = pct + "%";
   if(thumb) thumb.style.left = pct + "%";
   if(cur) cur.textContent = mpFmtTime(mp.audio.currentTime);
@@ -3349,7 +3335,7 @@ function mpToggleMute(){
   mpUpdateVolIcon();
 }
 function mpUpdateVolIcon(){
-  var ico = document.getElementById("mpVolIco");
+  let ico = document.getElementById("mpVolIco");
   if(!ico) return;
   if(mp.muted || mp.volume === 0) ico.textContent = "🔇";
   else if(mp.volume < 40) ico.textContent = "🔈";
@@ -3357,41 +3343,41 @@ function mpUpdateVolIcon(){
   else ico.textContent = "🔊";
 }
 function mpUpdateVolGradient(){
-  var vs = document.getElementById("mpVolSlider");
+  let vs = document.getElementById("mpVolSlider");
   if(!vs) return;
-  var pct = vs.value + "%";
-  vs.style.background = "linear-gradient(90deg,var(--na) " + pct + ",#e0d0c4 " + pct + ")";
+  let pct = vs.value + "%";
+  vs.style.background = "linear-gradient(90deg,let(--na) " + pct + ",#e0d0c4 " + pct + ")";
 }
 
 // ── Actualizar NOW PLAYING ──
 function mpUpdateNowPlaying(){
-  var item = mp.playlist[mp.current];
+  let item = mp.playlist[mp.current];
   if(!item) return;
-  var nm = document.getElementById("mpTrackName");
-  var art = document.getElementById("mpArt");
+  let nm = document.getElementById("mpTrackName");
+  let art = document.getElementById("mpArt");
   if(nm) nm.textContent = item.name;
   if(art){ art.textContent = "🎵"; art.style.borderRadius = "12px"; }
   document.getElementById("mpPlayerWrap") && document.getElementById("mpPlayerWrap").classList.add("mp-playing");
-  var panel = document.getElementById("mpPanel");
+  let panel = document.getElementById("mpPanel");
   if(panel) panel.classList.add("mp-playing");
   mpUpdateDur();
   mpRenderPlaylist();
 }
 function mpUpdateDur(){
-  var total = document.getElementById("mpTotalTime");
+  let total = document.getElementById("mpTotalTime");
   if(total && mp.audio.duration) total.textContent = mpFmtTime(mp.audio.duration);
 }
 
 // ── Íconos play/pausa ──
 function mpSetPlayIcon(playing){
-  var btn = document.getElementById("mpPlayBtn");
+  let btn = document.getElementById("mpPlayBtn");
   if(btn) btn.textContent = playing ? "⏸" : "▶";
 }
 
 // ── FAB: mostrar ondas o nota ──
 function mpUpdateFab(playing){
-  var ico = document.getElementById("mpFabIco");
-  var waves = document.getElementById("mpWaves");
+  let ico = document.getElementById("mpFabIco");
+  let waves = document.getElementById("mpWaves");
   if(playing){
     if(ico) ico.style.display = "none";
     if(waves) waves.style.display = "flex";
@@ -3403,11 +3389,11 @@ function mpUpdateFab(playing){
 
 // ── Renderizar lista ──
 function mpRenderPlaylist(){
-  var list = document.getElementById("mpPlList");
+  let list = document.getElementById("mpPlList");
   if(!list) return;
   if(!mp.playlist.length){ list.innerHTML = "<div style='text-align:center;padding:16px;color:#ccc;font-size:.8rem'>Sin canciones</div>"; return; }
   list.innerHTML = mp.playlist.map(function(item, i){
-    var active = i === mp.current ? " active" : "";
+    let active = i === mp.current ? " active" : "";
     return "<div class='mp-pl-item" + active + "' onclick='mpPlay(" + i + ")'>" +
       "<span class='mp-pl-num'>" + (i+1) + "</span>" +
       "<span class='mp-pl-ico'>" + (i === mp.current && mp.playing ? "🔊" : "🎵") + "</span>" +
@@ -3422,7 +3408,7 @@ function mpRenderPlaylist(){
 
 // ── Quitar canción de playlist ──
 function mpRemove(idx){
-  var item = mp.playlist[idx];
+  let item = mp.playlist[idx];
   if(item && item.objUrl) URL.revokeObjectURL(item.objUrl);
   // Eliminar de BD si tiene id
   if(item && item.id && usuario){
@@ -3487,42 +3473,42 @@ function mpClearAll(){
 // ── Utilidad: formatear tiempo ──
 function mpFmtTime(secs){
   if(!secs || isNaN(secs)) return "0:00";
-  var m = Math.floor(secs / 60);
-  var s = Math.floor(secs % 60);
+  let m = Math.floor(secs / 60);
+  let s = Math.floor(secs % 60);
   return m + ":" + (s < 10 ? "0" : "") + s;
 }
 
 // ── CONTACTO ─────────────────────────────────────────────────────────────────
 function actualizarContador(){
-  var ta=document.getElementById("cfMensaje");
-  var cnt=document.getElementById("cfCharCount");
+  let ta=document.getElementById("cfMensaje");
+  let cnt=document.getElementById("cfCharCount");
   if(!ta||!cnt)return;
-  var n=ta.value.length,max=500;
+  let n=ta.value.length,max=500;
   cnt.textContent=n+" / "+max;
-  cnt.style.color=n>450?"#c62828":n>350?"#e65100":"var(--gr)";
+  cnt.style.color=n>450?"#c62828":n>350?"#e65100":"let(--gr)";
 }
 
 function autocompletarContacto(){
   if(!usuario)return;
-  var nm=document.getElementById("cfNombre"),em=document.getElementById("cfEmail"),tel=document.getElementById("cfTel");
+  let nm=document.getElementById("cfNombre"),em=document.getElementById("cfEmail"),tel=document.getElementById("cfTel");
   if(nm&&!nm.value)nm.value=(usuario.n||"")+" "+(usuario.a||"");
   if(em&&!em.value)em.value=usuario.email||"";
   if(tel&&!tel.value&&usuario.tel)tel.value=usuario.tel;
-  var note=document.getElementById("cfLoginNote"),txt=document.getElementById("cfLoginNoteText");
+  let note=document.getElementById("cfLoginNote"),txt=document.getElementById("cfLoginNoteText");
   if(note){note.style.display="flex";}
   if(txt)txt.textContent="✨ Datos completados con tu cuenta";
 }
 
 function enviarContacto(){
-  var nombre  = (document.getElementById("cfNombre")||{}).value||"";
-  var email   = (document.getElementById("cfEmail")||{}).value||"";
-  var tel     = (document.getElementById("cfTel")||{}).value||"";
-  var asunto  = (document.getElementById("cfAsunto")||{}).value||"";
-  var mensaje = (document.getElementById("cfMensaje")||{}).value||"";
-  var prioEl  = document.querySelector('input[name="cfPrioridad"]:checked');
-  var prioridad = prioEl ? prioEl.value : "normal";
-  var errEl   = document.getElementById("cfErr");
-  var okEl    = document.getElementById("cfOk");
+  let nombre  = (document.getElementById("cfNombre")||{}).value||"";
+  let email   = (document.getElementById("cfEmail")||{}).value||"";
+  let tel     = (document.getElementById("cfTel")||{}).value||"";
+  let asunto  = (document.getElementById("cfAsunto")||{}).value||"";
+  let mensaje = (document.getElementById("cfMensaje")||{}).value||"";
+  let prioEl  = document.querySelector('input[name="cfPrioridad"]:checked');
+  let prioridad = prioEl ? prioEl.value : "normal";
+  let errEl   = document.getElementById("cfErr");
+  let okEl    = document.getElementById("cfOk");
 
   errEl.style.display="none";
   okEl.style.display="none";
@@ -3532,10 +3518,10 @@ function enviarContacto(){
   if(!asunto){errEl.textContent="Selecciona un asunto para tu mensaje.";errEl.style.display="block";return;}
   if(!mensaje.trim()||mensaje.trim().length<10){errEl.textContent="El mensaje debe tener al menos 10 caracteres.";errEl.style.display="block";return;}
 
-  var btn=document.querySelector(".contact-send-btn");
+  let btn=document.querySelector(".contact-send-btn");
   if(btn){btn.disabled=true;btn.textContent="Enviando…";}
 
-  var payload={nombre:nombre.trim(),email:email.trim().toLowerCase(),tel:tel.trim(),asunto:asunto,mensaje:mensaje.trim(),prioridad:prioridad};
+  let payload={nombre:nombre.trim(),email:email.trim().toLowerCase(),tel:tel.trim(),asunto:asunto,mensaje:mensaje.trim(),prioridad:prioridad};
 
   api("/contactos","POST",payload)
     .then(function(r){
@@ -3548,7 +3534,7 @@ function enviarContacto(){
       document.getElementById("cfAsunto").value="";
       document.getElementById("cfMensaje").value="";
       actualizarContador();
-      var prio=document.querySelector('input[name="cfPrioridad"][value="normal"]');
+      let prio=document.querySelector('input[name="cfPrioridad"][value="normal"]');
       if(prio)prio.checked=true;
       toast("Mensaje enviado correctamente ✅","s");
     })
@@ -3560,7 +3546,7 @@ function enviarContacto(){
 }
 
 function toggleFaq(el){
-  var isOpen = el.classList.contains("open");
+  let isOpen = el.classList.contains("open");
   document.querySelectorAll(".cfaq-item").forEach(function(i){i.classList.remove("open");});
   if(!isOpen) el.classList.add("open");
 }
@@ -3569,7 +3555,7 @@ function toggleFaq(el){
 function marcarMensajeLeido(id){
   api("/contactos/"+id+"/leer","PUT").then(function(r){
     if(!r.ok){toast("Error","e");return;}
-    var m=CONTACTOS.find(function(x){return x.id===id;});
+    let m=CONTACTOS.find(function(x){return x.id===id;});
     if(m)m.leido=1;
     toast("Marcado como leído ✅","s");
     if(aTab==="mensajes")renderAdminTab();
@@ -3588,9 +3574,9 @@ function eliminarMensaje(id){
 }
 
 // ── CHAT DE SOPORTE ──────────────────────────────────────────
-var _chatTimer  = null;
-var _chatActivo = false;
-var _chatUid    = null;
+let _chatTimer  = null;
+let _chatActivo = false;
+let _chatUid    = null;
 
 function abrirChatSoporte(){
   if(!usuario){ toast("Inicia sesión para usar el chat","e"); return; }
@@ -3603,7 +3589,7 @@ function abrirChatSoporte(){
 function cerrarChatSoporte(){
   _chatActivo = false;
   if(_chatTimer){ clearInterval(_chatTimer); _chatTimer = null; }
-  var w = document.getElementById("chatWidget");
+  let w = document.getElementById("chatWidget");
   if(w){ w.classList.remove("chat-open"); setTimeout(function(){ w.remove(); }, 300); }
 }
 
@@ -3629,10 +3615,10 @@ function _cargarMensajesChat(){
 }
 
 function _renderChatWidget(){
-  var existing = document.getElementById("chatWidget");
+  let existing = document.getElementById("chatWidget");
   if(existing) existing.remove();
 
-  var w = document.createElement("div");
+  let w = document.createElement("div");
   w.id = "chatWidget";
   w.className = "chat-widget";
   w.innerHTML =
@@ -3665,18 +3651,18 @@ function _renderChatWidget(){
 }
 
 function _renderMensajesChat(mensajes){
-  var box = document.getElementById("chatMessages");
+  let box = document.getElementById("chatMessages");
   if(!box) return;
   if(!mensajes.length) return;
 
   // Keep welcome message, rebuild the rest
-  var welcome = box.querySelector(".chat-msg-soporte");
+  let welcome = box.querySelector(".chat-msg-soporte");
   box.innerHTML = "";
   if(welcome) box.appendChild(welcome);
 
   mensajes.forEach(function(m){
-    var esCliente = m.remitente === "cliente";
-    var div = document.createElement("div");
+    let esCliente = m.remitente === "cliente";
+    let div = document.createElement("div");
     div.className = "chat-msg " + (esCliente ? "chat-msg-cliente" : "chat-msg-soporte");
     div.innerHTML =
       '<div class="chat-bubble">' + _escapeHtml(m.mensaje) + '</div>'
@@ -3692,16 +3678,16 @@ function _renderMensajesChat(mensajes){
 }
 
 function enviarMensajeChat(){
-  var inp = document.getElementById("chatInput");
+  let inp = document.getElementById("chatInput");
   if(!inp) return;
-  var msg = inp.value.trim();
+  let msg = inp.value.trim();
   if(!msg || !_chatUid) return;
 
   // Optimistic UI
   inp.value = "";
-  var box = document.getElementById("chatMessages");
+  let box = document.getElementById("chatMessages");
   if(box){
-    var div = document.createElement("div");
+    let div = document.createElement("div");
     div.className = "chat-msg chat-msg-cliente";
     div.innerHTML = '<div class="chat-bubble">' + _escapeHtml(msg) + '</div>'
       + '<div class="chat-time">Tú · enviando…</div>';
@@ -3728,12 +3714,12 @@ function _escapeHtml(s){
 }
 
 // ── CHAT ADMIN — responder desde el panel ─────────────────────
-var _chatAdminUid   = null;
-var _chatAdminTimer = null;
+let _chatAdminUid   = null;
+let _chatAdminTimer = null;
 
 function abrirChatAdmin(uid, nombre){
   _chatAdminUid = uid;
-  var c = document.getElementById("aTB") || document.getElementById("sTB");
+  let c = document.getElementById("aTB") || document.getElementById("sTB");
   if(!c) return;
   // Mark client messages as read
   fetch("/api/chat?uid="+uid).then(function(r){ return r.json(); }).then(function(r){
@@ -3748,13 +3734,13 @@ function abrirChatAdmin(uid, nombre){
 }
 
 function _renderChatAdmin(mensajes, nombre, container){
-  var box = typeof container === "string"
+  let box = typeof container === "string"
     ? document.getElementById(container)
     : (container.id === "chatAdminBox" ? container : null);
 
   // If rendering into the full tab container
   if(!box || box.id !== "chatAdminBox"){
-    var wrap = container || document.getElementById("aTB") || document.getElementById("sTB");
+    let wrap = container || document.getElementById("aTB") || document.getElementById("sTB");
     if(!wrap) return;
     wrap.innerHTML =
       '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">'
@@ -3774,12 +3760,12 @@ function _renderChatAdmin(mensajes, nombre, container){
   if(!box) return;
   box.innerHTML = "";
   if(!mensajes.length){
-    box.innerHTML = '<div style="text-align:center;color:var(--gr);padding:20px">Sin mensajes aún</div>';
+    box.innerHTML = '<div style="text-align:center;color:let(--gr);padding:20px">Sin mensajes aún</div>';
     return;
   }
   mensajes.forEach(function(m){
-    var esCliente = m.remitente === "cliente";
-    var div = document.createElement("div");
+    let esCliente = m.remitente === "cliente";
+    let div = document.createElement("div");
     div.style.cssText = "display:flex;flex-direction:column;" + (esCliente ? "align-items:flex-start" : "align-items:flex-end");
     div.innerHTML =
       '<div style="max-width:80%;background:' + (esCliente ? "#EFF6FF" : "#F0FDF4")
@@ -3787,7 +3773,7 @@ function _renderChatAdmin(mensajes, nombre, container){
       + ';padding:9px 13px;border-radius:' + (esCliente ? "4px 14px 14px 14px" : "14px 4px 14px 14px")
       + ';font-size:.87rem;line-height:1.5">'
       + _escapeHtml(m.mensaje) + '</div>'
-      + '<div style="font-size:.68rem;color:var(--gr);margin-top:2px">'
+      + '<div style="font-size:.68rem;color:let(--gr);margin-top:2px">'
       + (esCliente ? (m.uNom || "Cliente") : "Soporte") + ' · ' + (m.fecha || "").slice(11,16)
       + '</div>';
     box.appendChild(div);
@@ -3796,9 +3782,9 @@ function _renderChatAdmin(mensajes, nombre, container){
 }
 
 function enviarRespuestaAdmin(){
-  var inp = document.getElementById("chatAdminInput");
+  let inp = document.getElementById("chatAdminInput");
   if(!inp || !_chatAdminUid) return;
-  var msg = inp.value.trim();
+  let msg = inp.value.trim();
   if(!msg) return;
   inp.value = "";
   fetch("/api/chat",{
