@@ -227,6 +227,20 @@ def init_db():
     ]
 
     # Indexes for performance
+    # ── CHAT ──────────────────────────────────────────────────
+    tables.append(f"""
+        CREATE TABLE IF NOT EXISTS chat_mensajes (
+            id          {t('INTEGER PRIMARY KEY AUTOINCREMENT', 'SERIAL PRIMARY KEY')},
+            uid         {t('INTEGER', 'INT')} NOT NULL,
+            u_nom       TEXT NOT NULL,
+            u_email     TEXT NOT NULL,
+            mensaje     TEXT NOT NULL,
+            remitente   TEXT NOT NULL DEFAULT 'cliente',
+            leido       {t('INTEGER', 'SMALLINT')} NOT NULL DEFAULT 0,
+            fecha       {t("TEXT DEFAULT (datetime('now','localtime'))", 'TIMESTAMP DEFAULT NOW()')}
+        )
+    """)
+
     indexes = [
         "CREATE INDEX IF NOT EXISTS idx_usuarios_email   ON usuarios(email)",
         "CREATE INDEX IF NOT EXISTS idx_usuarios_rol     ON usuarios(rol)",
@@ -244,6 +258,8 @@ def init_db():
         "CREATE INDEX IF NOT EXISTS idx_pw_resets_token ON password_resets(token)",
         "CREATE INDEX IF NOT EXISTS idx_pw_resets_email ON password_resets(email)",
         "CREATE INDEX IF NOT EXISTS idx_logs_fecha       ON logs(fecha)",
+        "CREATE INDEX IF NOT EXISTS idx_chat_uid         ON chat_mensajes(uid)",
+        "CREATE INDEX IF NOT EXISTS idx_chat_leido       ON chat_mensajes(leido)",
     ]
 
     from django.db import transaction
