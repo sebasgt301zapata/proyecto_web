@@ -4618,3 +4618,36 @@ html.dark .vchart-tab.on{ background:#1E293B;color:#93C5FD; }
 .badge-pulse{animation:badgePop .4s cubic-bezier(.36,.07,.19,.97) both;}
 .badd:active{transform:scale(.93);transition:transform .1s;}
 }
+
+/* ══════════════════════════════════════════
+   WEB PUSH — Botones y admin
+   ══════════════════════════════════════════ */
+
+.push-toggle-btn{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:.75rem;padding:6px 11px;
+  border-radius:50px;cursor:pointer;
+  transition:all .18s;white-space:nowrap;
+  font-family:'Inter',sans-serif;font-weight:700;
+}
+.push-toggle-btn.push-on{
+  background:linear-gradient(135deg,#1E3A8A,#2563EB) !important;
+  color:#fff !important;
+  border-color:transparent !important;
+}
+.push-admin-wrap{
+  display:flex;flex-direction:column;gap:16px;
+}
+.push-stats-row{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;
+}
+.push-form{
+  background:#F8FAFC;
+  border:1.5px solid #E2E8F0;
+  border-radius:14px;
+  padding:16px;
+}
+html.dark .push-form{
+  background:#0F172A;
+  border-color:#334155;
+}
