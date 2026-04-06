@@ -241,6 +241,18 @@ def init_db():
         )
     """)
 
+    tables.append(f"""
+        CREATE TABLE IF NOT EXISTS push_subscriptions (
+            id        {t('INTEGER PRIMARY KEY AUTOINCREMENT', 'SERIAL PRIMARY KEY')},
+            uid       {t('INTEGER', 'INT')} NOT NULL UNIQUE,
+            endpoint  TEXT NOT NULL,
+            p256dh    TEXT NOT NULL,
+            auth      TEXT NOT NULL,
+            activo    {t('INTEGER', 'SMALLINT')} NOT NULL DEFAULT 1,
+            creado    {t("TEXT DEFAULT (datetime('now','localtime'))", 'TIMESTAMP DEFAULT NOW()')}
+        )
+    """)
+
     indexes = [
         "CREATE INDEX IF NOT EXISTS idx_usuarios_email   ON usuarios(email)",
         "CREATE INDEX IF NOT EXISTS idx_usuarios_rol     ON usuarios(rol)",
@@ -260,6 +272,7 @@ def init_db():
         "CREATE INDEX IF NOT EXISTS idx_logs_fecha       ON logs(fecha)",
         "CREATE INDEX IF NOT EXISTS idx_chat_uid         ON chat_mensajes(uid)",
         "CREATE INDEX IF NOT EXISTS idx_chat_leido       ON chat_mensajes(leido)",
+        "CREATE INDEX IF NOT EXISTS idx_push_uid         ON push_subscriptions(uid)",
     ]
 
     from django.db import transaction
