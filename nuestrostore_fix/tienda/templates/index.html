@@ -780,5 +780,16 @@
 
 <div class="tcs" id="tcs"></div>
 <script src="{% static 'js/app.js' %}"></script>
+<script>
+// ── SERVICE WORKER + PUSH REGISTRATION ─────────────────────
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/static/sw.js', {scope:'/'})
+    .then(function(reg){
+      window._swReg = reg;
+      console.log('[SW] Registered, scope:', reg.scope);
+    })
+    .catch(function(err){ console.warn('[SW] Registration failed:', err); });
+}
+</script>
 </body>
 </html>
