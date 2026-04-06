@@ -964,7 +964,7 @@ function doLogin(){
     if(!r.ok){_loginAttempts++;errEl.textContent="❌ "+(r.error||"Credenciales incorrectas.")+((_loginAttempts>=3)?" ("+( 5-_loginAttempts)+" intentos restantes)":"");errEl.style.display="block";passEl.value="";passEl.focus();if(_loginAttempts>=5){_loginLocked=true;setTimeout(function(){_loginLocked=false;_loginAttempts=0;toast("Puedes intentar de nuevo","i");},30000);}return;}
     usuario=r.usuario;localStorage.setItem("ns_usuario",JSON.stringify(usuario));cerrarModal("mLogin");emailEl.value="";passEl.value="";errEl.style.display="none";
     toast("¡Bienvenido, "+usuario.n+"! ("+({cliente:"Cliente",administrador:"Admin",superadmin:"Super Admin"}[usuario.rol]||usuario.rol)+")","s");
-    actualizarUI();cargarDatos();mpCargarDesdeDB();_mpYaCargo=true;
+    actualizarUI();cargarDatos();mpCargarDesdeDB();_mpYaCargo=true;setTimeout(_checkPushEstado,800);
   });
 }
 function doRegistro(){
@@ -1148,6 +1148,7 @@ function actualizarUI(){
     var nombre=usuario.n.split(" ")[0];
     navIcons.innerHTML=''; // En móvil carrito y cuenta están en el bottom nav
     deskActs.innerHTML=
+      '<button class="push-toggle-btn bte" onclick="activarNotificaciones()" title="Activar notificaciones" style="font-size:.75rem;padding:5px 10px;display:'+(pushPuedeActivarse()&&usuario?'flex':'none')+'">'+(pushEstaActivo()?'🔔 Notif. ON':'🔕 Notif. OFF')+'</button>'+
       '<button class="dm-toggle bdn bdn-lang" onclick="toggleDarkMode()" title="Modo oscuro">'+(DARK_MODE?'☀️':'🌙')+'</button>'+
       '<button class="bdn bdn-lang" onclick="abrirIdiomaMoneda()" title="Moneda">💰</button>'+
       '<div class="hdr-cart-btn" onclick="abrirCarrito()">🛒<span class="hdr-cart-badge" id="cartBadgeDesk" style="display:none">0</span></div>'+
@@ -1165,6 +1166,7 @@ function actualizarUI(){
   }else{
     navIcons.innerHTML=''; // En móvil carrito y cuenta están en el bottom nav
     deskActs.innerHTML=
+      '<button class="push-toggle-btn bte" onclick="activarNotificaciones()" title="Activar notificaciones" style="font-size:.75rem;padding:5px 10px;display:'+(pushPuedeActivarse()&&usuario?'flex':'none')+'">'+(pushEstaActivo()?'🔔 Notif. ON':'🔕 Notif. OFF')+'</button>'+
       '<button class="dm-toggle bdn bdn-lang" onclick="toggleDarkMode()" title="Modo oscuro">'+(DARK_MODE?'☀️':'🌙')+'</button>'+
       '<button class="bdn bdn-lang" onclick="abrirIdiomaMoneda()" title="Moneda">💰</button>'+
       '<button class="bdn bdn-o" onclick="abrirLogin()">'+t('iniciarSesion')+'</button>'+
@@ -2200,7 +2202,7 @@ function _adminEliminarChat(uid){
     });
 }
 
-function buildSuper(){var pb=document.getElementById("panB");var userAvaSuper=usuario.avatar?(usuario.avatar.startsWith("data:")||/^\p{Emoji}/u.test(usuario.avatar)||usuario.avatar.length<=8)?usuario.avatar:'<img src="'+usuario.avatar+'" style="width:32px;height:32px;object-fit:cover;border-radius:50%"/>':(usuario.n[0]);var userBar='<div class="panel-user-bar">'+'<div class="pub-ava">'+userAvaSuper+'</div>'+'<div class="pub-info"><div class="pub-name">'+usuario.n+' '+usuario.a+'</div><div class="pub-role">👑 Super Admin</div></div>'+'<div class="pub-actions">'+'<button class="pub-btn pub-btn-edit" onclick="panelEditarPerfil()">✏️ Perfil</button>'+'<button class="pub-btn pub-btn-exit" onclick="panelSalir()">🚪 Salir</button>'+'</div></div>';var tbs=[{k:"stats",l:"📊 Stats"},{k:"users",l:"👥 Usuarios"},{k:"prods",l:"📦 Productos"},{k:"categorias",l:"🏷️ Categorías"},{k:"reportes",l:"🚨 Reportes"},{k:"mensajes",l:"📬 Mensajes",id:"tabMensajesSuper"},{k:"cadmin",l:"➕ Admin"},{k:"cupones",l:"🎫 Cupones"},{k:"chat",l:"💬 Chat"},{k:"logs",l:"📋 Logs"}];var html=tbs.map(function(t){var id=t.id?' id="'+t.id+'"':'';var on=' onclick="setSTab(\''+t.k+'\',this)"';return '<button class="tab'+(sTab===t.k?' on':'')+'"'+id+on+'>'+t.l+'</button>';}).join("");pb.innerHTML=userBar+'<div class="tabs">'+html+'</div><div id="sTB"></div>';
+function buildSuper(){var pb=document.getElementById("panB");var userAvaSuper=usuario.avatar?(usuario.avatar.startsWith("data:")||/^\p{Emoji}/u.test(usuario.avatar)||usuario.avatar.length<=8)?usuario.avatar:'<img src="'+usuario.avatar+'" style="width:32px;height:32px;object-fit:cover;border-radius:50%"/>':(usuario.n[0]);var userBar='<div class="panel-user-bar">'+'<div class="pub-ava">'+userAvaSuper+'</div>'+'<div class="pub-info"><div class="pub-name">'+usuario.n+' '+usuario.a+'</div><div class="pub-role">👑 Super Admin</div></div>'+'<div class="pub-actions">'+'<button class="pub-btn pub-btn-edit" onclick="panelEditarPerfil()">✏️ Perfil</button>'+'<button class="pub-btn pub-btn-exit" onclick="panelSalir()">🚪 Salir</button>'+'</div></div>';var tbs=[{k:"stats",l:"📊 Stats"},{k:"users",l:"👥 Usuarios"},{k:"prods",l:"📦 Productos"},{k:"categorias",l:"🏷️ Categorías"},{k:"reportes",l:"🚨 Reportes"},{k:"mensajes",l:"📬 Mensajes",id:"tabMensajesSuper"},{k:"cadmin",l:"➕ Admin"},{k:"cupones",l:"🎫 Cupones"},{k:"chat",l:"💬 Chat"},{k:"push",l:"🔔 Push"},{k:"logs",l:"📋 Logs"}];var html=tbs.map(function(t){var id=t.id?' id="'+t.id+'"':'';var on=' onclick="setSTab(\''+t.k+'\',this)"';return '<button class="tab'+(sTab===t.k?' on':'')+'"'+id+on+'>'+t.l+'</button>';}).join("");pb.innerHTML=userBar+'<div class="tabs">'+html+'</div><div id="sTB"></div>';
 // Al abrir el panel siempre refrescar la pestaña stats
 if(sTab==="stats")invalidateSCache(["prods","users","reportes","contactos"]);
 renderSuperTab();}
@@ -3418,6 +3420,171 @@ function eliminarMensaje(id){
     if(sTab==="mensajes")renderSuperTab();
   });
 }
+
+// ── WEB PUSH — Cliente ───────────────────────────────────────
+var _pushSuscrito = false;
+
+function _urlB64ToUint8Array(base64String){
+  var padding = '='.repeat((4 - base64String.length % 4) % 4);
+  var base64  = (base64String + padding).replace(/-/g,'+').replace(/_/g,'/');
+  var rawData = atob(base64);
+  var arr     = new Uint8Array(rawData.length);
+  for(var i=0;i<rawData.length;i++) arr[i]=rawData.charCodeAt(i);
+  return arr;
+}
+
+function pushPuedeActivarse(){
+  return 'serviceWorker' in navigator
+      && 'PushManager'   in window
+      && 'Notification'  in window;
+}
+
+function pushEstaActivo(){
+  return _pushSuscrito;
+}
+
+function activarNotificaciones(){
+  if(!pushPuedeActivarse()){
+    toast("Tu navegador no soporta notificaciones push","e"); return;
+  }
+  if(!usuario){
+    toast("Inicia sesión para activar notificaciones","e"); return;
+  }
+
+  Notification.requestPermission().then(function(permission){
+    if(permission !== 'granted'){
+      toast("Permiso de notificaciones denegado","e"); return;
+    }
+    // Get VAPID public key
+    fetch('/api/push/vapid-key').then(function(r){ return r.json(); }).then(function(r){
+      if(!r.ok || !r.publicKey){ toast("Error al obtener clave VAPID","e"); return; }
+      var appServerKey = _urlB64ToUint8Array(r.publicKey);
+
+      navigator.serviceWorker.ready.then(function(reg){
+        reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: appServerKey
+        }).then(function(sub){
+          var json = sub.toJSON();
+          var keys = json.keys || {};
+          return fetch('/api/push/subscribe', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({
+              uid:      usuario.id,
+              endpoint: json.endpoint,
+              p256dh:   keys.p256dh,
+              auth:     keys.auth
+            })
+          });
+        }).then(function(r){ return r.json(); })
+          .then(function(r){
+            if(r.ok){
+              _pushSuscrito = true;
+              _actualizarBtnPush();
+              toast("🔔 Notificaciones activadas","s");
+            }
+          })
+          .catch(function(err){
+            console.warn('[Push] Subscribe error:', err);
+            toast("Error al activar notificaciones","e");
+          });
+      });
+    });
+  });
+}
+
+function desactivarNotificaciones(){
+  if(!usuario) return;
+  navigator.serviceWorker.ready.then(function(reg){
+    reg.pushManager.getSubscription().then(function(sub){
+      if(sub) sub.unsubscribe();
+      return fetch('/api/push/unsubscribe',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({uid: usuario.id})
+      });
+    }).then(function(){
+      _pushSuscrito = false;
+      _actualizarBtnPush();
+      toast("🔕 Notificaciones desactivadas","i");
+    });
+  });
+}
+
+function _checkPushEstado(){
+  if(!pushPuedeActivarse() || !usuario) return;
+  navigator.serviceWorker.ready.then(function(reg){
+    reg.pushManager.getSubscription().then(function(sub){
+      _pushSuscrito = !!sub;
+      _actualizarBtnPush();
+    });
+  });
+}
+
+function _actualizarBtnPush(){
+  document.querySelectorAll('.push-toggle-btn').forEach(function(btn){
+    btn.innerHTML  = _pushSuscrito ? '🔔 Notif. ON' : '🔕 Notif. OFF';
+    btn.title      = _pushSuscrito ? 'Desactivar notificaciones' : 'Activar notificaciones push';
+    btn.className  = 'push-toggle-btn bte' + (_pushSuscrito ? ' push-on' : '');
+    btn.onclick    = _pushSuscrito ? desactivarNotificaciones : activarNotificaciones;
+  });
+}
+
+// ── PUSH ADMIN — Enviar notificaciones desde superadmin ──────
+function _renderPushAdmin(c){
+  fetch('/api/push/stats').then(function(r){ return r.json(); }).then(function(r){
+    var total = r.total || 0;
+    c.innerHTML =
+      '<div class="push-admin-wrap">'
+      +'<div class="push-stats-row">'
+      +'  <div class="sc"><div class="sn">'+total+'</div><div class="sl">🔔 Suscritos</div></div>'
+      +'</div>'
+      +'<div class="push-form">'
+      +'  <div class="admin-form-title">📢 Enviar Notificación</div>'
+      +'  <div class="fg"><label>Título *</label>'
+      +'    <input class="fc" id="pushTitle" placeholder="Ej: ¡Oferta Flash! 🔥"/></div>'
+      +'  <div class="fg"><label>Mensaje *</label>'
+      +'    <input class="fc" id="pushBody" placeholder="Ej: 30% en todos los electrónicos. Solo hoy."/></div>'
+      +'  <div class="f2">'
+      +'    <div class="fg"><label>URL de destino</label>'
+      +'      <input class="fc" id="pushUrl" value="/" placeholder="/"/></div>'
+      +'    <div class="fg"><label>Tag (agrupa notifs)</label>'
+      +'      <input class="fc" id="pushTag" value="oferta" placeholder="oferta"/></div>'
+      +'  </div>'
+      +'  <div style="display:flex;gap:8px;margin-top:4px">'
+      +'    <button class="bp" style="flex:1" onclick="_enviarPushBroadcast()">📢 Enviar a todos ('+total+')</button>'
+      +'  </div>'
+      +'  <div id="pushFeedback" style="margin-top:8px;font-size:.82rem;min-height:18px"></div>'
+      +'</div>'
+      +'</div>';
+  });
+}
+
+function _enviarPushBroadcast(){
+  var title = (document.getElementById('pushTitle')||{}).value||'';
+  var body  = (document.getElementById('pushBody') ||{}).value||'';
+  var url   = (document.getElementById('pushUrl')  ||{}).value||'/';
+  var tag   = (document.getElementById('pushTag')  ||{}).value||'oferta';
+  var fb    = document.getElementById('pushFeedback');
+
+  if(!title.trim()||!body.trim()){
+    if(fb) fb.textContent='⚠️ Título y mensaje requeridos';
+    return;
+  }
+  if(fb) fb.textContent='Enviando…';
+
+  fetch('/api/push/send',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({title:title.trim(), body:body.trim(), url:url, tag:tag})
+  }).then(function(r){return r.json();}).then(function(r){
+    if(fb) fb.textContent = r.ok ? '✅ Notificación enviada a todos los suscritos' : '❌ Error: '+(r.error||'');
+  }).catch(function(){
+    if(fb) fb.textContent = '❌ Error de conexión';
+  });
+}
+
 // ── CHAT DE SOPORTE ──────────────────────────────────────────
 var _chatTimer  = null;
 var _chatActivo = false;
