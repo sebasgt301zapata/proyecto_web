@@ -2,8 +2,10 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    # Frontend
-    path('', views.index, name='index'),
+    # Frontend — páginas separadas
+    path('',           views.index,        name='index'),
+    path('tienda/',    views.tienda_page,   name='tienda'),
+    path('contacto/',  views.contacto_page, name='contacto'),
 
     # Auth
     path('api/login',    views.api_login,    name='api_login'),
