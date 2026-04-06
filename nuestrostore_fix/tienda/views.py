@@ -498,6 +498,193 @@ def api_mis_reportes(request, uid):
 # ── PEDIDOS ───────────────────────────────────────────
 @csrf_exempt
 @require_http_methods(["POST"])
+
+# ── EMAIL ─────────────────────────────────────────────────────
+def _enviar_confirmacion_pedido(pedido_id, u_nom, u_email, items, total, cupon=None):
+    """
+    Sends order confirmation email.
+    Works in dev mode (console backend) and production (SMTP).
+    Never raises — logs errors but does not break the order flow.
+    """
+    try:
+        from django.core.mail import send_mail
+        from django.conf import settings
+
+        # Format currency
+        def cop(v):
+            return f"COP$ {v:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+        # Build items rows
+        items_rows = ""
+        subtotal = 0
+        for it in items:
+            precio = it.get("p", 0)
+            qty    = it.get("qty", 1)
+            linea  = precio * qty
+            subtotal += linea
+            items_rows += (
+                f"<tr>"
+                f"<td style='padding:10px 12px;border-bottom:1px solid #f0f0f0'>"
+                f"  <span style='font-size:1.4rem'>{it.get('e','📦')}</span> "
+                f"  <strong>{it.get('n','Producto')}</strong>"
+                f"</td>"
+                f"<td style='padding:10px 12px;border-bottom:1px solid #f0f0f0;text-align:center;color:#64748B'>"
+                f"  x{qty}"
+                f"</td>"
+                f"<td style='padding:10px 12px;border-bottom:1px solid #f0f0f0;text-align:right;"
+                f"  font-family:monospace;color:#1E3A8A;font-weight:700'>"
+                f"  {cop(linea)}"
+                f"</td>"
+                f"</tr>"
+            )
+
+        descuento_row = ""
+        if cupon and cupon.get("descuento", 0) > 0:
+            descuento_row = (
+                f"<tr>"
+                f"<td colspan='2' style='padding:8px 12px;color:#16A34A;font-size:.9rem'>"
+                f"  🎫 Cupón <strong>{cupon.get('codigo','')}</strong>"
+                f"</td>"
+                f"<td style='padding:8px 12px;text-align:right;color:#16A34A;font-weight:700'>"
+                f"  -{cop(cupon['descuento'])}"
+                f"</td>"
+                f"</tr>"
+            )
+
+        nombre_corto = u_nom.split()[0] if u_nom else "Cliente"
+
+        html_body = f"""
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/></head>
+<body style="margin:0;padding:0;background:#F8FAFC;font-family:'Segoe UI',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#F8FAFC;padding:32px 16px">
+  <tr><td align="center">
+    <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08)">
+
+      <!-- Header -->
+      <tr><td style="background:linear-gradient(135deg,#0F172A 0%,#1E3A8A 60%,#2563EB 100%);padding:32px 36px;text-align:center">
+        <div style="font-family:Arial Black,Arial,sans-serif;font-size:28px;font-weight:900;color:#fff;letter-spacing:2px">
+          Nuestro<span style="color:#67E8F9">Store</span>
+        </div>
+        <div style="color:rgba(255,255,255,.75);font-size:13px;margin-top:4px">Tu tienda de confianza en Colombia</div>
+      </td></tr>
+
+      <!-- Success banner -->
+      <tr><td style="background:#F0FDF4;border-bottom:2px solid #BBF7D0;padding:20px 36px;text-align:center">
+        <div style="font-size:2.2rem">✅</div>
+        <div style="font-size:1.15rem;font-weight:700;color:#15803D;margin-top:6px">¡Pedido confirmado!</div>
+        <div style="color:#166534;font-size:.9rem;margin-top:4px">Pedido <strong>#{pedido_id}</strong></div>
+      </td></tr>
+
+      <!-- Greeting -->
+      <tr><td style="padding:28px 36px 16px">
+        <p style="font-size:1rem;color:#0F172A;margin:0">Hola <strong>{nombre_corto}</strong> 👋</p>
+        <p style="font-size:.92rem;color:#475569;margin:10px 0 0;line-height:1.6">
+          Gracias por tu compra. Hemos recibido tu pedido y lo estamos procesando.
+          Te contactaremos pronto con los detalles del envío.
+        </p>
+      </td></tr>
+
+      <!-- Items table -->
+      <tr><td style="padding:8px 36px 20px">
+        <table width="100%" cellpadding="0" cellspacing="0"
+               style="border-collapse:collapse;border:1.5px solid #E2E8F0;border-radius:12px;overflow:hidden;font-size:.9rem">
+          <thead>
+            <tr style="background:linear-gradient(135deg,#0F172A,#1E3A8A)">
+              <th style="padding:10px 12px;text-align:left;color:#fff;font-size:.8rem;font-weight:700;letter-spacing:.5px">PRODUCTO</th>
+              <th style="padding:10px 12px;text-align:center;color:#fff;font-size:.8rem;font-weight:700">CANT.</th>
+              <th style="padding:10px 12px;text-align:right;color:#fff;font-size:.8rem;font-weight:700">TOTAL</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items_rows}
+            {descuento_row}
+            <tr style="background:#F8FAFC">
+              <td colspan="2" style="padding:12px;font-weight:800;color:#0F172A;font-size:1rem">TOTAL A PAGAR</td>
+              <td style="padding:12px;text-align:right;font-weight:900;color:#1E3A8A;font-size:1.15rem;font-family:monospace">{cop(total)}</td>
+            </tr>
+          </tbody>
+        </table>
+      </td></tr>
+
+      <!-- Payment methods -->
+      <tr><td style="padding:0 36px 20px">
+        <div style="background:#EFF6FF;border-radius:10px;padding:14px;text-align:center">
+          <div style="font-size:.82rem;color:#1E40AF;font-weight:700;margin-bottom:6px">Métodos de pago aceptados</div>
+          <div style="font-size:.85rem;color:#1E3A8A">💳 PSE &nbsp;·&nbsp; 📱 Nequi &nbsp;·&nbsp; 💚 Daviplata &nbsp;·&nbsp; 🏦 Transferencia</div>
+        </div>
+      </td></tr>
+
+      <!-- Info boxes -->
+      <tr><td style="padding:0 36px 24px">
+        <table width="100%" cellpadding="0" cellspacing="0">
+          <tr>
+            <td width="50%" style="padding-right:6px">
+              <div style="background:#F0FDF4;border-radius:10px;padding:14px;text-align:center">
+                <div style="font-size:1.4rem">🚚</div>
+                <div style="font-size:.78rem;font-weight:700;color:#15803D;margin-top:4px">Envío Rápido</div>
+                <div style="font-size:.72rem;color:#166534">24-48 horas a todo Colombia</div>
+              </div>
+            </td>
+            <td width="50%" style="padding-left:6px">
+              <div style="background:#FFF7ED;border-radius:10px;padding:14px;text-align:center">
+                <div style="font-size:1.4rem">🔄</div>
+                <div style="font-size:.78rem;font-weight:700;color:#C2410C;margin-top:4px">Garantía</div>
+                <div style="font-size:.72rem;color:#9A3412">30 días para devoluciones</div>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </td></tr>
+
+      <!-- Footer -->
+      <tr><td style="background:#0F172A;padding:24px 36px;text-align:center">
+        <p style="color:rgba(255,255,255,.5);font-size:.75rem;margin:0">
+          © {__import__('datetime').datetime.now().year} NuestroStore · Colombia<br/>
+          <a href="mailto:info@nuestrostore.com" style="color:#67E8F9;text-decoration:none">info@nuestrostore.com</a>
+          &nbsp;·&nbsp; +57 601 000 0000
+        </p>
+        <p style="color:rgba(255,255,255,.3);font-size:.68rem;margin:8px 0 0">
+          Este correo fue enviado a {u_email} porque realizaste una compra en NuestroStore.
+        </p>
+      </td></tr>
+
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>"""
+
+        text_body = (
+            f"¡Pedido #{pedido_id} confirmado!\n\n"
+            f"Hola {nombre_corto},\n"
+            f"Gracias por tu compra en NuestroStore.\n\n"
+            f"Productos:\n"
+            + "\n".join(
+                f"  • {it.get('n','Producto')} x{it.get('qty',1)} — {cop(it.get('p',0)*it.get('qty',1))}"
+                for it in items
+            )
+            + f"\n\nTotal: {cop(total)}\n\n"
+            f"Procesaremos tu pedido en 24-48h.\n"
+            f"Contacto: info@nuestrostore.com"
+        )
+
+        send_mail(
+            subject=f"✅ Pedido #{pedido_id} confirmado — NuestroStore",
+            message=text_body,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[u_email],
+            html_message=html_body,
+            fail_silently=False,
+        )
+        log_action("Sistema", "EMAIL_PEDIDO", f"Confirmación enviada a {u_email} (pedido #{pedido_id})")
+
+    except Exception as e:
+        # Never break the order — just log the email failure
+        log_action("Sistema", "EMAIL_ERROR", f"Fallo al enviar a {u_email}: {str(e)[:120]}")
+
+
 def api_crear_pedido(request):
     data  = json.loads(request.body or '{}')
     uid   = int(data.get("uid") or 0)
@@ -519,7 +706,25 @@ def api_crear_pedido(request):
                 _exec("UPDATE productos SET stock = MAX(0, stock - ?) WHERE id=?",
                       (item.get("qty", 1), item.get("id")))
     log_action(u_nom, "PEDIDO", f"Total: {total:.2f}")
-    return JsonResponse({"ok": True})
+
+    # Get the pedido_id that was just created
+    nuevo_pedido = _exec_one(
+        "SELECT id FROM pedidos WHERE uid=? ORDER BY id DESC LIMIT 1", (uid,)
+    )
+    pedido_id = nuevo_pedido["id"] if nuevo_pedido else 0
+
+    # Parse cupon from request data (if any)
+    cupon_data = data.get("cupon")  # {codigo, descuento} or None
+
+    # Send confirmation email (non-blocking — never breaks the order)
+    import threading
+    threading.Thread(
+        target=_enviar_confirmacion_pedido,
+        args=(pedido_id, u_nom, u_email, items, total, cupon_data),
+        daemon=True
+    ).start()
+
+    return JsonResponse({"ok": True, "pedidoId": pedido_id})
 
 
 def api_mis_pedidos(request, uid):
@@ -861,6 +1066,74 @@ def api_contacto_eliminar(request, cid):
     _exec("DELETE FROM contactos WHERE id=?", (cid,))
     return JsonResponse({"ok": True})
 
+
+
+# ── CHAT DE SOPORTE ───────────────────────────────────────────
+@csrf_exempt
+def api_chat(request):
+    """GET: messages for a user. POST: send a message."""
+
+    if request.method == "GET":
+        uid = int(request.GET.get("uid") or 0)
+        if not uid:
+            return JsonResponse({"ok": False, "error": "uid requerido"})
+        rows = _exec("""
+            SELECT id, uid, u_nom AS uNom, u_email AS uEmail,
+                   mensaje, remitente, leido, fecha
+            FROM chat_mensajes WHERE uid=? ORDER BY id ASC
+        """, (uid,))
+        # Mark support messages as read by client
+        _exec("UPDATE chat_mensajes SET leido=1 WHERE uid=? AND remitente='soporte'", (uid,))
+        return JsonResponse({"ok": True, "mensajes": rows})
+
+    if request.method == "POST":
+        data     = json.loads(request.body or '{}')
+        uid      = int(data.get("uid") or 0)
+        mensaje  = (data.get("mensaje") or "").strip()
+        remitente = data.get("remitente", "cliente")  # 'cliente' | 'soporte'
+        if not uid or not mensaje:
+            return JsonResponse({"ok": False, "error": "Datos incompletos"})
+        u = _exec_one("SELECT nombre, apellido, email FROM usuarios WHERE id=?", (uid,))
+        if not u:
+            return JsonResponse({"ok": False, "error": "Usuario no encontrado"})
+        u_nom   = f"{u['nombre']} {u['apellido']}"
+        u_email = u["email"]
+        _exec_insert(
+            "INSERT INTO chat_mensajes(uid, u_nom, u_email, mensaje, remitente) VALUES(?,?,?,?,?)",
+            (uid, u_nom, u_email, mensaje, remitente)
+        )
+        if remitente == "soporte":
+            log_action("Soporte", "CHAT_RESPUESTA", f"Respuesta a {u_nom}")
+        return JsonResponse({"ok": True})
+
+    return JsonResponse({"ok": False, "error": "Método no permitido"}, status=405)
+
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def api_chat_admin(request):
+    """Admin: get all active chats grouped by user."""
+    rows = _exec("""
+        SELECT uid, u_nom AS uNom, u_email AS uEmail,
+               COUNT(*) AS total,
+               SUM(CASE WHEN remitente='cliente' AND leido=0 THEN 1 ELSE 0 END) AS sinLeer,
+               MAX(fecha) AS ultimaFecha,
+               (SELECT mensaje FROM chat_mensajes cm2
+                WHERE cm2.uid=cm.uid ORDER BY cm2.id DESC LIMIT 1) AS ultimoMsg
+        FROM chat_mensajes cm
+        GROUP BY uid, u_nom, u_email
+        ORDER BY ultimaFecha DESC
+    """)
+    # Mark admin view — client messages as read when admin fetches
+    return JsonResponse({"ok": True, "chats": rows})
+
+
+@csrf_exempt
+@require_http_methods(["DELETE"])
+def api_chat_eliminar(request, uid):
+    """Delete entire chat with a user."""
+    _exec("DELETE FROM chat_mensajes WHERE uid=?", (uid,))
+    return JsonResponse({"ok": True})
 
 # ── 404 ───────────────────────────────────────────────
 def error_404(request, exception=None):
