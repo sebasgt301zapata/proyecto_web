@@ -271,9 +271,15 @@ def api_cupones_admin(request):
         return JsonResponse({"ok": True})
     return JsonResponse({"ok": False, "error": "Método no permitido"}, status=405)
 
-# ── Frontend ──────────────────────────────────────────
+# ── Frontend — páginas separadas ─────────────────────
 def index(request):
-    return render(request, 'index.html')
+    return render(request, 'inicio.html')
+
+def tienda_page(request):
+    return render(request, 'tienda.html')
+
+def contacto_page(request):
+    return render(request, 'contacto.html')
 
 
 # ── LOGIN ─────────────────────────────────────────────
