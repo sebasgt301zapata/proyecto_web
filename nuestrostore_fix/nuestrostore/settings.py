@@ -113,3 +113,12 @@ DEFAULT_FROM_EMAIL  = os.environ.get(
     'DEFAULT_FROM_EMAIL',
     f'NuestroStore <{EMAIL_HOST_USER}>' if EMAIL_HOST_USER else 'NuestroStore <noreply@nuestrostore.com>'
 )
+
+# ── WEB PUSH / VAPID ─────────────────────────────────────────
+# Generar claves con: python manage.py generate_vapid  (ver views.py)
+# O usar las preconfiguradas (cambiar en producción):
+VAPID_PUBLIC_KEY  = os.environ.get('VAPID_PUBLIC_KEY',
+    'BEndZUOs3UJRpPLCdIxkQAmbJ_JhA05qvXd4v4wj_V7S44-MjEhTXoGDPKKQ6kg9CUk9WwYJ0L--6JuwfrMw5rk')
+VAPID_PRIVATE_KEY = os.environ.get('VAPID_PRIVATE_KEY',
+    'NlFmhwbXvxC2N2ppunKVQNYzzXIdQpeoJPd3eJCAHi4')
+VAPID_EMAIL       = os.environ.get('VAPID_EMAIL', 'mailto:nuestrostore@gmail.com')
