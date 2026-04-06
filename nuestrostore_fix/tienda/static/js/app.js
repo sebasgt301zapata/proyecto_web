@@ -1353,16 +1353,35 @@ function pedido(){
   if(!confirm("📋 CONFIRMAR PEDIDO\n\n"+resumen+"\n\n─────────────────\nSubtotal: "+bs(total)+"\nIVA (19%): "+bs(iva)+"\nTOTAL: "+bs(total+iva)+"\n\n¿Confirmas la compra?")){return;}
   var btn=document.querySelector(".btn-pagar");
   if(btn){btn.disabled=true;btn.textContent="Procesando…";}
-  api("/pedidos","POST",{uid:usuario.id,items:JSON.parse(JSON.stringify(carrito)),total:total}).then(function(r){
+    // Include cupon data if active
+  var payload = {uid:usuario.id, items:JSON.parse(JSON.stringify(carrito)), total:total};
+  if(cuponActivo) payload.cupon = {codigo:cuponActivo.codigo, descuento:cuponActivo.descuento};
+
+  api("/pedidos","POST",payload).then(function(r){
     if(btn){btn.disabled=false;btn.textContent="Pagar →";}
     if(!r.ok){toast("Error al procesar el pedido","e");return;}
+
+    // Mark cupon as used and clear it
+    if(cuponActivo){
+      fetch("/api/cupones/usar",{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({codigo:cuponActivo.codigo})});
+      cuponActivo=null;
+      var cuponInp=document.getElementById("cuponInput");
+      if(cuponInp) cuponInp.value="";
+      var cuponMsg=document.getElementById("cuponMsg");
+      if(cuponMsg){cuponMsg.textContent="";cuponMsg.className="cupon-msg";}
+    }
+
+    var itemsSnapshot = JSON.parse(JSON.stringify(carrito));
+    var pedidoId = r.pedidoId;
+    var totalFinal = total;
     carrito=[];
     actualizarCarrito();
     cerrarCarrito();
-    toast("¡Pedido confirmado! 🎉 Te contactaremos pronto.","s");
-    // Actualizar stock local
-    if(r.ok) cargarDatos();
-  });
+    toast("✅ Pedido"+(pedidoId?" #"+pedidoId:"")+" confirmado. Revisa tu correo 📧","s");
+    _mostrarConfirmacionPedido(pedidoId, itemsSnapshot, totalFinal);
+    cargarDatos();
+  })
 }
 
 // ── FACTURA ──────────────────────────────────
@@ -1424,7 +1443,7 @@ function abrirRegistro(){ abrirModal("mReg"); }
 function abrirCarritoBtn(){ abrirCarrito(); }
 function panelEditarPerfil(){ cerrarModal("mPanel"); setTimeout(abrirPerfil, 50); }
 function panelSalir(){ cerrarModal("mPanel"); cerrarSesion(); }
-function cerrarPanelBtn(){ cerrarModal("mPanel"); }
+function cerrarPanelBtn(){ cerrarModal("mPanel"); if(_chatTimer){clearInterval(_chatTimer);_chatTimer=null;} if(_adminChatTimer){clearInterval(_adminChatTimer);_adminChatTimer=null;} }
 function cerrarLoginBtn(){ cerrarModal("mLogin"); }
 function cerrarRegBtn(){ cerrarModal("mReg"); }
 
@@ -1441,11 +1460,147 @@ function abrirCuentaCliente(){
       '<button class="bs" style="flex:1;font-size:.85rem;padding:10px;margin-top:0" onclick="panelSalir()">🚪 Salir</button>'+
     '</div>'+
     '<button onclick="mpPanelToggle()" id="mpPanelBtn" style="width:100%;margin-bottom:18px;padding:10px 14px;border-radius:10px;border:2px solid #e0d0c0;background:#fff8f0;font-weight:800;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;color:var(--na3)">'+mpPanelBtnLabel()+'</button>'+
-    '<div class="tabs"><button class="tab on" onclick="cTabN(this,2)">🛍️ Mis Compras</button><button class="tab" onclick="cTabN(this,5)">💙 Favoritos</button><button class="tab" onclick="cTabN(this,1)">🚨 Reportes</button><button class="tab" onclick="cTabN(this,3)">📋 Historial</button><button class="tab" onclick="cTabN(this,4)">⭐ Reseñas</button></div>'+
+    '<div class="tabs"><button class="tab on" onclick="cTabN(this,2)">🛍️ Mis Compras</button><button class="tab" onclick="cTabN(this,5)">💙 Favoritos</button><button class="tab" onclick="cTabN(this,6)">💬 Chat</button><button class="tab" onclick="cTabN(this,1)">🚨 Reportes</button><button class="tab" onclick="cTabN(this,3)">📋 Historial</button><button class="tab" onclick="cTabN(this,4)">⭐ Reseñas</button></div>'+
     '<div id="cTabBody"></div>';
   cTabN(pb.querySelector(".tab"),2);
   abrirModal("mPanel");
 }
+
+function _renderChatTab(c){
+  _chatUid = usuario.id;
+  c.innerHTML =
+    '<div class="chat-panel-wrap">'
+    + '<div class="chat-messages" id="chatPanelBox"><div class="chat-empty-state"><div style="font-size:2.5rem">💬</div><div class="chat-empty-title">Soporte en vivo</div><div class="chat-empty-sub">¿Tienes alguna pregunta? Escríbenos, respondemos en menos de 24h.</div></div></div>'
+    + '<div class="chat-input-row">'
+    + '  <input class="fc chat-input" id="chatPanelInput" placeholder="Escribe un mensaje…" autocomplete="off"'
+    + '    onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();_enviarMsgPanel();}"/>'
+    + '  <button class="chat-send-btn" id="chatSendBtn" onclick="_enviarMsgPanel()" title="Enviar">'
+    + '    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>'
+    + '  </button>'
+    + '</div>'
+    + '</div>';
+  _chatCargarMensajes();
+  if(_chatTimer) clearInterval(_chatTimer);
+  _chatTimer = setInterval(function(){
+    var box = document.getElementById('chatPanelBox');
+    if(!box){ clearInterval(_chatTimer); _chatTimer=null; return; }
+    _chatCargarMensajes(true);
+  }, 4000);
+}
+
+function _chatCargarMensajes(silencioso){
+  fetch('/api/chat?uid='+usuario.id)
+    .then(function(r){ return r.json(); })
+    .then(function(r){
+      var box = document.getElementById('chatPanelBox');
+      if(!box || !r.ok) return;
+      var msgs = r.mensajes || [];
+      var wasEmpty = box.querySelector('.chat-empty-state') !== null;
+      var atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 40;
+      if(!msgs.length){
+        if(wasEmpty) return; // Already showing empty state
+        box.innerHTML = '<div class="chat-empty-state"><div style="font-size:2.5rem">💬</div><div class="chat-empty-title">Soporte en vivo</div><div class="chat-empty-sub">¿Tienes alguna pregunta? Escríbenos, respondemos en menos de 24h.</div></div>';
+        return;
+      }
+      // Rebuild messages
+      box.innerHTML = msgs.map(function(m){
+        var esCliente = m.remitente === 'cliente';
+        return '<div class="chat-msg-row '+(esCliente?'chat-msg-row-client':'chat-msg-row-support')+'">'
+          + '<div class="chat-bubble '+(esCliente?'chat-bubble-client':'chat-bubble-support')+'">'
+          + _escapeHtml(m.mensaje)
+          + '</div>'
+          + '<div class="chat-msg-time">'+(esCliente?'Tú':'🛡️ Soporte')+' · '+(m.fecha||'').slice(11,16)+'</div>'
+          + '</div>';
+      }).join('');
+      if(atBottom || wasEmpty) box.scrollTop = box.scrollHeight;
+    })
+    .catch(function(){});
+}
+
+function _chatLimpiarAlCerrar(){
+  if(_chatTimer){ clearInterval(_chatTimer); _chatTimer=null; }
+}
+
+function _enviarMsgPanel(){
+  var inp = document.getElementById('chatPanelInput');
+  var btn = document.getElementById('chatSendBtn');
+  if(!inp) return;
+  var msg = inp.value.trim();
+  if(!msg) return;
+  inp.value = '';
+  inp.disabled = true;
+  if(btn) btn.disabled = true;
+
+  // Optimistic UI: show message immediately
+  var box = document.getElementById('chatPanelBox');
+  if(box){
+    var emptyState = box.querySelector('.chat-empty-state');
+    if(emptyState) box.innerHTML = '';
+    var row = document.createElement('div');
+    row.className = 'chat-msg-row chat-msg-row-client';
+    row.innerHTML = '<div class="chat-bubble chat-bubble-client">'+_escapeHtml(msg)+'</div>'
+      + '<div class="chat-msg-time">Tú · enviando…</div>';
+    box.appendChild(row);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  fetch('/api/chat', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({uid: usuario.id, mensaje: msg, remitente: 'cliente'})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(r){
+    inp.disabled = false;
+    if(btn) btn.disabled = false;
+    inp.focus();
+    if(r.ok) _chatCargarMensajes();
+    else toast('Error al enviar mensaje', 'e');
+  })
+  .catch(function(){
+    inp.disabled = false;
+    if(btn) btn.disabled = false;
+    toast('Error de conexión', 'e');
+  });
+}
+
+
+  var inp = document.getElementById("chatPanelInput");
+  if(!inp) return;
+  var msg = inp.value.trim();
+  if(!msg) return;
+  inp.value = "";
+  fetch("/api/chat",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({uid:usuario.id, mensaje:msg, remitente:"cliente"})
+  }).then(function(r){return r.json();}).then(function(r){
+    if(r.ok){
+      // Refresh panel
+      fetch("/api/chat?uid="+usuario.id).then(function(r){return r.json();}).then(function(r){
+        var box = document.getElementById("chatPanelBox");
+        if(!box||!r.ok) return;
+        var msgs = r.mensajes||[];
+        box.innerHTML = "";
+        msgs.forEach(function(m){
+          var ec = m.remitente==="cliente";
+          var div = document.createElement("div");
+          div.style.cssText = "display:flex;flex-direction:column;"+(ec?"align-items:flex-end":"align-items:flex-start");
+          div.innerHTML =
+            '<div style="max-width:82%;background:'+(ec?"linear-gradient(135deg,#1E3A8A,#2563EB)":"#F1F5F9")
+            +';color:'+(ec?"#fff":"#0F172A")
+            +';padding:9px 13px;border-radius:'+(ec?"14px 4px 14px 14px":"4px 14px 14px 14px")
+            +';font-size:.86rem;line-height:1.5">'
+            +_escapeHtml(m.mensaje)+'</div>'
+            +'<div style="font-size:.68rem;color:var(--gr);margin-top:2px">'
+            +(ec?"Tú":"Soporte")+' · '+(m.fecha||"").slice(11,16)+'</div>';
+          box.appendChild(div);
+        });
+        box.scrollTop = box.scrollHeight;
+      });
+    }
+  });
+
 function cTabN(btn,t){
   document.querySelectorAll("#panB .tab").forEach(function(b){b.classList.remove("on");});btn.classList.add("on");
   var c=document.getElementById("cTabBody");
@@ -1457,7 +1612,7 @@ function cTabN(btn,t){
       if(res[0].ok)PEDIDOS=res[0].pedidos;if(res[1].ok)REPORTES=res[1].reportes;
       c.innerHTML=renderHistorial(PEDIDOS,REPORTES);
     });
-  } else if(t===5){ c.innerHTML=renderWishlist(); } else{api("/resenias").then(function(r){if(!r.ok){c.innerHTML='<div class="empty"><div class="eico">⭐</div><h3>Sin reseñas</h3></div>';return;}var mis=r.resenias.filter(function(x){return x.uid===usuario.id;});if(!mis.length){c.innerHTML='<div class="empty"><div class="eico">⭐</div><h3>Sin reseñas aún</h3></div>';return;}c.innerHTML='<div style="display:flex;flex-direction:column;gap:10px">'+mis.map(function(res){var pn=(PRODS.find(function(p){return p.id===res.pid;})||{n:"Producto"}).n;return '<div style="border:2px solid #f0f0f0;border-radius:12px;padding:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><strong style="color:var(--na3)">'+pn+'</strong><span style="color:#f59e0b">'+starsHtml(res.estrellas)+'</span></div><p style="font-size:.88rem;color:#444">'+res.comentario+'</p><small style="color:var(--gr)">'+res.fecha+'</small></div>';}).join("")+'</div>';});}
+  } else if(t===5){ c.innerHTML=renderWishlist(); } else if(t===6){ _renderChatTab(c); } else{api("/resenias").then(function(r){if(!r.ok){c.innerHTML='<div class="empty"><div class="eico">⭐</div><h3>Sin reseñas</h3></div>';return;}var mis=r.resenias.filter(function(x){return x.uid===usuario.id;});if(!mis.length){c.innerHTML='<div class="empty"><div class="eico">⭐</div><h3>Sin reseñas aún</h3></div>';return;}c.innerHTML='<div style="display:flex;flex-direction:column;gap:10px">'+mis.map(function(res){var pn=(PRODS.find(function(p){return p.id===res.pid;})||{n:"Producto"}).n;return '<div style="border:2px solid #f0f0f0;border-radius:12px;padding:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><strong style="color:var(--na3)">'+pn+'</strong><span style="color:#f59e0b">'+starsHtml(res.estrellas)+'</span></div><p style="font-size:.88rem;color:#444">'+res.comentario+'</p><small style="color:var(--gr)">'+res.fecha+'</small></div>';}).join("")+'</div>';});}
 }
 
 function renderMisReportes(lista){
@@ -1905,11 +2060,151 @@ function elimCupon(id){
     renderSuperTab();
   });
 }
-function buildSuper(){var pb=document.getElementById("panB");var userAvaSuper=usuario.avatar?(usuario.avatar.startsWith("data:")||/^\p{Emoji}/u.test(usuario.avatar)||usuario.avatar.length<=8)?usuario.avatar:'<img src="'+usuario.avatar+'" style="width:32px;height:32px;object-fit:cover;border-radius:50%"/>':(usuario.n[0]);var userBar='<div class="panel-user-bar">'+'<div class="pub-ava">'+userAvaSuper+'</div>'+'<div class="pub-info"><div class="pub-name">'+usuario.n+' '+usuario.a+'</div><div class="pub-role">👑 Super Admin</div></div>'+'<div class="pub-actions">'+'<button class="pub-btn pub-btn-edit" onclick="panelEditarPerfil()">✏️ Perfil</button>'+'<button class="pub-btn pub-btn-exit" onclick="panelSalir()">🚪 Salir</button>'+'</div></div>';var tbs=[{k:"stats",l:"📊 Stats"},{k:"users",l:"👥 Usuarios"},{k:"prods",l:"📦 Productos"},{k:"categorias",l:"🏷️ Categorías"},{k:"reportes",l:"🚨 Reportes"},{k:"mensajes",l:"📬 Mensajes",id:"tabMensajesSuper"},{k:"cadmin",l:"➕ Admin"},{k:"cupones",l:"🎫 Cupones"},{k:"logs",l:"📋 Logs"}];var html=tbs.map(function(t){var id=t.id?' id="'+t.id+'"':'';var on=' onclick="setSTab(\''+t.k+'\',this)"';return '<button class="tab'+(sTab===t.k?' on':'')+'"'+id+on+'>'+t.l+'</button>';}).join("");pb.innerHTML=userBar+'<div class="tabs">'+html+'</div><div id="sTB"></div>';
+
+// ── CHAT ADMIN — Superadmin panel ────────────────────────────
+var _adminChatUid     = null;  // Currently open conversation UID
+var _adminChatTimer   = null;  // Polling timer
+
+function _renderSuperChats(c){
+  c.innerHTML = '<div class="tab-loading"></div>';
+  _adminCargarChats(c);
+}
+
+function _adminCargarChats(c){
+  fetch('/api/chat/admin')
+    .then(function(r){ return r.json(); })
+    .then(function(r){
+      if(!r.ok){ c.innerHTML='<div class="empty"><div class="eico">💬</div><h3>Error cargando chats</h3></div>'; return; }
+      var chats = r.chats || [];
+      if(!chats.length){
+        c.innerHTML = '<div class="empty"><div class="eico">💬</div><h3>Sin conversaciones</h3><p>Cuando los clientes escriban aparecerán aquí.</p></div>';
+        return;
+      }
+      var listaHtml = '<div class="admin-chat-layout">'
+        + '<div class="admin-chat-list" id="adminChatList">'
+        + chats.map(function(ch){
+            var sinLeer = ch.sinLeer > 0;
+            return '<div class="admin-chat-item'+(sinLeer?' admin-chat-item-unread':'')+'" '
+              + 'onclick="_adminAbrirChat('+ch.uid+',\''+_escapeHtml(ch.uNom)+'\',\''+_escapeHtml(ch.uEmail)+'\')" '
+              + 'data-uid="'+ch.uid+'">'
+              + '<div class="admin-chat-ava">'+(ch.uNom||'?')[0].toUpperCase()+'</div>'
+              + '<div class="admin-chat-meta">'
+              + '  <div class="admin-chat-name">'+_escapeHtml(ch.uNom)+'</div>'
+              + '  <div class="admin-chat-preview">'+_escapeHtml((ch.ultimoMsg||'').slice(0,40))+'</div>'
+              + '</div>'
+              + (sinLeer?'<div class="admin-chat-badge">'+ch.sinLeer+'</div>':'')
+              + '</div>';
+          }).join('')
+        + '</div>'
+        + '<div class="admin-chat-conv" id="adminChatConv">'
+        + '  <div class="admin-chat-placeholder"><div style="font-size:2rem">👈</div><p>Selecciona una conversación</p></div>'
+        + '</div>'
+        + '</div>';
+      c.innerHTML = listaHtml;
+      // Auto-open first if only one
+      if(chats.length === 1) _adminAbrirChat(chats[0].uid, chats[0].uNom, chats[0].uEmail);
+    })
+    .catch(function(){ c.innerHTML='<div class="empty"><div class="eico">⚠️</div><h3>Error de conexión</h3></div>'; });
+}
+
+function _adminAbrirChat(uid, nom, email){
+  _adminChatUid = uid;
+  // Highlight selected
+  document.querySelectorAll('.admin-chat-item').forEach(function(el){
+    el.classList.toggle('admin-chat-item-active', parseInt(el.dataset.uid) === uid);
+  });
+  var conv = document.getElementById('adminChatConv');
+  if(!conv) return;
+  conv.innerHTML =
+    '<div class="admin-chat-conv-header">'
+    + '  <div class="admin-chat-ava">'+nom[0].toUpperCase()+'</div>'
+    + '  <div><div style="font-weight:700;font-size:.9rem">'+_escapeHtml(nom)+'</div><div style="font-size:.72rem;color:var(--gr)">'+_escapeHtml(email)+'</div></div>'
+    + '  <button class="btd" style="margin-left:auto;font-size:.72rem" onclick="_adminEliminarChat('+uid+')">🗑️ Cerrar chat</button>'
+    + '</div>'
+    + '<div class="admin-chat-messages" id="adminChatMessages"><div class="tab-loading"></div></div>'
+    + '<div class="chat-input-row" style="padding:10px 12px;border-top:1.5px solid #E2E8F0">'
+    + '  <input class="fc chat-input" id="adminChatInput" placeholder="Responder a '+_escapeHtml(nom)+'…" autocomplete="off"'
+    + '    onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();_adminEnviarRespuesta();}"/>'
+    + '  <button class="chat-send-btn" onclick="_adminEnviarRespuesta()" title="Enviar">'
+    + '    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>'
+    + '  </button>'
+    + '</div>';
+  _adminCargarMensajes(uid);
+  if(_adminChatTimer) clearInterval(_adminChatTimer);
+  _adminChatTimer = setInterval(function(){
+    if(_adminChatUid === uid) _adminCargarMensajes(uid, true);
+    else { clearInterval(_adminChatTimer); _adminChatTimer=null; }
+  }, 4000);
+}
+
+function _adminCargarMensajes(uid, silencioso){
+  fetch('/api/chat?uid='+uid)
+    .then(function(r){ return r.json(); })
+    .then(function(r){
+      var box = document.getElementById('adminChatMessages');
+      if(!box || !r.ok) return;
+      var msgs = r.mensajes || [];
+      var atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 40;
+      if(!msgs.length){
+        box.innerHTML = '<div style="text-align:center;padding:30px;color:var(--gr);font-size:.88rem">Sin mensajes aún</div>';
+        return;
+      }
+      box.innerHTML = msgs.map(function(m){
+        var esCliente = m.remitente === 'cliente';
+        return '<div class="chat-msg-row '+(esCliente?'chat-msg-row-support':'chat-msg-row-client')+'">'
+          + '<div class="chat-bubble '+(esCliente?'chat-bubble-support':'chat-bubble-client')+'">'
+          + _escapeHtml(m.mensaje)+'</div>'
+          + '<div class="chat-msg-time">'+(esCliente?'👤 '+_escapeHtml(m.uNom||'Cliente'):'🛡️ Soporte')+' · '+(m.fecha||'').slice(11,16)+'</div>'
+          + '</div>';
+      }).join('');
+      if(atBottom || !silencioso) box.scrollTop = box.scrollHeight;
+      // Clear unread badge for this user
+      var item = document.querySelector('.admin-chat-item[data-uid="'+uid+'"]');
+      if(item){ item.classList.remove('admin-chat-item-unread'); var badge=item.querySelector('.admin-chat-badge');if(badge)badge.remove(); }
+    });
+}
+
+function _adminEnviarRespuesta(){
+  if(!_adminChatUid) return;
+  var inp = document.getElementById('adminChatInput');
+  if(!inp) return;
+  var msg = inp.value.trim();
+  if(!msg) return;
+  inp.value = ''; inp.disabled = true;
+  fetch('/api/chat', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({uid: _adminChatUid, mensaje: msg, remitente: 'soporte'})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(r){
+    inp.disabled = false; inp.focus();
+    if(r.ok) _adminCargarMensajes(_adminChatUid);
+    else toast('Error al enviar respuesta','e');
+  })
+  .catch(function(){ inp.disabled=false; toast('Error de conexión','e'); });
+}
+
+function _adminEliminarChat(uid){
+  if(!confirm('¿Cerrar y eliminar esta conversación?')) return;
+  fetch('/api/chat/'+uid+'/eliminar', {method:'DELETE'})
+    .then(function(r){ return r.json(); })
+    .then(function(r){
+      if(r.ok){
+        toast('Chat eliminado','i');
+        if(_adminChatTimer){clearInterval(_adminChatTimer);_adminChatTimer=null;}
+        _adminChatUid = null;
+        var c = document.getElementById('sTB');
+        if(c) _renderSuperChats(c);
+      }
+    });
+}
+
+function buildSuper(){var pb=document.getElementById("panB");var userAvaSuper=usuario.avatar?(usuario.avatar.startsWith("data:")||/^\p{Emoji}/u.test(usuario.avatar)||usuario.avatar.length<=8)?usuario.avatar:'<img src="'+usuario.avatar+'" style="width:32px;height:32px;object-fit:cover;border-radius:50%"/>':(usuario.n[0]);var userBar='<div class="panel-user-bar">'+'<div class="pub-ava">'+userAvaSuper+'</div>'+'<div class="pub-info"><div class="pub-name">'+usuario.n+' '+usuario.a+'</div><div class="pub-role">👑 Super Admin</div></div>'+'<div class="pub-actions">'+'<button class="pub-btn pub-btn-edit" onclick="panelEditarPerfil()">✏️ Perfil</button>'+'<button class="pub-btn pub-btn-exit" onclick="panelSalir()">🚪 Salir</button>'+'</div></div>';var tbs=[{k:"stats",l:"📊 Stats"},{k:"users",l:"👥 Usuarios"},{k:"prods",l:"📦 Productos"},{k:"categorias",l:"🏷️ Categorías"},{k:"reportes",l:"🚨 Reportes"},{k:"mensajes",l:"📬 Mensajes",id:"tabMensajesSuper"},{k:"cadmin",l:"➕ Admin"},{k:"cupones",l:"🎫 Cupones"},{k:"chat",l:"💬 Chat"},{k:"logs",l:"📋 Logs"}];var html=tbs.map(function(t){var id=t.id?' id="'+t.id+'"':'';var on=' onclick="setSTab(\''+t.k+'\',this)"';return '<button class="tab'+(sTab===t.k?' on':'')+'"'+id+on+'>'+t.l+'</button>';}).join("");pb.innerHTML=userBar+'<div class="tabs">'+html+'</div><div id="sTB"></div>';
 // Al abrir el panel siempre refrescar la pestaña stats
 if(sTab==="stats")invalidateSCache(["prods","users","reportes","contactos"]);
 renderSuperTab();}
-function setSTab(t,btn){sTab=t;document.querySelectorAll("#panB .tab").forEach(function(b){b.classList.remove("on");});btn.classList.add("on");renderSuperTab();}
+function setSTab(t,btn){sTab=t;if(_adminChatTimer){clearInterval(_adminChatTimer);_adminChatTimer=null;}_adminChatUid=null;document.querySelectorAll("#panB .tab").forEach(function(b){b.classList.remove("on");});btn.classList.add("on");renderSuperTab();}
 // Cache de timestamps para las APIs del superadmin (0 = nunca cargado)
 var _sCache={prods:0,users:0,reportes:0,logs:0,contactos:0};
 var _sCacheTTL=30000; // 30 segundos
@@ -3123,3 +3418,231 @@ function eliminarMensaje(id){
     if(sTab==="mensajes")renderSuperTab();
   });
 }
+// ── CHAT DE SOPORTE ──────────────────────────────────────────
+var _chatTimer  = null;
+var _chatActivo = false;
+var _chatUid    = null;
+
+function abrirChatSoporte(){
+  if(!usuario){ toast("Inicia sesión para usar el chat","e"); return; }
+  _chatUid    = usuario.id;
+  _chatActivo = true;
+  _renderChatWidget();
+  _chatPoll();
+}
+
+function cerrarChatSoporte(){
+  _chatActivo = false;
+  if(_chatTimer){ clearInterval(_chatTimer); _chatTimer = null; }
+  var w = document.getElementById("chatWidget");
+  if(w){ w.classList.remove("chat-open"); setTimeout(function(){ w.remove(); }, 300); }
+}
+
+function _chatPoll(){
+  if(!_chatActivo) return;
+  _cargarMensajesChat();
+  if(_chatTimer) clearInterval(_chatTimer);
+  _chatTimer = setInterval(function(){
+    if(_chatActivo) _cargarMensajesChat();
+    else clearInterval(_chatTimer);
+  }, 4000); // Poll every 4 seconds
+}
+
+function _cargarMensajesChat(){
+  if(!_chatUid || !_chatActivo) return;
+  fetch("/api/chat?uid=" + _chatUid)
+    .then(function(r){ return r.json(); })
+    .then(function(r){
+      if(!r.ok) return;
+      _renderMensajesChat(r.mensajes || []);
+    })
+    .catch(function(){});
+}
+
+function _renderChatWidget(){
+  var existing = document.getElementById("chatWidget");
+  if(existing) existing.remove();
+
+  var w = document.createElement("div");
+  w.id = "chatWidget";
+  w.className = "chat-widget";
+  w.innerHTML =
+    '<div class="chat-header">'
+    + '<div class="chat-header-info">'
+    + '  <div class="chat-avatar">💬</div>'
+    + '  <div>'
+    + '    <div class="chat-header-name">Soporte NuestroStore</div>'
+    + '    <div class="chat-header-status"><span class="chat-dot"></span> En línea</div>'
+    + '  </div>'
+    + '</div>'
+    + '<button class="chat-close" onclick="cerrarChatSoporte()" title="Cerrar">✕</button>'
+    + '</div>'
+    + '<div class="chat-messages" id="chatMessages">'
+    + '  <div class="chat-msg chat-msg-soporte">'
+    + '    <div class="chat-bubble">¡Hola ' + usuario.n + '! 👋<br>¿En qué podemos ayudarte hoy?</div>'
+    + '    <div class="chat-time">Soporte</div>'
+    + '  </div>'
+    + '</div>'
+    + '<div class="chat-input-wrap">'
+    + '  <input class="chat-input" id="chatInput" placeholder="Escribe tu mensaje…" autocomplete="off"'
+    + '    onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();enviarMensajeChat();}"'
+    + '  />'
+    + '  <button class="chat-send" onclick="enviarMensajeChat()" title="Enviar">➤</button>'
+    + '</div>';
+
+  document.body.appendChild(w);
+  requestAnimationFrame(function(){ w.classList.add("chat-open"); });
+  document.getElementById("chatInput").focus();
+}
+
+function _renderMensajesChat(mensajes){
+  var box = document.getElementById("chatMessages");
+  if(!box) return;
+  if(!mensajes.length) return;
+
+  // Keep welcome message, rebuild the rest
+  var welcome = box.querySelector(".chat-msg-soporte");
+  box.innerHTML = "";
+  if(welcome) box.appendChild(welcome);
+
+  mensajes.forEach(function(m){
+    var esCliente = m.remitente === "cliente";
+    var div = document.createElement("div");
+    div.className = "chat-msg " + (esCliente ? "chat-msg-cliente" : "chat-msg-soporte");
+    div.innerHTML =
+      '<div class="chat-bubble">' + _escapeHtml(m.mensaje) + '</div>'
+      + '<div class="chat-time">'
+      + (esCliente ? "Tú" : "Soporte")
+      + ' · ' + (m.fecha || "").slice(11, 16)
+      + '</div>';
+    box.appendChild(div);
+  });
+
+  // Scroll to bottom
+  box.scrollTop = box.scrollHeight;
+}
+
+function enviarMensajeChat(){
+  var inp = document.getElementById("chatInput");
+  if(!inp) return;
+  var msg = inp.value.trim();
+  if(!msg || !_chatUid) return;
+
+  // Optimistic UI
+  inp.value = "";
+  var box = document.getElementById("chatMessages");
+  if(box){
+    var div = document.createElement("div");
+    div.className = "chat-msg chat-msg-cliente";
+    div.innerHTML = '<div class="chat-bubble">' + _escapeHtml(msg) + '</div>'
+      + '<div class="chat-time">Tú · enviando…</div>';
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  fetch("/api/chat", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({uid: _chatUid, mensaje: msg, remitente: "cliente"})
+  }).then(function(r){ return r.json(); })
+    .then(function(r){
+      if(r.ok) _cargarMensajesChat(); // Refresh to get server timestamp
+    });
+}
+
+function _escapeHtml(s){
+  return String(s)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;");
+}
+
+// ── CHAT ADMIN — responder desde el panel ─────────────────────
+var _chatAdminUid   = null;
+var _chatAdminTimer = null;
+
+function abrirChatAdmin(uid, nombre){
+  _chatAdminUid = uid;
+  var c = document.getElementById("aTB") || document.getElementById("sTB");
+  if(!c) return;
+  // Mark client messages as read
+  fetch("/api/chat?uid="+uid).then(function(r){ return r.json(); }).then(function(r){
+    _renderChatAdmin(r.mensajes || [], nombre, c);
+    if(_chatAdminTimer) clearInterval(_chatAdminTimer);
+    _chatAdminTimer = setInterval(function(){
+      fetch("/api/chat?uid="+uid).then(function(r){ return r.json(); }).then(function(r){
+        if(r.ok) _renderChatAdmin(r.mensajes || [], nombre, document.getElementById("chatAdminBox"));
+      });
+    }, 5000);
+  });
+}
+
+function _renderChatAdmin(mensajes, nombre, container){
+  var box = typeof container === "string"
+    ? document.getElementById(container)
+    : (container.id === "chatAdminBox" ? container : null);
+
+  // If rendering into the full tab container
+  if(!box || box.id !== "chatAdminBox"){
+    var wrap = container || document.getElementById("aTB") || document.getElementById("sTB");
+    if(!wrap) return;
+    wrap.innerHTML =
+      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">'
+      + '<button class="bte" onclick="if(_chatAdminTimer)clearInterval(_chatAdminTimer);renderAdminTab&&renderAdminTab();renderSuperTab&&renderSuperTab()">← Volver</button>'
+      + '<strong style="font-size:.95rem">💬 Chat con ' + nombre + '</strong>'
+      + '</div>'
+      + '<div class="chat-admin-box" id="chatAdminBox" style="height:320px;overflow-y:auto;border:1.5px solid #E2E8F0;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;margin-bottom:12px">'
+      + '</div>'
+      + '<div style="display:flex;gap:8px">'
+      + '<input class="fc" id="chatAdminInput" placeholder="Responder…" style="flex:1"'
+      + '  onkeydown="if(event.key===\'Enter\')enviarRespuestaAdmin()"/>'
+      + '<button class="bp" style="padding:10px 18px;white-space:nowrap" onclick="enviarRespuestaAdmin()">Enviar ➤</button>'
+      + '</div>';
+    box = document.getElementById("chatAdminBox");
+  }
+
+  if(!box) return;
+  box.innerHTML = "";
+  if(!mensajes.length){
+    box.innerHTML = '<div style="text-align:center;color:var(--gr);padding:20px">Sin mensajes aún</div>';
+    return;
+  }
+  mensajes.forEach(function(m){
+    var esCliente = m.remitente === "cliente";
+    var div = document.createElement("div");
+    div.style.cssText = "display:flex;flex-direction:column;" + (esCliente ? "align-items:flex-start" : "align-items:flex-end");
+    div.innerHTML =
+      '<div style="max-width:80%;background:' + (esCliente ? "#EFF6FF" : "#F0FDF4")
+      + ';color:' + (esCliente ? "#1E3A8A" : "#166534")
+      + ';padding:9px 13px;border-radius:' + (esCliente ? "4px 14px 14px 14px" : "14px 4px 14px 14px")
+      + ';font-size:.87rem;line-height:1.5">'
+      + _escapeHtml(m.mensaje) + '</div>'
+      + '<div style="font-size:.68rem;color:var(--gr);margin-top:2px">'
+      + (esCliente ? (m.uNom || "Cliente") : "Soporte") + ' · ' + (m.fecha || "").slice(11,16)
+      + '</div>';
+    box.appendChild(div);
+  });
+  box.scrollTop = box.scrollHeight;
+}
+
+function enviarRespuestaAdmin(){
+  var inp = document.getElementById("chatAdminInput");
+  if(!inp || !_chatAdminUid) return;
+  var msg = inp.value.trim();
+  if(!msg) return;
+  inp.value = "";
+  fetch("/api/chat",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({uid:_chatAdminUid, mensaje:msg, remitente:"soporte"})
+  }).then(function(r){ return r.json(); }).then(function(r){
+    if(r.ok){
+      fetch("/api/chat?uid="+_chatAdminUid).then(function(r){return r.json();}).then(function(r){
+        if(r.ok) _renderChatAdmin(r.mensajes||[], "", document.getElementById("chatAdminBox"));
+      });
+    }
+  });
+}
+
+
