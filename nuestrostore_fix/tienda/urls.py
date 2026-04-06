@@ -50,6 +50,11 @@ urlpatterns = [
     path('api/contactos/<int:cid>/leer',   views.api_contacto_leer,    name='api_contacto_leer'),
     path('api/contactos/<int:cid>/eliminar', views.api_contacto_eliminar, name='api_contacto_eliminar'),
 
+    # Chat de soporte
+    path('api/chat',                views.api_chat,          name='api_chat'),
+    path('api/chat/admin',          views.api_chat_admin,    name='api_chat_admin'),
+    path('api/chat/<int:uid>/eliminar', views.api_chat_eliminar, name='api_chat_eliminar'),
+
     # Recuperar contraseña
     path('api/reset/solicitar',  views.api_solicitar_reset,  name='api_solicitar_reset'),
     path('api/reset/verificar',  views.api_verificar_reset,  name='api_verificar_reset'),
