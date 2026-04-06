@@ -1135,6 +1135,323 @@ def api_chat_eliminar(request, uid):
     _exec("DELETE FROM chat_mensajes WHERE uid=?", (uid,))
     return JsonResponse({"ok": True})
 
+
+# ── WEB PUSH — VAPID ──────────────────────────────────────────
+import base64 as _b64
+import struct as _struct
+import time as _time
+import os as _os
+
+def _b64u_encode(data):
+    if isinstance(data, (str, bytes)):
+        if isinstance(data, str): data = data.encode()
+    return _b64.urlsafe_b64encode(data).rstrip(b'=').decode()
+
+def _b64u_decode(s):
+    if isinstance(s, bytes): s = s.decode()
+    pad = 4 - len(s) % 4
+    if pad != 4: s += '=' * pad
+    return _b64.urlsafe_b64decode(s)
+
+def _make_vapid_jwt(audience, subject, private_key_b64):
+    """Generate a VAPID JWT using only the cryptography library."""
+    from cryptography.hazmat.primitives.asymmetric import ec
+    from cryptography.hazmat.primitives import hashes
+    from cryptography.hazmat.backends import default_backend
+    from cryptography.hazmat.primitives.asymmetric.utils import decode_dss_signature
+    import json
+
+    # Rebuild private key from raw bytes
+    priv_int = int.from_bytes(_b64u_decode(private_key_b64), 'big')
+    priv_key = ec.derive_private_key(priv_int, ec.SECP256R1(), default_backend())
+
+    header  = _b64u_encode(json.dumps({"typ": "JWT", "alg": "ES256"}).encode())
+    payload = _b64u_encode(json.dumps({
+        "aud": audience,
+        "exp": int(_time.time()) + 43200,
+        "sub": subject,
+    }).encode())
+
+    signing_input = f"{header}.{payload}".encode()
+    sig_der = priv_key.sign(signing_input, ec.ECDSA(hashes.SHA256()))
+    r, s    = decode_dss_signature(sig_der)
+    sig     = r.to_bytes(32, 'big') + s.to_bytes(32, 'big')
+    return f"{header}.{payload}.{_b64u_encode(sig)}"
+
+
+def _encrypt_push_payload(payload_str, p256dh_b64, auth_b64):
+    """
+    Encrypt a push payload per RFC 8291 / Web Push Encryption.
+    Returns (ciphertext_bytes, salt_b64, server_public_key_b64).
+    """
+    from cryptography.hazmat.primitives.asymmetric import ec
+    from cryptography.hazmat.primitives import hashes
+    from cryptography.hazmat.primitives.kdf.hkdf import HKDF
+    from cryptography.hazmat.backends import default_backend
+    from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+    from cryptography.hazmat.primitives import serialization
+
+    # Decode client keys
+    client_pub_bytes = _b64u_decode(p256dh_b64)
+    auth_secret      = _b64u_decode(auth_b64)
+
+    # Load client public key
+    client_pub = ec.EllipticCurvePublicKey.from_encoded_point(ec.SECP256R1(), client_pub_bytes)
+
+    # Generate server ephemeral key
+    server_key = ec.generate_private_key(ec.SECP256R1(), default_backend())
+    server_pub = server_key.public_key()
+    server_pub_bytes = server_pub.public_bytes(
+        serialization.Encoding.X962,
+        serialization.PublicFormat.UncompressedPoint
+    )
+
+    # ECDH shared secret
+    shared = server_key.exchange(ec.ECDH(), client_pub)
+
+    # Salt (16 random bytes)
+    salt = _os.urandom(16)
+
+    # PRK (pseudo-random key) via HKDF-SHA256
+    prk_key = HKDF(
+        algorithm=hashes.SHA256(), length=32,
+        salt=auth_secret,
+        info=b"Content-Encoding: auth\x00",
+        backend=default_backend()
+    ).derive(shared)
+
+    # Context string
+    context = (
+        b"P-256\x00"
+        + _struct.pack('>H', len(client_pub_bytes)) + client_pub_bytes
+        + _struct.pack('>H', len(server_pub_bytes)) + server_pub_bytes
+    )
+
+    # CEK (content encryption key) and nonce
+    cek = HKDF(
+        algorithm=hashes.SHA256(), length=16,
+        salt=salt,
+        info=b"Content-Encoding: aesgcm\x00" + context,
+        backend=default_backend()
+    ).derive(prk_key)
+
+    nonce = HKDF(
+        algorithm=hashes.SHA256(), length=12,
+        salt=salt,
+        info=b"Content-Encoding: nonce\x00" + context,
+        backend=default_backend()
+    ).derive(prk_key)
+
+    # Encrypt
+    payload_bytes = payload_str.encode('utf-8')
+    # Add padding: 2-byte big-endian padding length + padding + payload
+    padded = _struct.pack('>H', 0) + payload_bytes
+    aesgcm = AESGCM(cek)
+    ciphertext = aesgcm.encrypt(nonce, padded, None)
+
+    return ciphertext, _b64u_encode(salt), _b64u_encode(server_pub_bytes)
+
+
+def _send_push(subscription, payload_dict):
+    """
+    Send a push notification to one subscription.
+    subscription: {endpoint, p256dh, auth}
+    payload_dict: dict with title, body, etc.
+    Returns True on success.
+    """
+    import json
+    import urllib.request
+    import urllib.parse
+    from django.conf import settings
+
+    endpoint   = subscription['endpoint']
+    p256dh     = subscription['p256dh']
+    auth       = subscription['auth']
+    vapid_pub  = settings.VAPID_PUBLIC_KEY
+    vapid_priv = settings.VAPID_PRIVATE_KEY
+    vapid_sub  = settings.VAPID_EMAIL
+
+    payload_str = json.dumps(payload_dict)
+
+    try:
+        ciphertext, salt_b64, server_pub_b64 = _encrypt_push_payload(payload_str, p256dh, auth)
+
+        # Parse audience from endpoint
+        parsed = urllib.parse.urlparse(endpoint)
+        audience = f"{parsed.scheme}://{parsed.netloc}"
+
+        # Build VAPID JWT
+        jwt = _make_vapid_jwt(audience, vapid_sub, vapid_priv)
+
+        # Build HTTP request
+        headers = {
+            'Content-Type': 'application/octet-stream',
+            'Content-Encoding': 'aesgcm',
+            'Encryption': f'salt={salt_b64}',
+            'Crypto-Key': f'dh={server_pub_b64};p256ecdsa={vapid_pub}',
+            'Authorization': f'WebPush {jwt}',
+            'TTL': '86400',
+        }
+
+        req = urllib.request.Request(endpoint, data=ciphertext, headers=headers, method='POST')
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            return resp.status in (200, 201, 202, 204)
+
+    except Exception as e:
+        log_action("Sistema", "PUSH_ERROR", str(e)[:120])
+        return False
+
+
+def _notify_user(uid, title, body, url='/', tag='general', icon=None):
+    """Send push notification to a specific user (non-blocking thread)."""
+    import threading
+    def _send():
+        sub = _exec_one(
+            "SELECT endpoint, p256dh, auth FROM push_subscriptions WHERE uid=? AND activo=1",
+            (uid,)
+        )
+        if not sub:
+            return
+        payload = {'title': title, 'body': body, 'tag': tag,
+                   'icon': icon or '/static/img/favicon.svg',
+                   'data': {'url': url}}
+        ok = _send_push(dict(sub), payload)
+        if not ok:
+            # Subscription likely expired — deactivate
+            _exec("UPDATE push_subscriptions SET activo=0 WHERE uid=?", (uid,))
+    threading.Thread(target=_send, daemon=True).start()
+
+
+def _notify_all_clients(title, body, url='/', tag='oferta'):
+    """Broadcast push notification to all subscribed clients."""
+    import threading
+    def _broadcast():
+        subs = _exec(
+            "SELECT uid, endpoint, p256dh, auth FROM push_subscriptions WHERE activo=1"
+        )
+        payload = {'title': title, 'body': body, 'tag': tag,
+                   'icon': '/static/img/favicon.svg', 'data': {'url': url}}
+        for sub in subs:
+            try:
+                ok = _send_push(dict(sub), payload)
+                if not ok:
+                    _exec("UPDATE push_subscriptions SET activo=0 WHERE uid=?", (sub['uid'],))
+            except Exception:
+                pass
+    threading.Thread(target=_broadcast, daemon=True).start()
+
+
+# ── PUSH API ENDPOINTS ────────────────────────────────────────
+@csrf_exempt
+@require_http_methods(["GET"])
+def api_vapid_public_key(request):
+    """Return VAPID public key so the frontend can subscribe."""
+    from django.conf import settings
+    return JsonResponse({"ok": True, "publicKey": settings.VAPID_PUBLIC_KEY})
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def api_push_subscribe(request):
+    """Save or update a push subscription for a user."""
+    data     = json.loads(request.body or '{}')
+    uid      = int(data.get('uid') or 0)
+    endpoint = (data.get('endpoint') or '').strip()
+    p256dh   = (data.get('p256dh') or '').strip()
+    auth     = (data.get('auth') or '').strip()
+
+    if not uid or not endpoint or not p256dh or not auth:
+        return JsonResponse({"ok": False, "error": "Datos incompletos"})
+
+    # Upsert subscription
+    existing = _exec_one("SELECT id FROM push_subscriptions WHERE uid=?", (uid,))
+    if existing:
+        _exec(
+            "UPDATE push_subscriptions SET endpoint=?, p256dh=?, auth=?, activo=1 WHERE uid=?",
+            (endpoint, p256dh, auth, uid)
+        )
+    else:
+        _exec_insert(
+            "INSERT INTO push_subscriptions(uid, endpoint, p256dh, auth) VALUES(?,?,?,?)",
+            (uid, endpoint, p256dh, auth)
+        )
+    log_action(str(uid), "PUSH_SUBSCRIBE", "Suscripción guardada")
+    return JsonResponse({"ok": True})
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def api_push_unsubscribe(request):
+    """Remove push subscription for a user."""
+    data = json.loads(request.body or '{}')
+    uid  = int(data.get('uid') or 0)
+    if uid:
+        _exec("UPDATE push_subscriptions SET activo=0 WHERE uid=?", (uid,))
+    return JsonResponse({"ok": True})
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def api_push_send(request):
+    """Admin: broadcast or send to specific user."""
+    data  = json.loads(request.body or '{}')
+    title = (data.get('title') or '').strip()
+    body  = (data.get('body') or '').strip()
+    uid   = data.get('uid')  # None = broadcast to all
+    tag   = data.get('tag', 'oferta')
+    url   = data.get('url', '/')
+
+    if not title or not body:
+        return JsonResponse({"ok": False, "error": "Título y mensaje requeridos"})
+
+    if uid:
+        _notify_user(int(uid), title, body, url, tag)
+        return JsonResponse({"ok": True, "modo": "individual"})
+    else:
+        _notify_all_clients(title, body, url, tag)
+        return JsonResponse({"ok": True, "modo": "broadcast"})
+
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def api_push_stats(request):
+    """Admin: count active subscriptions."""
+    count = _exec_one("SELECT COUNT(*) AS n FROM push_subscriptions WHERE activo=1")
+    return JsonResponse({"ok": True, "total": count['n'] if count else 0})
+
+
+@csrf_exempt
+@require_http_methods(["PUT"])
+def api_cambiar_estado_pedido(request, pid):
+    """Admin: update pedido estado and notify the client."""
+    data   = json.loads(request.body or '{}')
+    estado = (data.get('estado') or '').strip()
+    estados_validos = ['procesando', 'preparando', 'enviado', 'entregado', 'cancelado']
+    if estado not in estados_validos:
+        return JsonResponse({"ok": False, "error": f"Estado inválido. Válidos: {estados_validos}"})
+
+    pedido = _exec_one("SELECT uid, u_nom, u_email, total FROM pedidos WHERE id=?", (pid,))
+    if not pedido:
+        return JsonResponse({"ok": False, "error": "Pedido no encontrado"})
+
+    _exec("UPDATE pedidos SET estado=? WHERE id=?", (estado, pid))
+    log_action("Admin", "PEDIDO_ESTADO", f"Pedido #{pid} → {estado}")
+
+    # Push notification to the client
+    emojis = {
+        'procesando': '⏳', 'preparando': '📦',
+        'enviado': '🚚', 'entregado': '✅', 'cancelado': '❌'
+    }
+    emoji = emojis.get(estado, '📋')
+    _notify_user(
+        uid   = pedido['uid'],
+        title = f"{emoji} Pedido #{pid} actualizado",
+        body  = f"Tu pedido está ahora en estado: {estado.upper()}",
+        url   = '/',
+        tag   = f"pedido-{pid}"
+    )
+    return JsonResponse({"ok": True})
+
 # ── 404 ───────────────────────────────────────────────
 def error_404(request, exception=None):
     from django.shortcuts import render as drender
