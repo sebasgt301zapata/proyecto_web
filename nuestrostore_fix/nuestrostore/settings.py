@@ -88,3 +88,28 @@ except ImportError:
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 DATA_UPLOAD_MAX_MEMORY_SIZE = 20 * 1024 * 1024
+
+# ── EMAIL / SMTP ──────────────────────────────────────────────
+# Configurar con variables de entorno en Render:
+#   EMAIL_HOST=smtp.gmail.com
+#   EMAIL_PORT=587
+#   EMAIL_HOST_USER=tu@gmail.com
+#   EMAIL_HOST_PASSWORD=tu_app_password   ← contraseña de app Gmail
+#   DEFAULT_FROM_EMAIL=NuestroStore <tu@gmail.com>
+#
+# Para Gmail: Activar "Contraseñas de aplicación" en tu cuenta Google.
+# Para otros: Mailgun, SendGrid, Brevo, etc.
+
+EMAIL_BACKEND    = os.environ.get(
+    'EMAIL_BACKEND',
+    'django.core.mail.backends.console.EmailBackend'   # Dev: imprime en consola
+)
+EMAIL_HOST       = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT       = int(os.environ.get('EMAIL_PORT', 587))
+EMAIL_USE_TLS    = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_HOST_USER  = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL  = os.environ.get(
+    'DEFAULT_FROM_EMAIL',
+    f'NuestroStore <{EMAIL_HOST_USER}>' if EMAIL_HOST_USER else 'NuestroStore <noreply@nuestrostore.com>'
+)
