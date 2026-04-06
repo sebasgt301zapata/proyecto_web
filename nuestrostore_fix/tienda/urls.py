@@ -50,6 +50,14 @@ urlpatterns = [
     path('api/contactos/<int:cid>/leer',   views.api_contacto_leer,    name='api_contacto_leer'),
     path('api/contactos/<int:cid>/eliminar', views.api_contacto_eliminar, name='api_contacto_eliminar'),
 
+    # Web Push / VAPID
+    path('api/push/vapid-key',           views.api_vapid_public_key,      name='api_vapid_key'),
+    path('api/push/subscribe',           views.api_push_subscribe,         name='api_push_subscribe'),
+    path('api/push/unsubscribe',         views.api_push_unsubscribe,       name='api_push_unsubscribe'),
+    path('api/push/send',                views.api_push_send,              name='api_push_send'),
+    path('api/push/stats',               views.api_push_stats,             name='api_push_stats'),
+    path('api/pedidos/<int:pid>/estado', views.api_cambiar_estado_pedido,  name='api_pedido_estado'),
+
     # Chat de soporte
     path('api/chat',                views.api_chat,          name='api_chat'),
     path('api/chat/admin',          views.api_chat_admin,    name='api_chat_admin'),
