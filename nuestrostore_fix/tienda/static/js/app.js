@@ -239,7 +239,7 @@ function bs(n){
 // setLang eliminado — idioma fijo en español
 function setCurrency(cur){
   CURRENCY=cur;localStorage.setItem("ns_currency",cur);
-  if(PRODS.length){if(PAGE==="inicio")renderInicio();if(PAGE==="tienda")renderProds();}
+  if(PRODS.length){if(paginaActual==="inicio"||PAGE==="inicio")renderInicio();if(paginaActual==="tienda"||PAGE==="tienda")renderProds();}
   actualizarCarrito();
 }
 function aplicarIdioma(){
@@ -249,21 +249,15 @@ function aplicarIdioma(){
 
 // ── PÁGINAS ──────────────────────────────────
 function irPagina(pg){
-  // Map page names to real URLs
-  const routes = {
-    'inicio':   '/',
-    'tienda':   '/tienda/',
-    'contacto': '/contacto/',
-  };
+  const routes = {'inicio':'/','tienda':'/tienda/','contacto':'/contacto/'};
   if(routes[pg]){
-    window.location.href = routes[pg];
+    // Only navigate if not already on that page
+    if(window.location.pathname !== routes[pg]){
+      window.location.href = routes[pg];
+    }
     return;
   }
-  // For 'cuenta' open panel instead
-  if(pg === 'cuenta'){
-    abrirPanel();
-    return;
-  }
+  if(pg === 'cuenta'){ if(usuario) abrirPanel(); else abrirLogin(); return; }
 }
 
 function toast(msg,tipo){tipo=tipo||"i";let c=document.getElementById("tcs"),el=document.createElement("div");el.className="tst "+tipo;el.innerHTML="<span>"+({s:"✅",e:"❌",i:"🔔"}[tipo]||"🔔")+"</span> "+msg;c.appendChild(el);setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},3200);}
@@ -293,12 +287,12 @@ async function cargarDatos(){
     CATS=[{id:0,n:"🏷️ Todos"}];
     Object.keys(catMap).forEach(function(cid){CATS.push({id:parseInt(cid),n:catMap[cid]});});
     actualizarStatsHero();
-    if(paginaActual==="tienda"){cargarCats();renderProds();actualizarEstadsTienda();}
+    if(paginaActual==="tienda"||PAGE==="tienda"){cargarCats();renderProds();actualizarEstadsTienda();}
   }
   let rr=await api("/resenias");
   if(rr.ok){RESENIAS={};rr.resenias.forEach(function(res){if(!RESENIAS[res.pid])RESENIAS[res.pid]=[];RESENIAS[res.pid].push(res);});}
   // Always re-render current page after data loads
-  if(paginaActual==="inicio"){
+  if(paginaActual==="inicio"||PAGE==="inicio"){
     // Doble rAF garantiza que el DOM está completamente pintado antes de medir
     requestAnimationFrame(function(){
       requestAnimationFrame(function(){
@@ -306,7 +300,7 @@ async function cargarDatos(){
       });
     });
   }
-  if(paginaActual==="tienda"){cargarCats();renderProds();actualizarEstadsTienda();}
+  if(paginaActual==="tienda"||PAGE==="tienda"){cargarCats();renderProds();actualizarEstadsTienda();}
 }
 function actualizarStatsHero(){
   let cs=PRODS.filter(function(p){return p.st>0;});
@@ -411,8 +405,8 @@ function mostrarSugerencias(q){
   sugg.innerHTML=html;sugg.style.display="block";
 }
 function resaltarTexto(txt,q){let re=new RegExp("("+q.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+")","gi");return txt.replace(re,"<mark>$1</mark>");}
-function filtrarYVer(catId){document.getElementById("swSugg").style.display="none";catActiva=parseInt(catId);irPagina("tienda");}
-function limpiarBusqueda(){let inp=document.getElementById("sBusq");if(inp){inp.value="";busqueda="";inp.focus();}let cl=document.getElementById("swClear");if(cl)cl.style.display="none";let s=document.getElementById("swSugg");if(s)s.style.display="none";if(paginaActual==="tienda")renderProds();}
+function filtrarYVer(catId){document.getElementById("swSugg").style.display="none";catActiva=parseInt(catId);if(PAGE!=="tienda"){window.location.href="/tienda/";return;}renderProds();}
+function limpiarBusqueda(){let inp=document.getElementById("sBusq");if(inp){inp.value="";busqueda="";inp.focus();}let cl=document.getElementById("swClear");if(cl)cl.style.display="none";let s=document.getElementById("swSugg");if(s)s.style.display="none";if(PAGE==="tienda"||paginaActual==="tienda")renderProds();}
 function buscar(){busqueda=(document.getElementById("sBusq")||{}).value||"";busqueda=busqueda.trim();document.getElementById("swSugg").style.display="none";if(busqueda)_saveSearchToHistory(busqueda);if(PAGE!=="tienda"){ window.location.href="/tienda/?q="+encodeURIComponent(busqueda); return; } renderProds();}
 
 // ── CARRUSEL (arreglado, sin dejar de girar) ─
@@ -1011,7 +1005,7 @@ function verProd(id){
 function selStar(v){starSelVal=v;document.getElementById("resEstrellas").value=v;document.querySelectorAll("#starSelector .star").forEach(function(s){s.classList.toggle("sel",parseInt(s.getAttribute("data-v"))<=v);});}
 function abrirResenia(pid,nom){
   if(!nom){let pp=PRODS.find(function(x){return x.id===pid;});nom=pp?pp.n:"Producto";}if(!usuario){toast("Inicia sesión","e");abrirModal("mLogin");return;}document.getElementById("resPid").value=pid;document.getElementById("resProdNom").textContent="📦 "+nom;document.getElementById("resComentario").value="";starSelVal=5;selStar(5);cerrarModal("mProd");abrirModal("mResenia");}
-function enviarResenia(){if(!usuario){toast("Inicia sesión","e");return;}let pid=parseInt(document.getElementById("resPid").value),coment=document.getElementById("resComentario").value.trim();if(!coment){toast("Escribe un comentario","e");return;}api("/resenias","POST",{uid:usuario.id,pid:pid,estrellas:starSelVal,comentario:coment}).then(function(r){if(!r.ok){toast(r.error||"Error","e");return;}toast("¡Reseña publicada! ⭐","s");cerrarModal("mResenia");api("/resenias").then(function(rr){if(rr.ok){RESENIAS={};rr.resenias.forEach(function(res){if(!RESENIAS[res.pid])RESENIAS[res.pid]=[];RESENIAS[res.pid].push(res);});renderInicio();if(paginaActual==="tienda")renderProds();}});});}
+function enviarResenia(){if(!usuario){toast("Inicia sesión","e");return;}let pid=parseInt(document.getElementById("resPid").value),coment=document.getElementById("resComentario").value.trim();if(!coment){toast("Escribe un comentario","e");return;}api("/resenias","POST",{uid:usuario.id,pid:pid,estrellas:starSelVal,comentario:coment}).then(function(r){if(!r.ok){toast(r.error||"Error","e");return;}toast("¡Reseña publicada! ⭐","s");cerrarModal("mResenia");api("/resenias").then(function(rr){if(rr.ok){RESENIAS={};rr.resenias.forEach(function(res){if(!RESENIAS[res.pid])RESENIAS[res.pid]=[];RESENIAS[res.pid].push(res);});renderInicio();if(PAGE==="tienda"||paginaActual==="tienda")renderProds();}});});}
 
 // ── PERFIL ───────────────────────────────────
 let AVATARES=["😊","🧑","👩","👨","🧑‍💻","👩‍💼","👨‍💼","🧑‍🎨","👩‍🍳","👨‍🔬","🦸","🧙","🐱","🦊","🐸","🌟","🔥","💎","🏆","🚀","🎮","🎨","🎸","⚽","🌈"];
@@ -2740,8 +2734,12 @@ function crearAdmin(){let n=document.getElementById("aNom").value.trim(),a=docum
 // ── INIT ─────────────────────────────────────
 document.addEventListener("DOMContentLoaded",function(){
   // Mark active nav links
-  document.querySelectorAll('.dnav-btn,.btab').forEach(el => {
-    if(el.getAttribute('href') === window.location.pathname){
+  // Sync paginaActual with PAGE from template
+  paginaActual = typeof PAGE !== "undefined" ? PAGE : "inicio";
+  const curPath = window.location.pathname;
+  document.querySelectorAll('.dnav-btn,.btab').forEach(function(el){
+    const href = el.getAttribute('href');
+    if(href && href === curPath){
       el.classList.add('active','on');
     }
   });
@@ -2767,7 +2765,7 @@ document.addEventListener("DOMContentLoaded",function(){
   mpInit();
   aplicarIdioma();
   aplicarDarkMode(DARK_MODE); // Apply saved dark mode preference
-  irPagina("inicio");
+  // PAGE-AWARE: no redirect needed, already on correct page
   // Show loading skeleton while data loads
   let pI = document.getElementById("pInicio");
   if(pI && !PRODS.length){
