@@ -4,7 +4,7 @@ let usuario=null,carrito=[],wishlist=[],catActiva=0,busqueda="",sortActivo="def"
 let filtroPrecioMin=0,filtroPrecioMax=Infinity,filtroRating=0,filtroSoloOfertas=false;
 let aTab="productos",sTab="stats",editId=null,newPF={n:"",d:"",p:"",o:"",st:"",cat:1,dest:false,img:null};
 let CONTACTOS=[];
-let contFact=1000,paginaActual="inicio",starSelVal=5;
+let contFact=1000,paginaActual=(typeof PAGE!=="undefined"?PAGE:"inicio"),starSelVal=5;
 let imgTempAdmin=null,imgTempSuper=null,spEditId=null,spNewPF={n:"",d:"",p:"",o:"",st:"",cat:1,dest:false,img:null};
 let swTimer=null;
 
@@ -357,13 +357,13 @@ function _renderHistorySuggestions(){
   }
   let html = '<div class="sw-sugg-sep" style="display:flex;align-items:center;justify-content:space-between">'
     + '<span>Búsquedas recientes</span>'
-    + '<span style="cursor:pointer;color:let(--na);font-size:.72rem;font-weight:700" onclick="_clearSearchHistory()">Borrar</span>'
+    + '<span style="cursor:pointer;color:var(--na);font-size:.72rem;font-weight:700" onclick="_clearSearchHistory()">Borrar</span>'
     + '</div>';
   html += _searchHistory.map(function(h){
     return '<div class="sw-sugg-item sw-hist-item" onclick="document.getElementById(\'sBusq\').value=\''+h.replace(/'/g,"\'")+'\';buscarDesdeHistorial(\''+h.replace(/'/g,"\'")+'\')">'
       + '<span class="sugg-ico" style="font-size:.9rem;opacity:.5">🕒</span>'
       + '<span class="sugg-nm">'+h+'</span>'
-      + '<span style="font-size:.72rem;color:let(--gr);margin-left:auto;padding-left:8px">↗</span>'
+      + '<span style="font-size:.72rem;color:var(--gr);margin-left:auto;padding-left:8px">↗</span>'
       + '</div>';
   }).join("");
   sugg.innerHTML = html;
@@ -413,7 +413,7 @@ function mostrarSugerencias(q){
 function resaltarTexto(txt,q){let re=new RegExp("("+q.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+")","gi");return txt.replace(re,"<mark>$1</mark>");}
 function filtrarYVer(catId){document.getElementById("swSugg").style.display="none";catActiva=parseInt(catId);irPagina("tienda");}
 function limpiarBusqueda(){let inp=document.getElementById("sBusq");if(inp){inp.value="";busqueda="";inp.focus();}let cl=document.getElementById("swClear");if(cl)cl.style.display="none";let s=document.getElementById("swSugg");if(s)s.style.display="none";if(paginaActual==="tienda")renderProds();}
-function buscar(){busqueda=(document.getElementById("sBusq")||{}).value||"";busqueda=busqueda.trim();document.getElementById("swSugg").style.display="none";if(busqueda)_saveSearchToHistory(busqueda);if(paginaActual!=="tienda")irPagina("tienda");renderProds();}
+function buscar(){busqueda=(document.getElementById("sBusq")||{}).value||"";busqueda=busqueda.trim();document.getElementById("swSugg").style.display="none";if(busqueda)_saveSearchToHistory(busqueda);if(PAGE!=="tienda"){ window.location.href="/tienda/?q="+encodeURIComponent(busqueda); return; } renderProds();}
 
 // ── CARRUSEL (arreglado, sin dejar de girar) ─
 let CR={ofertas:{idx:0,total:0,perPage:1,timer:null,items:[]},valorados:{idx:0,total:0,perPage:1,timer:null,items:[]}};
@@ -432,7 +432,7 @@ function carouselInit(name,items,delay){
   // Render real cards (tiny delay lets fade-out play)
   let doRender=function(){
     track.style.transition="none";
-    track.innerHTML=items.map(function(html){return '<div class="pc" style="flex-shrink:0;width:let(--cw)">'+html+'</div>';}).join("");
+    track.innerHTML=items.map(function(html){return '<div class="pc" style="flex-shrink:0;width:var(--cw)">'+html+'</div>';}).join("");
   // Set CSS let for card width
   let outer=document.getElementById("outer"+cap(name));
   if(outer){let gap=14,pp=c.perPage,ow=outer.offsetWidth||outer.getBoundingClientRect().width||window.innerWidth;if(ow<10)ow=window.innerWidth;let peekOffset=(pp===1&&ow<480)?Math.floor(ow*0.22):0;let cw=Math.floor((ow-peekOffset-(gap*(pp-1)))/pp);if(cw<80)cw=Math.floor((window.innerWidth-48)/pp);outer.style.setProperty("--cw",cw+"px");outer.style.setProperty("--cgap",gap+"px");}
@@ -638,7 +638,7 @@ function tarjetaInner(p,showOferta,starsStr,cnt){
   let imgEl=p.img?'<img src="'+p.img+'" data-pid="'+p.id+'" onclick="event.stopPropagation();(function(el){let pp=PRODS.find(function(x){return x.id===parseInt(el.dataset.pid);});if(pp)abrirZoomImagen(el.src,pp.n);})(this)"/>':(
     '<span class="pi-emoji">'+emojiProd(p)+'</span>'
   );
-  let starsEl=starsStr?'<div class="pstars">'+starsStr+(cnt?' <small style="color:let(--gr);font-size:.7rem">('+cnt+')</small>':'')+'</div>':"";
+  let starsEl=starsStr?'<div class="pstars">'+starsStr+(cnt?' <small style="color:var(--gr);font-size:.7rem">('+cnt+')</small>':'')+'</div>':"";
   let ofPct=(showOferta&&p.o&&p.p>0)?Math.round((1-p.o/p.p)*100):0;
   let pctBadge=ofPct>0?'<span class="pdesc-pct">-'+ofPct+'%</span>':"";
   let stockBadge=(p.st>0&&p.st<=5)?'<span style="position:absolute;bottom:8px;left:8px;background:rgba(230,81,0,.9);color:#fff;font-size:.62rem;font-weight:900;padding:3px 7px;border-radius:50px;z-index:2">⚡ Solo '+p.st+'</span>':"";
@@ -826,14 +826,14 @@ function renderProds(){
   let filtroInfo=document.getElementById("filtroInfo");
   if(!filtroInfo){
     let toolbar=document.querySelector(".tienda-toolbar");
-    if(toolbar){filtroInfo=document.createElement("div");filtroInfo.id="filtroInfo";filtroInfo.style.cssText="font-size:.8rem;font-weight:700;color:let(--gr);padding:6px 16px 0;max-width:960px;margin:0 auto;";toolbar.after(filtroInfo);}
+    if(toolbar){filtroInfo=document.createElement("div");filtroInfo.id="filtroInfo";filtroInfo.style.cssText="font-size:.8rem;font-weight:700;color:var(--gr);padding:6px 16px 0;max-width:960px;margin:0 auto;";toolbar.after(filtroInfo);}
   }
   if(filtroInfo){
     let txt="";
     if(busqueda)txt+="🔍 \""+busqueda+"\" — ";
     if(catActiva>0){let cat=CATS.find(function(c){return c.id===catActiva;});if(cat)txt+=cat.n+" — ";}
     txt+=lista.length+" resultado"+(lista.length!==1?"s":"");
-    if(busqueda||catActiva>0)txt+=' <span style="cursor:pointer;color:let(--na);text-decoration:underline;margin-left:6px" onclick="catActiva=0;busqueda="";document.getElementById(\"sBusq\").value="";renderProds();cargarCats()">✕ Limpiar</span>';
+    if(busqueda||catActiva>0)txt+=' <span style="cursor:pointer;color:var(--na);text-decoration:underline;margin-left:6px" onclick="catActiva=0;busqueda="";document.getElementById(\"sBusq\").value="";renderProds();cargarCats()">✕ Limpiar</span>';
     filtroInfo.innerHTML=txt;
   }
   if(!lista.length){g.innerHTML='<div style="grid-column:1/-1" class="empty"><div class="eico">🔍</div><h3>Sin resultados</h3><p>Prueba otra búsqueda o categoría</p>'+(busqueda||catActiva>0?'<button class="btn-hero-2" style="margin-top:12px;font-size:.85rem" onclick="catActiva=0;busqueda="";document.getElementById(\"sBusq\").value="";renderProds();cargarCats()">Ver todos los productos</button>':'')+' </div>';return;}
@@ -951,12 +951,12 @@ function verProd(id){
   let imgHtml=p.img?'<img src="'+p.img+'" data-pid="'+p.id+'" style="width:100%;border-radius:12px;margin-bottom:16px;max-height:240px;object-fit:cover;cursor:zoom-in" onclick="(function(el){let pp=PRODS.find(function(x){return x.id===parseInt(el.dataset.pid);});if(pp)abrirZoomImagen(el.src,pp.n);})(this)"/>':
     '<div style="text-align:center;font-size:6rem;padding:24px 20px;background:linear-gradient(135deg,#fff8e1,#ffe082);border-radius:12px;margin-bottom:16px">'+emojiProd(p)+'</div>';
   let avg=promedioEstrellas(p.id),cnt=RESENIAS[p.id]?RESENIAS[p.id].length:0;
-  let starsRow=avg>0?'<div style="margin-bottom:14px">'+starsHtml(avg)+' <span style="color:let(--gr);font-size:.85rem">'+avg.toFixed(1)+'/5 ('+cnt+' reseña'+(cnt!==1?'s':'')+')</span></div>':"";
+  let starsRow=avg>0?'<div style="margin-bottom:14px">'+starsHtml(avg)+' <span style="color:var(--gr);font-size:.85rem">'+avg.toFixed(1)+'/5 ('+cnt+' reseña'+(cnt!==1?'s':'')+')</span></div>':"";
   let listaRes=RESENIAS[p.id]||[];
   let agotado=p.st<=0;
-  let resHtml='<div style="margin-top:18px;border-top:2px solid #f0f0f0;padding-top:14px"><div style="font-weight:800;color:let(--na3);margin-bottom:12px">⭐ Reseñas ('+listaRes.length+')</div>';
+  let resHtml='<div style="margin-top:18px;border-top:2px solid #f0f0f0;padding-top:14px"><div style="font-weight:800;color:var(--na3);margin-bottom:12px">⭐ Reseñas ('+listaRes.length+')</div>';
   if(listaRes.length){resHtml+='<div style="max-height:180px;overflow-y:auto">'+listaRes.map(function(r){return '<div class="resenia-item"><div class="res-header"><span class="res-autor">'+r.uNom+' '+r.uApe[0]+'.</span><span class="res-fecha">'+r.fecha+'</span></div><div class="res-stars">'+starsHtml(r.estrellas)+'</div><div class="res-texto">'+r.comentario+'</div></div>';}).join("")+'</div>';}
-  else resHtml+='<div style="color:let(--gr);font-size:.85rem;text-align:center;padding:12px">Sin reseñas aún.</div>';
+  else resHtml+='<div style="color:var(--gr);font-size:.85rem;text-align:center;padding:12px">Sin reseñas aún.</div>';
   resHtml+='</div>';
   document.getElementById("mProdB").innerHTML=imgHtml+
     '<div class="pcat" style="margin-bottom:6px">'+p.cat+'</div>'+starsRow+
@@ -965,7 +965,7 @@ function verProd(id){
     '</div>'+(agotado?'<div style="background:#ffebee;border-radius:8px;padding:10px 14px;text-align:center;font-weight:800;color:#c62828;margin-bottom:14px">❌ Producto Agotado</div>':
     '<p style="color:#888;font-size:.85rem;margin-bottom:18px">📦 Stock: '+p.st+' unidades</p>'+
     '<button class="bp" onclick="addCart('+p.id+');cerrarModal(\"mProd\")">🛒 Agregar al Carrito</button>')+
-    (usuario?'<button class="wl-btn-lg"'+(enWishlist(p.id)?' style="border-color:#3B82F6;color:#1E3A8A;background:#EFF6FF"':'')+' data-pid="'+p.id+'" onclick="toggleWishlist('+p.id+',event);let b=this;b.style.background=enWishlist('+p.id+')?\"#EFF6FF\":\"#fff\";b.style.color=enWishlist('+p.id+')?\"#1E3A8A\":\"let(--gr2)\";b.innerHTML=enWishlist('+p.id+')?\"💙 En Favoritos\":\"🤍 Guardar en Favoritos\"">'+(enWishlist(p.id)?'💙 En Favoritos':'🤍 Guardar en Favoritos')+'</button>':'')+
+    (usuario?'<button class="wl-btn-lg"'+(enWishlist(p.id)?' style="border-color:#3B82F6;color:#1E3A8A;background:#EFF6FF"':'')+' data-pid="'+p.id+'" onclick="toggleWishlist('+p.id+',event);let b=this;b.style.background=enWishlist('+p.id+')?\"#EFF6FF\":\"#fff\";b.style.color=enWishlist('+p.id+')?\"#1E3A8A\":\"var(--gr2)\";b.innerHTML=enWishlist('+p.id+')?\"💙 En Favoritos\":\"🤍 Guardar en Favoritos\"">'+(enWishlist(p.id)?'💙 En Favoritos':'🤍 Guardar en Favoritos')+'</button>':'')+
     (usuario&&!agotado?'<button class="bs" onclick="abrirResenia('+p.id+')">⭐ Escribir Reseña</button>':'')+
     (usuario?'<button class="bs" onclick="cerrarModal(\"mProd\");abrirRep('+p.id+')">🚨 Reportar Problema</button>':'')+resHtml;
   // Productos relacionados
@@ -975,7 +975,7 @@ function verProd(id){
   let relHtml = '';
   if(relacionados.length){
     relHtml = '<div style="margin-top:20px;border-top:2px solid #f0f0f0;padding-top:16px">'
-      + '<div style="font-weight:800;color:let(--na3);margin-bottom:12px;font-size:.9rem">🛍️ También te puede gustar</div>'
+      + '<div style="font-weight:800;color:var(--na3);margin-bottom:12px;font-size:.9rem">🛍️ También te puede gustar</div>'
       + '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">'
       + relacionados.map(function(r){
           let rImg = r.img
@@ -1038,14 +1038,14 @@ function abrirPerfil(){
         '<div class="perfil-rol">'+rolLabel+'</div>'+
       '</div>'+
     '</div>'+
-    '<div style="font-weight:800;font-size:.88rem;color:let(--gr2);margin-bottom:8px">Elige un avatar emoji:</div>'+
+    '<div style="font-weight:800;font-size:.88rem;color:var(--gr2);margin-bottom:8px">Elige un avatar emoji:</div>'+
     '<div class="avatar-grid">'+AVATARES.map(function(av){return '<div class="ava-opt'+(perfilAvatarSel===av?' sel':''  )+'" data-av="'+av+'" onclick="selAvatar(this.getAttribute(\"data-av\"))" title="'+av+'">'+av+'</div>';}).join('')+'</div>'+
     '<div class="f2">'+
       '<div class="fg"><label>Nombre *</label><input class="fc" id="pfNom" value="'+pf.nombre+'"/></div>'+
       '<div class="fg"><label>Apellido *</label><input class="fc" id="pfApe" value="'+pf.apellido+'"/></div>'+
     '</div>'+
     '<div class="fg"><label>Teléfono</label><input class="fc" id="pfTel" type="tel" value="'+(pf.tel||'')+'"/></div>'+
-    '<details style="margin-bottom:14px"><summary style="cursor:pointer;font-weight:700;color:let(--gr);font-size:.88rem;padding:8px 0">🔑 Cambiar contraseña (opcional)</summary>'+
+    '<details style="margin-bottom:14px"><summary style="cursor:pointer;font-weight:700;color:var(--gr);font-size:.88rem;padding:8px 0">🔑 Cambiar contraseña (opcional)</summary>'+
     '<div style="padding-top:10px">'+
     '<div class="fg"><label>Contraseña actual</label><input class="fc" type="password" id="pfOldPw" placeholder="Tu contraseña actual"/></div>'+
     '<div class="fg"><label>Nueva contraseña</label><input class="fc" type="password" id="pfNewPw" placeholder="Mínimo 8 caracteres"/></div>'+
@@ -1053,8 +1053,8 @@ function abrirPerfil(){
     '<div id="pfErr" class="form-err" style="display:none"></div>'+
     '<button class="bp" onclick="guardarPerfil()">💾 Guardar Cambios</button>'+
     '<div style="margin-top:14px;padding-top:14px;border-top:2px solid #f0e4d0">'+
-    '<div style="font-weight:800;font-size:.82rem;color:let(--gr2);margin-bottom:8px">🎵 Reproductor de música</div>'+
-    '<button id="mpPerfilBtn" onclick="mpPerfilToggle()" style="width:100%;padding:11px 14px;border-radius:10px;border:2px solid #e0d0c0;background:#fff8f0;font-weight:700;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;color:let(--na3)">'+mpPerfilBtnLabel()+'</button>'+
+    '<div style="font-weight:800;font-size:.82rem;color:var(--gr2);margin-bottom:8px">🎵 Reproductor de música</div>'+
+    '<button id="mpPerfilBtn" onclick="mpPerfilToggle()" style="width:100%;padding:11px 14px;border-radius:10px;border:2px solid #e0d0c0;background:#fff8f0;font-weight:700;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;color:var(--na3)">'+mpPerfilBtnLabel()+'</button>'+
     '</div>';
     document.getElementById("mPerfilB").innerHTML=html;
     abrirModal("mPerfil");
@@ -1149,7 +1149,7 @@ function abrirRecuperarPass(){
     modal.innerHTML =
       '<div class="mdl" style="max-width:420px;border-radius:20px 20px 0 0;padding:0">'
       + '<div class="mhd" style="padding:18px 20px 14px">'
-      + '<h3 id="resetT" style="font-size:1.05rem;font-weight:800;color:let(--bk)">🔑 Recuperar Contraseña</h3>'
+      + '<h3 id="resetT" style="font-size:1.05rem;font-weight:800;color:var(--bk)">🔑 Recuperar Contraseña</h3>'
       + '<button class="bx" onclick="cerrarModal(\'mReset\')">✕</button>'
       + '</div>'
       + '<div id="resetBody" style="padding:16px 20px 24px"></div>'
@@ -1164,14 +1164,14 @@ function abrirRecuperarPass(){
 function _renderResetStep1(){
   document.getElementById("resetT").textContent = "🔑 Recuperar Contraseña";
   document.getElementById("resetBody").innerHTML =
-    '<p style="color:let(--gr);font-size:.88rem;margin-bottom:16px;line-height:1.5">'
+    '<p style="color:var(--gr);font-size:.88rem;margin-bottom:16px;line-height:1.5">'
     + 'Ingresa tu correo y te enviaremos un código de 6 dígitos para restablecer tu contraseña.</p>'
     + '<div class="fg"><label>Correo electrónico *</label>'
     + '<input class="fc" id="resetEmail" type="email" placeholder="tu@correo.com" autocomplete="email"/></div>'
     + '<div id="resetErr" class="form-err" style="display:none"></div>'
     + '<button class="bp" id="resetBtn1" style="margin-top:12px;width:100%" onclick="solicitarReset()">Enviar código</button>'
     + '<div style="text-align:center;margin-top:12px">'
-    + '<button style="background:none;border:none;color:let(--na);font-size:.85rem;cursor:pointer" onclick="cerrarModal(\'mReset\');abrirLogin()">← Volver al inicio de sesión</button>'
+    + '<button style="background:none;border:none;color:var(--na);font-size:.85rem;cursor:pointer" onclick="cerrarModal(\'mReset\');abrirLogin()">← Volver al inicio de sesión</button>'
     + '</div>';
   setTimeout(function(){ let el=document.getElementById("resetEmail"); if(el) el.focus(); }, 100);
 }
@@ -1198,7 +1198,7 @@ function _renderResetStep2(devCode){
       + '🔧 <strong>Modo dev:</strong> Tu código es <strong style="font-family:monospace;font-size:1rem;letter-spacing:2px">'+devCode+'</strong></div>'
     : '';
   document.getElementById("resetBody").innerHTML =
-    '<p style="color:let(--gr);font-size:.88rem;margin-bottom:14px;line-height:1.5">'
+    '<p style="color:var(--gr);font-size:.88rem;margin-bottom:14px;line-height:1.5">'
     + 'Enviamos un código de 6 dígitos a <strong>'+_resetEmail+'</strong>. Válido por 10 minutos.</p>'
     + devNote
     + '<div class="fg"><label>Código de 6 dígitos *</label>'
@@ -1207,7 +1207,7 @@ function _renderResetStep2(devCode){
     + '<div id="resetErr" class="form-err" style="display:none"></div>'
     + '<button class="bp" id="resetBtn2" style="margin-top:12px;width:100%" onclick="verificarCodigo()">Verificar código</button>'
     + '<div style="text-align:center;margin-top:10px">'
-    + '<button style="background:none;border:none;color:let(--na);font-size:.82rem;cursor:pointer" onclick="_renderResetStep1()">← Cambiar correo</button>'
+    + '<button style="background:none;border:none;color:var(--na);font-size:.82rem;cursor:pointer" onclick="_renderResetStep1()">← Cambiar correo</button>'
     + '</div>';
   setTimeout(function(){ let el=document.getElementById("resetCode"); if(el) el.focus(); }, 100);
 }
@@ -1230,7 +1230,7 @@ function verificarCodigo(){
 function _renderResetStep3(){
   document.getElementById("resetT").textContent = "🔐 Nueva Contraseña";
   document.getElementById("resetBody").innerHTML =
-    '<p style="color:let(--gr);font-size:.88rem;margin-bottom:14px;line-height:1.5">'
+    '<p style="color:var(--gr);font-size:.88rem;margin-bottom:14px;line-height:1.5">'
     + '¡Código verificado! Elige una nueva contraseña segura.</p>'
     + '<div class="fg"><label>Nueva contraseña *</label>'
     + '<input class="fc" id="resetNewPass" type="password" placeholder="Mínimo 8 caracteres" autocomplete="new-password"/></div>'
@@ -1558,7 +1558,7 @@ function abrirRespRep(rid){
   let html='<div class="rep-card" style="margin-bottom:0;border:none">'+
     '<div class="rep-card-head">'+
       '<div class="rep-user-ava">'+userAva+'</div>'+
-      '<div><strong style="font-size:.9rem">'+rep.uNom+'</strong><br><small style="color:let(--gr)">'+rep.fecha+'</small></div>'+
+      '<div><strong style="font-size:.9rem">'+rep.uNom+'</strong><br><small style="color:var(--gr)">'+rep.fecha+'</small></div>'+
       '<span class="rep-tipo-badge">'+rep.tipo+'</span>'+
       '<span class="rep-est-badge '+estCls+'">'+estLabel+'</span>'+
     '</div>'+
@@ -1598,15 +1598,15 @@ function abrirCuentaCliente(){
   document.getElementById("panT").textContent="👤 Mi Cuenta";
   let pb=document.getElementById("panB");
   let userAva=usuario.avatar?(usuario.avatar.length<8?usuario.avatar:'<img src="'+usuario.avatar+'" style="width:52px;height:52px;object-fit:cover;border-radius:50%"/>'):(usuario.n[0]);
-  pb.innerHTML='<div style="background:linear-gradient(135deg,let(--na3),let(--na2));border-radius:14px;padding:18px;color:#fff;margin-bottom:20px;display:flex;align-items:center;gap:14px">'+
-    '<div style="width:52px;height:52px;border-radius:50%;background:let(--am);color:let(--na3);display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:900;flex-shrink:0;overflow:hidden">'+userAva+'</div>'+
+  pb.innerHTML='<div style="background:linear-gradient(135deg,var(--na3),var(--na2));border-radius:14px;padding:18px;color:#fff;margin-bottom:20px;display:flex;align-items:center;gap:14px">'+
+    '<div style="width:52px;height:52px;border-radius:50%;background:var(--am);color:var(--na3);display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:900;flex-shrink:0;overflow:hidden">'+userAva+'</div>'+
     '<div><div style="font-weight:800;font-size:1.1rem">'+usuario.n+' '+usuario.a+'</div><div style="opacity:.85;font-size:.85rem">'+usuario.email+'</div>'+
-    '<span style="background:let(--am);color:let(--na3);padding:2px 10px;border-radius:50px;font-size:.72rem;font-weight:900;margin-top:4px;display:inline-block">👤 Cliente</span></div></div>'+
+    '<span style="background:var(--am);color:var(--na3);padding:2px 10px;border-radius:50px;font-size:.72rem;font-weight:900;margin-top:4px;display:inline-block">👤 Cliente</span></div></div>'+
     '<div style="display:flex;gap:8px;margin-bottom:12px">'+
       '<button class="bp" style="flex:1;font-size:.85rem;padding:10px" onclick="panelEditarPerfil()">✏️ Editar Perfil</button>'+
       '<button class="bs" style="flex:1;font-size:.85rem;padding:10px;margin-top:0" onclick="panelSalir()">🚪 Salir</button>'+
     '</div>'+
-    '<button onclick="mpPanelToggle()" id="mpPanelBtn" style="width:100%;margin-bottom:18px;padding:10px 14px;border-radius:10px;border:2px solid #e0d0c0;background:#fff8f0;font-weight:800;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;color:let(--na3)">'+mpPanelBtnLabel()+'</button>'+
+    '<button onclick="mpPanelToggle()" id="mpPanelBtn" style="width:100%;margin-bottom:18px;padding:10px 14px;border-radius:10px;border:2px solid #e0d0c0;background:#fff8f0;font-weight:800;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;color:var(--na3)">'+mpPanelBtnLabel()+'</button>'+
     '<div class="tabs"><button class="tab on" onclick="cTabN(this,2)">🛍️ Mis Compras</button><button class="tab" onclick="cTabN(this,5)">💙 Favoritos</button><button class="tab" onclick="cTabN(this,6)">💬 Chat</button><button class="tab" onclick="cTabN(this,1)">🚨 Reportes</button><button class="tab" onclick="cTabN(this,3)">📋 Historial</button><button class="tab" onclick="cTabN(this,4)">⭐ Reseñas</button></div>'+
     '<div id="cTabBody"></div>';
   cTabN(pb.querySelector(".tab"),2);
@@ -1739,7 +1739,7 @@ function _enviarMsgPanel(){
             +';padding:9px 13px;border-radius:'+(ec?"14px 4px 14px 14px":"4px 14px 14px 14px")
             +';font-size:.86rem;line-height:1.5">'
             +_escapeHtml(m.mensaje)+'</div>'
-            +'<div style="font-size:.68rem;color:let(--gr);margin-top:2px">'
+            +'<div style="font-size:.68rem;color:var(--gr);margin-top:2px">'
             +(ec?"Tú":"Soporte")+' · '+(m.fecha||"").slice(11,16)+'</div>';
           box.appendChild(div);
         });
@@ -1751,7 +1751,7 @@ function _enviarMsgPanel(){
 function cTabN(btn,t){
   document.querySelectorAll("#panB .tab").forEach(function(b){b.classList.remove("on");});btn.classList.add("on");
   let c=document.getElementById("cTabBody");
-  c.innerHTML='<div style="text-align:center;padding:24px;color:let(--gr)">Cargando…</div>';
+  c.innerHTML='<div style="text-align:center;padding:24px;color:var(--gr)">Cargando…</div>';
   if(t===1){api("/mis-reportes/"+usuario.id).then(function(r){if(r.ok)REPORTES=r.reportes;c.innerHTML=renderMisReportes(REPORTES);});}
   else if(t===2){api("/mis-pedidos/"+usuario.id).then(function(r){if(r.ok)PEDIDOS=r.pedidos;c.innerHTML=renderMisPedidos(PEDIDOS);});}
   else if(t===3){
@@ -1759,7 +1759,7 @@ function cTabN(btn,t){
       if(res[0].ok)PEDIDOS=res[0].pedidos;if(res[1].ok)REPORTES=res[1].reportes;
       c.innerHTML=renderHistorial(PEDIDOS,REPORTES);
     });
-  } else if(t===5){ c.innerHTML=renderWishlist(); } else if(t===6){ _renderChatTab(c); } else{api("/resenias").then(function(r){if(!r.ok){c.innerHTML='<div class="empty"><div class="eico">⭐</div><h3>Sin reseñas</h3></div>';return;}let mis=r.resenias.filter(function(x){return x.uid===usuario.id;});if(!mis.length){c.innerHTML='<div class="empty"><div class="eico">⭐</div><h3>Sin reseñas aún</h3></div>';return;}c.innerHTML='<div style="display:flex;flex-direction:column;gap:10px">'+mis.map(function(res){let pn=(PRODS.find(function(p){return p.id===res.pid;})||{n:"Producto"}).n;return '<div style="border:2px solid #f0f0f0;border-radius:12px;padding:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><strong style="color:let(--na3)">'+pn+'</strong><span style="color:#f59e0b">'+starsHtml(res.estrellas)+'</span></div><p style="font-size:.88rem;color:#444">'+res.comentario+'</p><small style="color:let(--gr)">'+res.fecha+'</small></div>';}).join("")+'</div>';});}
+  } else if(t===5){ c.innerHTML=renderWishlist(); } else if(t===6){ _renderChatTab(c); } else{api("/resenias").then(function(r){if(!r.ok){c.innerHTML='<div class="empty"><div class="eico">⭐</div><h3>Sin reseñas</h3></div>';return;}let mis=r.resenias.filter(function(x){return x.uid===usuario.id;});if(!mis.length){c.innerHTML='<div class="empty"><div class="eico">⭐</div><h3>Sin reseñas aún</h3></div>';return;}c.innerHTML='<div style="display:flex;flex-direction:column;gap:10px">'+mis.map(function(res){let pn=(PRODS.find(function(p){return p.id===res.pid;})||{n:"Producto"}).n;return '<div style="border:2px solid #f0f0f0;border-radius:12px;padding:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><strong style="color:var(--na3)">'+pn+'</strong><span style="color:#f59e0b">'+starsHtml(res.estrellas)+'</span></div><p style="font-size:.88rem;color:#444">'+res.comentario+'</p><small style="color:var(--gr)">'+res.fecha+'</small></div>';}).join("")+'</div>';});}
 }
 
 function renderMisReportes(lista){
@@ -1772,8 +1772,8 @@ function renderMisReportes(lista){
       '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">'+
         '<div style="width:36px;height:36px;border-radius:10px;background:'+col+'22;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0">🚨</div>'+
         '<div style="flex:1;min-width:0">'+
-          '<strong style="font-size:.88rem;color:let(--bk)">'+r.pNom+'</strong>'+
-          '<div style="font-size:.74rem;color:let(--gr)">📅 '+r.fecha+' · 🏷️ '+r.tipo+'</div>'+
+          '<strong style="font-size:.88rem;color:var(--bk)">'+r.pNom+'</strong>'+
+          '<div style="font-size:.74rem;color:var(--gr)">📅 '+r.fecha+' · 🏷️ '+r.tipo+'</div>'+
         '</div>'+
         '<span style="background:'+col+'22;color:'+col+';padding:3px 10px;border-radius:50px;font-size:.72rem;font-weight:900">'+lbl+'</span>'+
       '</div>'+
@@ -1782,7 +1782,7 @@ function renderMisReportes(lista){
         '<div style="font-size:.72rem;font-weight:900;color:'+col+';margin-bottom:4px">💬 Respuesta del equipo · '+(r.respFecha||"")+'</div>'+
         '<div style="font-size:.83rem;color:#333;line-height:1.55">'+r.respuesta+'</div>'+
       '</div>':
-      '<div style="font-size:.75rem;color:let(--gr);margin-top:6px;font-style:italic">⏳ Esperando respuesta del equipo…</div>')+
+      '<div style="font-size:.75rem;color:var(--gr);margin-top:6px;font-style:italic">⏳ Esperando respuesta del equipo…</div>')+
     '</div>';
   }).join("")+'</div><button class="bp" style="margin-top:14px" onclick="cerrarModal(\"mProd\");abrirRep(0)">+ Nuevo Reporte</button>';
 }
@@ -1792,7 +1792,7 @@ function renderMisPedidos(lista){
     '<div class="empty">'+
     '<div class="eico">🛍️</div>'+
     '<h3>'+t("sinPedidos")+'</h3>'+
-    '<p style="color:let(--gr);font-size:.88rem;margin:8px 0 16px">Tus compras aparecerán aquí</p>'+
+    '<p style="color:var(--gr);font-size:.88rem;margin:8px 0 16px">Tus compras aparecerán aquí</p>'+
     '<button class="btn-hero-2" style="margin-top:4px;font-size:.85rem" onclick="cerrarModal(\"mPanel\");irPagina(\"tienda\")">🛍️ '+t("verTienda")+'</button>'+
     '</div>'
   );
@@ -1916,27 +1916,27 @@ function renderHistorial(pedidos,reportes){
   eventos.sort(function(a,b){return (b.fecha||"").localeCompare(a.fecha||"");});
   if(!eventos.length)return '<div class="empty"><div class="eico">📋</div><h3>Sin historial</h3><p>Tus compras y reportes aparecerán aquí.</p></div>';
   return '<div style="position:relative">'+
-    '<div style="position:absolute;left:18px;top:0;bottom:0;width:2px;background:linear-gradient(180deg,let(--na2),let(--am));border-radius:2px;z-index:0"></div>'+
+    '<div style="position:absolute;left:18px;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--na2),var(--am));border-radius:2px;z-index:0"></div>'+
     '<div style="display:flex;flex-direction:column;gap:12px;padding-left:44px;position:relative;z-index:1">'+
     eventos.map(function(ev){
       let isPedido=ev.tipo==="pedido";let d=ev.data;
       let dot=isPedido?
-        '<div style="position:absolute;left:-30px;top:14px;width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,let(--na3),let(--na2));border:3px solid #fff;box-shadow:0 2px 8px rgba(255,109,0,.3);display:flex;align-items:center;justify-content:center;font-size:.6rem">🛒</div>':
+        '<div style="position:absolute;left:-30px;top:14px;width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,var(--na3),var(--na2));border:3px solid #fff;box-shadow:0 2px 8px rgba(255,109,0,.3);display:flex;align-items:center;justify-content:center;font-size:.6rem">🛒</div>':
         '<div style="position:absolute;left:-30px;top:14px;width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,#1565c0,#42a5f5);border:3px solid #fff;box-shadow:0 2px 8px rgba(21,101,192,.3);display:flex;align-items:center;justify-content:center;font-size:.6rem">🚨</div>';
       if(isPedido){
         let estadoLabel={procesado:"✅ Procesado",enviado:"🚚 Enviado",entregado:"📦 Entregado",cancelado:"❌ Cancelado"}[d.estado]||"✅ Procesado";
         let nItems=d.items?d.items.reduce(function(s,i){return s+(i.qty||1);},0):0;
         return '<div style="position:relative;background:#fff;border:1.5px solid #f0e6d6;border-radius:14px;padding:14px">'+dot+
           '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">'+
-            '<div><div style="font-weight:900;font-size:.88rem;color:let(--na3)">Pedido #'+d.id+'</div>'+
-            '<div style="font-size:.74rem;color:let(--gr)">📅 '+d.fecha+'</div></div>'+
+            '<div><div style="font-weight:900;font-size:.88rem;color:var(--na3)">Pedido #'+d.id+'</div>'+
+            '<div style="font-size:.74rem;color:var(--gr)">📅 '+d.fecha+'</div></div>'+
             '<span style="background:#e8f5e9;color:#2e7d32;padding:2px 9px;border-radius:50px;font-size:.7rem;font-weight:900">'+estadoLabel+'</span>'+
           '</div>'+
           '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
-            d.items.slice(0,3).map(function(it){return '<div style="background:#faf5f0;border-radius:8px;padding:4px 8px;font-size:.75rem;font-weight:700;color:let(--bk)">'+(it.e||"📦")+' '+it.n+' ×'+it.qty+'</div>';}).join("")+
-            (d.items.length>3?'<div style="background:#f5f5f5;border-radius:8px;padding:4px 8px;font-size:.75rem;color:let(--gr)">+'+(d.items.length-3)+' más</div>':'')+
+            d.items.slice(0,3).map(function(it){return '<div style="background:#faf5f0;border-radius:8px;padding:4px 8px;font-size:.75rem;font-weight:700;color:var(--bk)">'+(it.e||"📦")+' '+it.n+' ×'+it.qty+'</div>';}).join("")+
+            (d.items.length>3?'<div style="background:#f5f5f5;border-radius:8px;padding:4px 8px;font-size:.75rem;color:var(--gr)">+'+(d.items.length-3)+' más</div>':'')+
           '</div>'+
-          '<div style="margin-top:8px;font-weight:900;font-size:.9rem;color:let(--na3);text-align:right">'+bs(d.total+d.total*0.16)+'</div>'+
+          '<div style="margin-top:8px;font-weight:900;font-size:.9rem;color:var(--na3);text-align:right">'+bs(d.total+d.total*0.16)+'</div>'+
         '</div>';
       } else {
         let col=d.estado==="resuelto"?"#2e7d32":d.estado==="en_revision"?"#1565c0":"#e65100";
@@ -1944,7 +1944,7 @@ function renderHistorial(pedidos,reportes){
         return '<div style="position:relative;background:#fff;border:1.5px solid #dbeafe;border-radius:14px;padding:14px">'+dot+
           '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">'+
             '<div><div style="font-weight:900;font-size:.88rem;color:#1565c0">Reporte: '+d.pNom+'</div>'+
-            '<div style="font-size:.74rem;color:let(--gr)">📅 '+d.fecha+' · 🏷️ '+d.tipo+'</div></div>'+
+            '<div style="font-size:.74rem;color:var(--gr)">📅 '+d.fecha+' · 🏷️ '+d.tipo+'</div></div>'+
             '<span style="background:'+col+'22;color:'+col+';padding:2px 9px;border-radius:50px;font-size:.7rem;font-weight:900">'+lbl+'</span>'+
           '</div>'+
           '<div style="font-size:.82rem;color:#555;line-height:1.5;background:#f0f4ff;border-radius:8px;padding:8px 10px">'+(d.desc||d.descripcion||"")+'</div>'+
@@ -2051,7 +2051,7 @@ function _renderAdminTab(){
   }else if(aTab==="agregar"){
     let imgPv=(newPF.img||imgTempAdmin)?'<img src="'+(imgTempAdmin||newPF.img)+'" class="img-preview" id="imgPrev"/>':'<div id="imgPrev" style="display:none"></div>';
     let quitarFotoBtn=(editId&&(newPF.img||imgTempAdmin))?'<button class="btd" style="margin-top:6px;font-size:.8rem" onclick="quitarFotoFormAdmin()">🖼️✕ Quitar foto actual</button>':'';
-    c.innerHTML='<div class="f2"><div class="fg"><label>Nombre *</label><input class="fc" id="nNom" value="'+(newPF.n||"")+'"/></div><div class="fg"><label>Categoría</label><select class="fc" id="nCat">'+CATS.filter(function(x){return x.id>0;}).map(function(x){return '<option value="'+x.id+'"'+(x.id===newPF.cat?" selected":"")+'>'+x.n+'</option>';}).join("")+'</select></div></div><div class="fg"><label>Descripción</label><textarea class="fc" id="nDesc" rows="3" style="resize:vertical">'+(newPF.d||"")+'</textarea></div><div class="f2"><div class="fg"><label>Precio (COP$) *</label><input class="fc" type="number" id="nPrecio" value="'+(newPF.p||"")+'" step="0.01"/></div><div class="fg"><label>Precio Oferta</label><input class="fc" type="number" id="nOferta" value="'+(newPF.o||"")+'" step="0.01"/></div></div><div class="f2"><div class="fg"><label>Stock *</label><input class="fc" type="number" id="nStock" value="'+(newPF.st||"")+'"/></div><div class="fg"><label>¿Destacado?</label><select class="fc" id="nDest"><option value="false">No</option><option value="true"'+(newPF.dest?" selected":"")+'>Sí ⭐</option></select></div></div><div class="fg"><label>📷 Foto</label>'+imgPv+quitarFotoBtn+'<div class="img-upload-area"><input type="file" accept="image/*" onchange="cargarImgProd(event)"/><span style="font-size:2rem;display:block;margin-bottom:6px">📷</span><span style="font-size:.85rem;color:let(--gr)">'+(newPF.img||imgTempAdmin?"Cambiar foto":"Subir foto")+'</span></div></div><button class="bp" onclick="guardarProd()">'+(editId?"💾 Guardar Cambios":"➕ Crear Producto")+'</button>'+(editId?'<button class="bs" onclick="cancelEdit()">Cancelar</button>':"");
+    c.innerHTML='<div class="f2"><div class="fg"><label>Nombre *</label><input class="fc" id="nNom" value="'+(newPF.n||"")+'"/></div><div class="fg"><label>Categoría</label><select class="fc" id="nCat">'+CATS.filter(function(x){return x.id>0;}).map(function(x){return '<option value="'+x.id+'"'+(x.id===newPF.cat?" selected":"")+'>'+x.n+'</option>';}).join("")+'</select></div></div><div class="fg"><label>Descripción</label><textarea class="fc" id="nDesc" rows="3" style="resize:vertical">'+(newPF.d||"")+'</textarea></div><div class="f2"><div class="fg"><label>Precio (COP$) *</label><input class="fc" type="number" id="nPrecio" value="'+(newPF.p||"")+'" step="0.01"/></div><div class="fg"><label>Precio Oferta</label><input class="fc" type="number" id="nOferta" value="'+(newPF.o||"")+'" step="0.01"/></div></div><div class="f2"><div class="fg"><label>Stock *</label><input class="fc" type="number" id="nStock" value="'+(newPF.st||"")+'"/></div><div class="fg"><label>¿Destacado?</label><select class="fc" id="nDest"><option value="false">No</option><option value="true"'+(newPF.dest?" selected":"")+'>Sí ⭐</option></select></div></div><div class="fg"><label>📷 Foto</label>'+imgPv+quitarFotoBtn+'<div class="img-upload-area"><input type="file" accept="image/*" onchange="cargarImgProd(event)"/><span style="font-size:2rem;display:block;margin-bottom:6px">📷</span><span style="font-size:.85rem;color:var(--gr)">'+(newPF.img||imgTempAdmin?"Cambiar foto":"Subir foto")+'</span></div></div><button class="bp" onclick="guardarProd()">'+(editId?"💾 Guardar Cambios":"➕ Crear Producto")+'</button>'+(editId?'<button class="bs" onclick="cancelEdit()">Cancelar</button>':"");
   }else if(aTab==="categorias"){
     _renderCategorias(c);
   }else{
@@ -2063,7 +2063,7 @@ function _renderAdminTab(){
       return '<div class="rep-card">'+
         '<div class="rep-card-head">'+
           '<div class="rep-user-ava">'+userAva+'</div>'+
-          '<div><strong style="font-size:.88rem">'+r.uNom+'</strong><br><small style="color:let(--gr)">'+r.fecha+'</small></div>'+
+          '<div><strong style="font-size:.88rem">'+r.uNom+'</strong><br><small style="color:var(--gr)">'+r.fecha+'</small></div>'+
           '<span class="rep-tipo-badge">'+r.tipo+'</span>'+
           '<span class="rep-est-badge '+estCls+'">'+estLabel+'</span>'+
         '</div>'+
@@ -2088,12 +2088,12 @@ function _renderAdminTab(){
         return '<div class="msg-card'+(m.leido?'':' unread')+'">'+
           '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">'+
             '<div class="msg-avatar">'+(m.nombre||"?")[0].toUpperCase()+'</div>'+
-            '<div style="flex:1;min-width:0"><strong style="font-size:.86rem">'+m.nombre+'</strong><br><small style="color:let(--gr)">'+m.email+(m.tel?' · '+m.tel:'')+'</small></div>'+
-            badge+prioBadge+'<span style="background:#f5f5f5;color:let(--na3);font-size:.7rem;font-weight:800;padding:3px 9px;border-radius:50px">'+asuntoLabel+'</span>'+
+            '<div style="flex:1;min-width:0"><strong style="font-size:.86rem">'+m.nombre+'</strong><br><small style="color:var(--gr)">'+m.email+(m.tel?' · '+m.tel:'')+'</small></div>'+
+            badge+prioBadge+'<span style="background:#f5f5f5;color:var(--na3);font-size:.7rem;font-weight:800;padding:3px 9px;border-radius:50px">'+asuntoLabel+'</span>'+
           '</div>'+
-          '<div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:10px 12px;font-size:.84rem;color:let(--bk);line-height:1.6;margin-bottom:8px">'+m.mensaje+'</div>'+
+          '<div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:10px 12px;font-size:.84rem;color:var(--bk);line-height:1.6;margin-bottom:8px">'+m.mensaje+'</div>'+
           '<div style="display:flex;gap:8px;align-items:center;justify-content:space-between">'+
-            '<small style="color:let(--gr)">'+m.fecha+'</small>'+
+            '<small style="color:var(--gr)">'+m.fecha+'</small>'+
             '<div style="display:flex;gap:6px">'+
               (!m.leido?'<button class="bte" onclick="marcarMensajeLeido('+m.id+')">✅ Leído</button>':'')+
               '<a class="bte" href="mailto:'+m.email+'?subject=Re: '+m.asunto+'" style="text-decoration:none">📧 Responder</a>'+
@@ -2265,7 +2265,7 @@ function _adminAbrirChat(uid, nom, email){
   conv.innerHTML =
     '<div class="admin-chat-conv-header">'
     + '  <div class="admin-chat-ava">'+nom[0].toUpperCase()+'</div>'
-    + '  <div><div style="font-weight:700;font-size:.9rem">'+_escapeHtml(nom)+'</div><div style="font-size:.72rem;color:let(--gr)">'+_escapeHtml(email)+'</div></div>'
+    + '  <div><div style="font-weight:700;font-size:.9rem">'+_escapeHtml(nom)+'</div><div style="font-size:.72rem;color:var(--gr)">'+_escapeHtml(email)+'</div></div>'
     + '  <button class="btd" style="margin-left:auto;font-size:.72rem" onclick="_adminEliminarChat('+uid+')">🗑️ Cerrar chat</button>'
     + '</div>'
     + '<div class="admin-chat-messages" id="adminChatMessages"><div class="tab-loading"></div></div>'
@@ -2293,7 +2293,7 @@ function _adminCargarMensajes(uid, silencioso){
       let msgs = r.mensajes || [];
       let atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 40;
       if(!msgs.length){
-        box.innerHTML = '<div style="text-align:center;padding:30px;color:let(--gr);font-size:.88rem">Sin mensajes aún</div>';
+        box.innerHTML = '<div style="text-align:center;padding:30px;color:var(--gr);font-size:.88rem">Sin mensajes aún</div>';
         return;
       }
       box.innerHTML = msgs.map(function(m){
@@ -2647,7 +2647,7 @@ function _renderSuperTab(){
     // Load chart after DOM is painted
     setTimeout(renderVentasChart, 80);
   }else if(sTab==="users"){
-    c.innerHTML='<div class="tw"><table><thead><tr><th>Nombre</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>'+USUARIOS.map(function(u){let bc=u.rol==="superadmin"?"bsu":u.rol==="administrador"?"ba":"bc";return '<tr><td><div style="display:flex;align-items:center;gap:8px"><div style="width:30px;height:30px;border-radius:50%;background:let(--am);color:let(--na3);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.8rem;flex-shrink:0">'+(u.n[0])+'</div><div><strong>'+u.n+' '+u.a+'</strong><br><small style="color:let(--gr)">'+u.email+'</small></div></div></td><td><span class="bdg '+bc+'">'+u.rol+'</span></td><td><span class="bdg '+(u.act?"bok":"bno")+'">'+(u.act?"✅":"❌")+'</span></td><td>'+(u.rol!=="superadmin"?'<select onchange="cambiarRol('+u.id+',this.value)" style="padding:3px 6px;border:1px solid #ddd;border-radius:5px;font-size:.75rem"><option value="cliente"'+(u.rol==="cliente"?" selected":"")+'>Cliente</option><option value="administrador"'+(u.rol==="administrador"?" selected":"")+'>Admin</option></select><button class="'+(u.act?"btd":"btok")+'" onclick="togUser('+u.id+')">'+(u.act?"🚫":"✅")+'</button>':'<em style="color:let(--gr);font-size:.8rem">Propietario</em>')+'</td></tr>';}).join("")+'</tbody></table></div>';
+    c.innerHTML='<div class="tw"><table><thead><tr><th>Nombre</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>'+USUARIOS.map(function(u){let bc=u.rol==="superadmin"?"bsu":u.rol==="administrador"?"ba":"bc";return '<tr><td><div style="display:flex;align-items:center;gap:8px"><div style="width:30px;height:30px;border-radius:50%;background:var(--am);color:var(--na3);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.8rem;flex-shrink:0">'+(u.n[0])+'</div><div><strong>'+u.n+' '+u.a+'</strong><br><small style="color:var(--gr)">'+u.email+'</small></div></div></td><td><span class="bdg '+bc+'">'+u.rol+'</span></td><td><span class="bdg '+(u.act?"bok":"bno")+'">'+(u.act?"✅":"❌")+'</span></td><td>'+(u.rol!=="superadmin"?'<select onchange="cambiarRol('+u.id+',this.value)" style="padding:3px 6px;border:1px solid #ddd;border-radius:5px;font-size:.75rem"><option value="cliente"'+(u.rol==="cliente"?" selected":"")+'>Cliente</option><option value="administrador"'+(u.rol==="administrador"?" selected":"")+'>Admin</option></select><button class="'+(u.act?"btd":"btok")+'" onclick="togUser('+u.id+')">'+(u.act?"🚫":"✅")+'</button>':'<em style="color:var(--gr);font-size:.8rem">Propietario</em>')+'</td></tr>';}).join("")+'</tbody></table></div>';
   }else if(sTab==="prods"){
     c.innerHTML='<div class="tabs" style="margin-bottom:14px"><button class="tab on" id="spTabList" onclick="sprodTab(\'list\',this)">📋 Lista</button><button class="tab" id="spTabAdd" onclick="sprodTab(\'add\',this)">➕ Agregar</button></div><div id="spBody"></div>';
     sprodTab("list",document.getElementById("spTabList"));
@@ -2660,7 +2660,7 @@ function _renderSuperTab(){
       let estLabel={pendiente:"⏳ Pendiente",en_revision:"🔄 Revisión",resuelto:"✅ Resuelto"}[r.estado]||r.estado;
       let ua=(r.uNom||"U")[0];
       return '<div class="rep-card">'+
-        '<div class="rep-card-head"><div class="rep-user-ava">'+ua+'</div><div><strong style="font-size:.88rem">'+r.uNom+'</strong><br><small style="color:let(--gr)">'+r.fecha+'</small></div><span class="rep-tipo-badge">'+r.tipo+'</span><span class="rep-est-badge '+estCls+'">'+estLabel+'</span></div>'+
+        '<div class="rep-card-head"><div class="rep-user-ava">'+ua+'</div><div><strong style="font-size:.88rem">'+r.uNom+'</strong><br><small style="color:var(--gr)">'+r.fecha+'</small></div><span class="rep-tipo-badge">'+r.tipo+'</span><span class="rep-est-badge '+estCls+'">'+estLabel+'</span></div>'+
         '<div class="rep-card-body">'+(r.pNom&&r.pNom!=="General"?'<div class="rep-prod-tag">📦 '+r.pNom+'</div><br>':'')+
         '<div class="rep-desc-box">'+(r.desc||r.descripcion||"")+'</div>'+
         (r.respuesta?'<div class="rep-respuesta-box"><strong>💬 Respuesta ('+( r.respFecha||"")+'):</strong>'+r.respuesta+'</div>':'')+
@@ -2670,7 +2670,7 @@ function _renderSuperTab(){
   }else if(sTab==="mensajes"){
     if(!CONTACTOS.length){c.innerHTML='<div class="empty"><div class="eico">📬</div><h3>Sin mensajes</h3><p>Aún no hay mensajes de contacto.</p></div>';return;}
     let noLeidos=CONTACTOS.filter(function(m){return !m.leido;}).length;
-    c.innerHTML='<div style="margin-bottom:12px;display:flex;align-items:center;gap:10px"><strong style="font-size:.9rem">📬 Bandeja de entrada</strong>'+(noLeidos?'<span style="background:linear-gradient(135deg,let(--na3),let(--na2));color:#fff;font-size:.72rem;font-weight:900;padding:3px 10px;border-radius:50px">'+noLeidos+' nuevo'+(noLeidos>1?'s':'')+'</span>':'')+'</div>'+
+    c.innerHTML='<div style="margin-bottom:12px;display:flex;align-items:center;gap:10px"><strong style="font-size:.9rem">📬 Bandeja de entrada</strong>'+(noLeidos?'<span style="background:linear-gradient(135deg,var(--na3),var(--na2));color:#fff;font-size:.72rem;font-weight:900;padding:3px 10px;border-radius:50px">'+noLeidos+' nuevo'+(noLeidos>1?'s':'')+'</span>':'')+'</div>'+
     '<div style="display:flex;flex-direction:column;gap:10px">'+CONTACTOS.map(function(m){
       let badge=m.leido?'<span style="background:#e8f5e9;color:#2e7d32;font-size:.7rem;font-weight:800;padding:3px 9px;border-radius:50px">✅ Leído</span>':'<span style="background:#fff3e0;color:#e65100;font-size:.7rem;font-weight:800;padding:3px 9px;border-radius:50px">🔔 Nuevo</span>';
       let asuntoLabel={"pedido":"📦 Pedido","producto":"🛍️ Producto","devolucion":"↩️ Devolución","pago":"💳 Pago","envio":"🚚 Envío","queja":"😟 Queja","otro":"💬 Otro"}[m.asunto]||m.asunto;
@@ -2678,12 +2678,12 @@ function _renderSuperTab(){
       return '<div class="msg-card'+(m.leido?'':' unread')+'">'+
         '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">'+
           '<div class="msg-avatar">'+(m.nombre||"?")[0].toUpperCase()+'</div>'+
-          '<div style="flex:1;min-width:0"><strong style="font-size:.88rem">'+m.nombre+'</strong><br><small style="color:let(--gr)">'+m.email+(m.tel?' · '+m.tel:'')+'</small></div>'+
-          badge+prioBadge+'<span style="background:#f5f5f5;color:let(--na3);font-size:.7rem;font-weight:800;padding:3px 9px;border-radius:50px">'+asuntoLabel+'</span>'+
+          '<div style="flex:1;min-width:0"><strong style="font-size:.88rem">'+m.nombre+'</strong><br><small style="color:var(--gr)">'+m.email+(m.tel?' · '+m.tel:'')+'</small></div>'+
+          badge+prioBadge+'<span style="background:#f5f5f5;color:var(--na3);font-size:.7rem;font-weight:800;padding:3px 9px;border-radius:50px">'+asuntoLabel+'</span>'+
         '</div>'+
-        '<div style="background:#faf5f0;border-radius:10px;padding:10px 12px;font-size:.85rem;color:let(--bk);line-height:1.55;margin-bottom:8px">'+m.mensaje+'</div>'+
+        '<div style="background:#faf5f0;border-radius:10px;padding:10px 12px;font-size:.85rem;color:var(--bk);line-height:1.55;margin-bottom:8px">'+m.mensaje+'</div>'+
         '<div style="display:flex;gap:8px;align-items:center;justify-content:space-between">'+
-          '<small style="color:let(--gr)">'+m.fecha+'</small>'+
+          '<small style="color:var(--gr)">'+m.fecha+'</small>'+
           '<div style="display:flex;gap:6px">'+
             (!m.leido?'<button class="bte" onclick="marcarMensajeLeido('+m.id+')">✅ Marcar leído</button>':'')+
             '<a class="bte" href="mailto:'+m.email+'?subject=Re: '+m.asunto+'" style="text-decoration:none">📧 Responder</a>'+
@@ -2723,10 +2723,10 @@ function _renderSuperTab(){
   }else if(sTab==="cadmin"){
     c.innerHTML='<div style="max-width:480px"><div class="f2"><div class="fg"><label>Nombre *</label><input class="fc" id="aNom" placeholder="Nombre"/></div><div class="fg"><label>Apellido *</label><input class="fc" id="aApe" placeholder="Apellido"/></div></div><div class="fg"><label>Email *</label><input class="fc" type="email" id="aEmail" placeholder="correo@ejemplo.com"/></div><div class="fg"><label>Contraseña *</label><input class="fc" type="password" id="aPass" placeholder="Mínimo 8 caracteres"/></div><button class="bp" onclick="crearAdmin()">➕ Crear Administrador</button></div>';
   }else{
-    c.innerHTML='<div class="tw"><table><thead><tr><th>Fecha</th><th>Usuario</th><th>Acción</th><th>Detalle</th></tr></thead><tbody>'+LOGS.map(function(l){return '<tr><td style="color:let(--gr);font-size:.78rem;white-space:nowrap">'+l.f+'</td><td><strong>'+l.u+'</strong></td><td><code style="background:#f5f5f5;padding:2px 7px;border-radius:4px;font-size:.75rem">'+l.ac+'</code></td><td style="color:#555;font-size:.85rem">'+l.d+'</td></tr>';}).join("")+'</tbody></table></div>';
+    c.innerHTML='<div class="tw"><table><thead><tr><th>Fecha</th><th>Usuario</th><th>Acción</th><th>Detalle</th></tr></thead><tbody>'+LOGS.map(function(l){return '<tr><td style="color:var(--gr);font-size:.78rem;white-space:nowrap">'+l.f+'</td><td><strong>'+l.u+'</strong></td><td><code style="background:#f5f5f5;padding:2px 7px;border-radius:4px;font-size:.75rem">'+l.ac+'</code></td><td style="color:#555;font-size:.85rem">'+l.d+'</td></tr>';}).join("")+'</tbody></table></div>';
   }
 }
-function sprodTab(t,btn){document.querySelectorAll("#sTB .tabs .tab").forEach(function(b){b.classList.remove("on");});btn.classList.add("on");let sb=document.getElementById("spBody");if(!sb)return;if(t==="list"){sb.innerHTML='<div class="tw"><table><thead><tr><th>Img</th><th>Nombre</th><th>Precio</th><th>Stock</th><th>Acc.</th></tr></thead><tbody>'+PRODS.map(function(p){let thumb=p.img?'<img src="'+p.img+'" style="width:38px;height:38px;object-fit:cover;border-radius:6px;"/>':'<span style="font-size:1.3rem">'+emojiProd(p)+'</span>';let sc=p.st<=0?"#c62828":p.st<=10?"#f57f17":"#2e7d32";return '<tr><td>'+thumb+'</td><td><strong>'+p.n+'</strong><br><small style="color:let(--gr)">'+p.cat+'</small></td><td style="color:let(--na3);font-weight:700">'+bs(p.o||p.p)+'</td><td style="color:'+sc+';font-weight:800">'+p.st+(p.st<=0?" 🚫":p.st<=10?" ⚠️":"")+'</td><td><button class="bte" onclick="spEdit('+p.id+')">✏️</button><button class="btd" onclick="spElim('+p.id+')">🗑️</button>'+(p.img?'<button class="btd" style="background:#e3f2fd;color:#1565c0" onclick="elimFotoSp('+p.id+')">🖼️✕</button>':'')+'</td></tr>';}).join("")+'</tbody></table></div>';}else{let imgPv=(imgTempSuper||spNewPF.img)?'<img src="'+(imgTempSuper||spNewPF.img)+'" class="img-preview" id="spImgPrev"/>':'<div id="spImgPrev" style="display:none"></div>';let quitarFotoBtnSp=(spEditId&&(spNewPF.img||imgTempSuper))?'<button class="btd" style="margin-top:6px;font-size:.8rem" onclick="quitarFotoFormSuper()">🖼️✕ Quitar foto actual</button>':'';sb.innerHTML='<div class="f2"><div class="fg"><label>Nombre *</label><input class="fc" id="spNom" value="'+(spNewPF.n||"")+'"/></div><div class="fg"><label>Categoría</label><select class="fc" id="spCat">'+CATS.filter(function(c){return c.id>0;}).map(function(c){return '<option value="'+c.id+'"'+(c.id===spNewPF.cat?" selected":"")+'>'+c.n+'</option>';}).join("")+'</select></div></div><div class="fg"><label>Descripción</label><textarea class="fc" id="spDesc" rows="2" style="resize:vertical">'+(spNewPF.d||"")+'</textarea></div><div class="f2"><div class="fg"><label>Precio *</label><input class="fc" type="number" id="spPrecio" value="'+(spNewPF.p||"")+'" step="0.01"/></div><div class="fg"><label>Precio Oferta</label><input class="fc" type="number" id="spOferta" value="'+(spNewPF.o||"")+'" step="0.01"/></div></div><div class="f2"><div class="fg"><label>Stock *</label><input class="fc" type="number" id="spStock" value="'+(spNewPF.st||"")+'"/></div><div class="fg"><label>¿Destacado?</label><select class="fc" id="spDest"><option value="false">No</option><option value="true"'+(spNewPF.dest?" selected":"")+'>Sí ⭐</option></select></div></div><div class="fg"><label>📷 Foto</label>'+imgPv+quitarFotoBtnSp+'<div class="img-upload-area"><input type="file" accept="image/*" onchange="cargarImgSuper(event)"/><span style="font-size:2rem;display:block;margin-bottom:6px">📷</span><span style="font-size:.85rem;color:let(--gr)">'+(imgTempSuper||spNewPF.img?"Cambiar foto":"Subir foto")+'</span></div></div><button class="bp" onclick="spGuardar()">'+(spEditId?"💾 Guardar":"➕ Crear Producto")+'</button>'+(spEditId?'<button class="bs" onclick="spCancelar()">Cancelar</button>':"");}}
+function sprodTab(t,btn){document.querySelectorAll("#sTB .tabs .tab").forEach(function(b){b.classList.remove("on");});btn.classList.add("on");let sb=document.getElementById("spBody");if(!sb)return;if(t==="list"){sb.innerHTML='<div class="tw"><table><thead><tr><th>Img</th><th>Nombre</th><th>Precio</th><th>Stock</th><th>Acc.</th></tr></thead><tbody>'+PRODS.map(function(p){let thumb=p.img?'<img src="'+p.img+'" style="width:38px;height:38px;object-fit:cover;border-radius:6px;"/>':'<span style="font-size:1.3rem">'+emojiProd(p)+'</span>';let sc=p.st<=0?"#c62828":p.st<=10?"#f57f17":"#2e7d32";return '<tr><td>'+thumb+'</td><td><strong>'+p.n+'</strong><br><small style="color:var(--gr)">'+p.cat+'</small></td><td style="color:var(--na3);font-weight:700">'+bs(p.o||p.p)+'</td><td style="color:'+sc+';font-weight:800">'+p.st+(p.st<=0?" 🚫":p.st<=10?" ⚠️":"")+'</td><td><button class="bte" onclick="spEdit('+p.id+')">✏️</button><button class="btd" onclick="spElim('+p.id+')">🗑️</button>'+(p.img?'<button class="btd" style="background:#e3f2fd;color:#1565c0" onclick="elimFotoSp('+p.id+')">🖼️✕</button>':'')+'</td></tr>';}).join("")+'</tbody></table></div>';}else{let imgPv=(imgTempSuper||spNewPF.img)?'<img src="'+(imgTempSuper||spNewPF.img)+'" class="img-preview" id="spImgPrev"/>':'<div id="spImgPrev" style="display:none"></div>';let quitarFotoBtnSp=(spEditId&&(spNewPF.img||imgTempSuper))?'<button class="btd" style="margin-top:6px;font-size:.8rem" onclick="quitarFotoFormSuper()">🖼️✕ Quitar foto actual</button>':'';sb.innerHTML='<div class="f2"><div class="fg"><label>Nombre *</label><input class="fc" id="spNom" value="'+(spNewPF.n||"")+'"/></div><div class="fg"><label>Categoría</label><select class="fc" id="spCat">'+CATS.filter(function(c){return c.id>0;}).map(function(c){return '<option value="'+c.id+'"'+(c.id===spNewPF.cat?" selected":"")+'>'+c.n+'</option>';}).join("")+'</select></div></div><div class="fg"><label>Descripción</label><textarea class="fc" id="spDesc" rows="2" style="resize:vertical">'+(spNewPF.d||"")+'</textarea></div><div class="f2"><div class="fg"><label>Precio *</label><input class="fc" type="number" id="spPrecio" value="'+(spNewPF.p||"")+'" step="0.01"/></div><div class="fg"><label>Precio Oferta</label><input class="fc" type="number" id="spOferta" value="'+(spNewPF.o||"")+'" step="0.01"/></div></div><div class="f2"><div class="fg"><label>Stock *</label><input class="fc" type="number" id="spStock" value="'+(spNewPF.st||"")+'"/></div><div class="fg"><label>¿Destacado?</label><select class="fc" id="spDest"><option value="false">No</option><option value="true"'+(spNewPF.dest?" selected":"")+'>Sí ⭐</option></select></div></div><div class="fg"><label>📷 Foto</label>'+imgPv+quitarFotoBtnSp+'<div class="img-upload-area"><input type="file" accept="image/*" onchange="cargarImgSuper(event)"/><span style="font-size:2rem;display:block;margin-bottom:6px">📷</span><span style="font-size:.85rem;color:var(--gr)">'+(imgTempSuper||spNewPF.img?"Cambiar foto":"Subir foto")+'</span></div></div><button class="bp" onclick="spGuardar()">'+(spEditId?"💾 Guardar":"➕ Crear Producto")+'</button>'+(spEditId?'<button class="bs" onclick="spCancelar()">Cancelar</button>':"");}}
 function cargarImgSuper(e){let file=e.target.files[0];if(!file)return;let r=new FileReader();r.onload=function(ev){imgTempSuper=ev.target.result;let prev=document.getElementById("spImgPrev");if(prev){prev.src=imgTempSuper;prev.style.display="block";prev.className="img-preview";}};r.readAsDataURL(file);}
 function spEdit(id){let p=PRODS.find(function(x){return x.id===id;});if(!p)return;spEditId=id;imgTempSuper=p.img||null;spNewPF={n:p.n,d:p.d,p:p.p,o:p.o||"",st:p.st,cat:p.cid,dest:p.dest,img:p.img||null};sprodTab("add",document.getElementById("spTabAdd"));}
 function spCancelar(){spEditId=null;imgTempSuper=null;spNewPF={n:"",d:"",p:"",o:"",st:"",cat:1,dest:false,img:null};sprodTab("list",document.getElementById("spTabList"));}
@@ -2775,7 +2775,7 @@ document.addEventListener("DOMContentLoaded",function(){
     if(!sk){
       sk = document.createElement("div");
       sk.id = "skeletonLoader";
-      sk.style.cssText = "padding:60px 20px;text-align:center;color:let(--na3);font-size:1.1rem;font-weight:700;";
+      sk.style.cssText = "padding:60px 20px;text-align:center;color:var(--na3);font-size:1.1rem;font-weight:700;";
       sk.innerHTML = '<div style="font-size:3rem;margin-bottom:16px;animation:spin 1s linear infinite">🔄</div>Cargando productos...';
       pI.prepend(sk);
     }
@@ -3003,7 +3003,7 @@ function mpPerfilBtnLabel(){
   if(hidden){
     return '<span>Reproductor oculto</span><span style="font-size:.75rem;background:#e8f5e9;color:#2e7d32;padding:2px 8px;border-radius:50px">Mostrar</span>';
   }
-  return '<span>Reproductor visible</span><span style="font-size:.75rem;background:#fff0e0;color:let(--na3);padding:2px 8px;border-radius:50px">Ocultar</span>';
+  return '<span>Reproductor visible</span><span style="font-size:.75rem;background:#fff0e0;color:var(--na3);padding:2px 8px;border-radius:50px">Ocultar</span>';
 }
 
 function mpPerfilToggle(){
@@ -3024,7 +3024,7 @@ function mpPanelBtnLabel(){
   if(hidden){
     return '<span>🎵 Reproductor de música</span><span style="font-size:.75rem;background:#e8f5e9;color:#2e7d32;padding:2px 8px;border-radius:50px">Mostrar</span>';
   }
-  return '<span>🎵 Reproductor de música</span><span style="font-size:.75rem;background:#fff0e0;color:let(--na3);padding:2px 8px;border-radius:50px">Ocultar</span>';
+  return '<span>🎵 Reproductor de música</span><span style="font-size:.75rem;background:#fff0e0;color:var(--na3);padding:2px 8px;border-radius:50px">Ocultar</span>';
 }
 
 // ── Alternar visibilidad del reproductor desde el perfil ──
@@ -3346,7 +3346,7 @@ function mpUpdateVolGradient(){
   let vs = document.getElementById("mpVolSlider");
   if(!vs) return;
   let pct = vs.value + "%";
-  vs.style.background = "linear-gradient(90deg,let(--na) " + pct + ",#e0d0c4 " + pct + ")";
+  vs.style.background = "linear-gradient(90deg,var(--na) " + pct + ",#e0d0c4 " + pct + ")";
 }
 
 // ── Actualizar NOW PLAYING ──
@@ -3485,7 +3485,7 @@ function actualizarContador(){
   if(!ta||!cnt)return;
   let n=ta.value.length,max=500;
   cnt.textContent=n+" / "+max;
-  cnt.style.color=n>450?"#c62828":n>350?"#e65100":"let(--gr)";
+  cnt.style.color=n>450?"#c62828":n>350?"#e65100":"var(--gr)";
 }
 
 function autocompletarContacto(){
@@ -3760,7 +3760,7 @@ function _renderChatAdmin(mensajes, nombre, container){
   if(!box) return;
   box.innerHTML = "";
   if(!mensajes.length){
-    box.innerHTML = '<div style="text-align:center;color:let(--gr);padding:20px">Sin mensajes aún</div>';
+    box.innerHTML = '<div style="text-align:center;color:var(--gr);padding:20px">Sin mensajes aún</div>';
     return;
   }
   mensajes.forEach(function(m){
@@ -3773,7 +3773,7 @@ function _renderChatAdmin(mensajes, nombre, container){
       + ';padding:9px 13px;border-radius:' + (esCliente ? "4px 14px 14px 14px" : "14px 4px 14px 14px")
       + ';font-size:.87rem;line-height:1.5">'
       + _escapeHtml(m.mensaje) + '</div>'
-      + '<div style="font-size:.68rem;color:let(--gr);margin-top:2px">'
+      + '<div style="font-size:.68rem;color:var(--gr);margin-top:2px">'
       + (esCliente ? (m.uNom || "Cliente") : "Soporte") + ' · ' + (m.fecha || "").slice(11,16)
       + '</div>';
     box.appendChild(div);
