@@ -502,9 +502,6 @@ def api_mis_reportes(request, uid):
 
 
 # ── PEDIDOS ───────────────────────────────────────────
-@csrf_exempt
-@require_http_methods(["POST"])
-
 # ── EMAIL ─────────────────────────────────────────────────────
 def _enviar_confirmacion_pedido(pedido_id, u_nom, u_email, items, total, cupon=None):
     """
@@ -691,6 +688,8 @@ def _enviar_confirmacion_pedido(pedido_id, u_nom, u_email, items, total, cupon=N
         log_action("Sistema", "EMAIL_ERROR", f"Fallo al enviar a {u_email}: {str(e)[:120]}")
 
 
+@csrf_exempt
+@require_http_methods(["POST"])
 def api_crear_pedido(request):
     data  = json.loads(request.body or '{}')
     uid   = int(data.get("uid") or 0)
