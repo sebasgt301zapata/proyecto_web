@@ -35,7 +35,7 @@
 <!-- ══ HEADER ══ -->
 <header id="hdr">
   <div class="nav-row">
-    <a class="logo" href="/" aria-label="NuestroStore inicio"><b>Nuestro</b><span class="logo-store">Store</span><span class="logo-dot"></span></a>
+    <a class="logo" href="/" aria-label="NuestroStore inicio"><b>Nuestro</b><span class="logo-store">Store</span></a>
     <div class="search-wrap">
       <div class="sw" id="swBox">
         <span class="sw-ico">🔍</span>
@@ -57,7 +57,11 @@
       </button>
     </div>
     <button class="dm-toggle nic dm-mob" onclick="toggleDarkMode()" aria-label="Modo oscuro">🌙</button>
-    <div class="desk-acts" id="deskActs"></div>
+    <div class="desk-acts" id="deskActs">
+      <button class="dm-toggle bdn bdn-lang" onclick="toggleDarkMode()" title="Modo oscuro">🌙</button>
+      <button class="bdn bdn-o" onclick="abrirLogin()">Iniciar Sesión</button>
+      <button class="bdn bdn-f" onclick="abrirRegistro()">Registrarse →</button>
+    </div>
   </div>
 </header>
 
