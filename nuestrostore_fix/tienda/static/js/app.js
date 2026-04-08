@@ -1706,42 +1706,6 @@ function _enviarMsgPanel(){
 }
 
 
-  let inp = document.getElementById("chatPanelInput");
-  if(!inp) return;
-  let msg = inp.value.trim();
-  if(!msg) return;
-  inp.value = "";
-  fetch("/api/chat",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({uid:usuario.id, mensaje:msg, remitente:"cliente"})
-  }).then(function(r){return r.json();}).then(function(r){
-    if(r.ok){
-      // Refresh panel
-      fetch("/api/chat?uid="+usuario.id).then(function(r){return r.json();}).then(function(r){
-        let box = document.getElementById("chatPanelBox");
-        if(!box||!r.ok) return;
-        let msgs = r.mensajes||[];
-        box.innerHTML = "";
-        msgs.forEach(function(m){
-          let ec = m.remitente==="cliente";
-          let div = document.createElement("div");
-          div.style.cssText = "display:flex;flex-direction:column;"+(ec?"align-items:flex-end":"align-items:flex-start");
-          div.innerHTML =
-            '<div style="max-width:82%;background:'+(ec?"linear-gradient(135deg,#1E3A8A,#2563EB)":"#F1F5F9")
-            +';color:'+(ec?"#fff":"#0F172A")
-            +';padding:9px 13px;border-radius:'+(ec?"14px 4px 14px 14px":"4px 14px 14px 14px")
-            +';font-size:.86rem;line-height:1.5">'
-            +_escapeHtml(m.mensaje)+'</div>'
-            +'<div style="font-size:.68rem;color:var(--gr);margin-top:2px">'
-            +(ec?"Tú":"Soporte")+' · '+(m.fecha||"").slice(11,16)+'</div>';
-          box.appendChild(div);
-        });
-        box.scrollTop = box.scrollHeight;
-      });
-    }
-  });
-
 function cTabN(btn,t){
   document.querySelectorAll("#panB .tab").forEach(function(b){b.classList.remove("on");});btn.classList.add("on");
   let c=document.getElementById("cTabBody");
@@ -3797,5 +3761,3 @@ function enviarRespuestaAdmin(){
     }
   });
 }
-
-
