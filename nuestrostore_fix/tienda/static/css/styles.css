@@ -4791,3 +4791,194 @@ html.dark .cits .empty p {
 html.dark .cits {
   background: #0F172A;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   DARK MODE — TIENDA TOOLBAR (barra sticky con categorías)
+   ══════════════════════════════════════════════════════════════ */
+html.dark .tienda-toolbar {
+  background: #0F172A;
+  border-bottom-color: #1E293B;
+  box-shadow: 0 3px 16px rgba(0,0,0,.4);
+}
+
+/* Píldoras de categoría */
+html.dark .cc {
+  background: #1E293B;
+  color: #94A3B8;
+}
+html.dark .cc:hover {
+  background: #1E3A8A;
+  color: #BFDBFE;
+}
+html.dark .cc.on {
+  background: linear-gradient(135deg, #1E3A8A, #2563EB);
+  color: #fff;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   DARK MODE — BOTÓN Y PANEL DE FILTROS
+   ══════════════════════════════════════════════════════════════ */
+
+/* Botón "Filtros ⚙" */
+html.dark .filtros-toggle-btn {
+  background: #1E293B;
+  border-color: #334155;
+  color: #94A3B8;
+}
+html.dark .filtros-toggle-btn:hover {
+  background: #1E3A8A;
+  border-color: #3B82F6;
+  color: #BFDBFE;
+}
+html.dark .filtros-toggle-btn.on,
+html.dark .filtros-toggle-btn.has-active {
+  background: #1E3A8A;
+  border-color: #3B82F6;
+  color: #BFDBFE;
+}
+
+/* Panel desplegable */
+html.dark .filtros-panel {
+  background: #0F172A;
+  border-top-color: #1E293B;
+  border-bottom-color: #1E293B;
+}
+
+/* Separador vertical */
+html.dark .filtro-sep {
+  background: #1E293B;
+}
+
+/* Títulos de sección ("PRECIO", "VALORACIÓN", etc.) */
+html.dark .filtro-titulo {
+  color: #60A5FA;
+}
+
+/* Etiquetas de precio min/max */
+html.dark .filtro-precio-labels {
+  color: #93C5FD;
+}
+
+/* Track del slider */
+html.dark .filtro-range-track {
+  background: #1E293B;
+}
+
+/* Thumb del slider */
+html.dark .filtro-range::-webkit-slider-thumb {
+  background: #1E293B;
+  border-color: #3B82F6;
+  box-shadow: 0 1px 4px rgba(59,130,246,.3);
+}
+html.dark .filtro-range::-moz-range-thumb {
+  background: #1E293B;
+  border-color: #3B82F6;
+}
+
+/* Botones de estrellas (rating) */
+html.dark .filtro-star-btn {
+  background: #1E293B;
+  border-color: #334155;
+  color: #94A3B8;
+}
+html.dark .filtro-star-btn:hover {
+  background: #2D2006;
+  border-color: #F59E0B;
+  color: #FDE68A;
+}
+html.dark .filtro-star-btn.on {
+  background: linear-gradient(135deg, #2D2006, #3D2E00);
+  border-color: #F59E0B;
+  color: #FDE68A;
+}
+
+/* Botón "Solo ofertas" */
+html.dark .filtro-check-btn {
+  background: #1E293B;
+  border-color: #334155;
+  color: #94A3B8;
+}
+html.dark .filtro-check-btn .filtro-check-ico {
+  color: #64748B;
+}
+html.dark .filtro-check-btn:hover {
+  border-color: #FCA5A5;
+  color: #FCA5A5;
+  background: #1E293B;
+}
+html.dark .filtro-check-btn.on {
+  background: #1F0F0F;
+  border-color: #FCA5A5;
+  color: #FCA5A5;
+}
+html.dark .filtro-check-btn.on .filtro-check-ico {
+  color: #EF4444;
+}
+
+/* Botón "Limpiar filtros" */
+html.dark .filtros-reset {
+  background: #1E293B;
+  border-color: #334155;
+  color: #64748B;
+}
+html.dark .filtros-reset:hover {
+  background: #1F0F0F;
+  border-color: #FCA5A5;
+  color: #FCA5A5;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   DARK MODE — MODAL DE PRODUCTO (fondo del body del modal)
+   ══════════════════════════════════════════════════════════════ */
+html.dark .mdl {
+  background: #1E293B;
+  color: #F1F5F9;
+}
+html.dark .mb {
+  color: #CBD5E1;
+}
+
+/* Precio dentro del modal de producto */
+html.dark #mProdB .ppr-v { color: #93C5FD; }
+html.dark #mProdB .ppr-o { color: #475569; }
+
+/* ══════════════════════════════════════════════════════════════
+   DARK MODE — FACTURA
+   ══════════════════════════════════════════════════════════════ */
+html.dark .factura-overlay {
+  background: rgba(0,0,0,.75);
+}
+html.dark .factura-box {
+  background: #1E293B;
+  color: #F1F5F9;
+  box-shadow: 0 24px 80px rgba(0,0,0,.7);
+}
+html.dark .fact-head {
+  border-bottom-color: #334155;
+}
+html.dark .fact-head h3 { color: #F1F5F9; }
+html.dark .fact-body { color: #CBD5E1; }
+html.dark .fact-btns { border-top-color: #334155; }
+
+/* ══════════════════════════════════════════════════════════════
+   DARK MODE — PANEL DE USUARIO (pestañas internas)
+   ══════════════════════════════════════════════════════════════ */
+html.dark #cTabBody {
+  color: #CBD5E1;
+}
+html.dark .hitem {
+  background: #0F172A;
+  border-color: #1E293B;
+}
+html.dark .hitem-nm { color: #F1F5F9; }
+html.dark .hitem-sub { color: #64748B; }
+html.dark .hitem-price { color: #93C5FD; }
+
+/* ══════════════════════════════════════════════════════════════
+   DARK MODE — SELECTOR DE MONEDA / SELECT NATIVO
+   ══════════════════════════════════════════════════════════════ */
+html.dark select {
+  background: #1E293B;
+  border-color: #334155;
+  color: #F1F5F9;
+}
