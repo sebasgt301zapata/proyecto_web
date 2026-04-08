@@ -13,6 +13,13 @@ def _is_postgres():
     return 'postgresql' in settings.DATABASES['default']['ENGINE']
 
 
+def get_db_path():
+    """Retorna la ruta de la BD (SQLite) o la URL de conexión (PostgreSQL)."""
+    if _is_postgres():
+        return settings.DATABASES['default'].get('NAME', 'PostgreSQL')
+    return str(settings.DATABASES['default'].get('NAME', 'tienda.db'))
+
+
 def get_db():
     """Retorna la conexión Django (compatible con Postgres y SQLite)."""
     return django_conn
@@ -290,8 +297,9 @@ def init_db():
             ("Electrónica", "📱"), ("Ropa", "👕"), ("Hogar", "🏠"),
             ("Deportes", "⚽"), ("Alimentos", "🍎"), ("Belleza", "💄"),
         ]
+        conflict = "DO NOTHING" if pg else "IGNORE"
         for cat_n, cat_e in cats:
-            _exec("INSERT INTO categorias(nombre,emoji) VALUES(?,?) ON CONFLICT IGNORE", (cat_n, cat_e))
+            _exec(f"INSERT INTO categorias(nombre,emoji) VALUES(?,?) ON CONFLICT {conflict}", (cat_n, cat_e))
 
         usuarios_demo = [
             ("Super", "Admin", "superadmin@tienda.com", "Admin@2024", "superadmin"),
@@ -301,7 +309,7 @@ def init_db():
         ]
         for nom, ape, email, pw, rol in usuarios_demo:
             h = hash_pass(pw)
-            _exec("INSERT INTO usuarios(nombre,apellido,email,password,rol) VALUES(?,?,?,?,?) ON CONFLICT IGNORE",
+            _exec(f"INSERT INTO usuarios(nombre,apellido,email,password,rol) VALUES(?,?,?,?,?) ON CONFLICT {conflict}",
                   (nom, ape, email, h, rol))
 
         productos_demo = [
@@ -328,7 +336,7 @@ def init_db():
         ]
         for nom, desc, precio, oferta, stock, cat_id, dest, emoji in productos_demo:
             _exec(
-                "INSERT INTO productos(nombre,descripcion,precio,oferta,stock,cat_id,destacado,emoji) VALUES(?,?,?,?,?,?,?,?) ON CONFLICT IGNORE",
+                f"INSERT INTO productos(nombre,descripcion,precio,oferta,stock,cat_id,destacado,emoji) VALUES(?,?,?,?,?,?,?,?) ON CONFLICT {conflict}",
                 (nom, desc, precio, oferta, stock, cat_id, dest, emoji)
             )
 
