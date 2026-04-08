@@ -9,6 +9,21 @@ DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 _allowed = os.environ.get('ALLOWED_HOSTS', '')
 ALLOWED_HOSTS = [h.strip() for h in _allowed.split(',') if h.strip()] if _allowed else ['*']
 
+# ── RENDER / HTTPS ────────────────────────────────────────────
+# Necesario para que Django reconozca HTTPS detras del proxy de Render
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Django 4.0+ requiere listar dominios de confianza para CSRF con HTTPS.
+# Puedes sobreescribir con la variable de entorno CSRF_TRUSTED_ORIGINS en Render.
+_csrf_origins = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
+if _csrf_origins:
+    CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf_origins.split(',') if o.strip()]
+else:
+    CSRF_TRUSTED_ORIGINS = [
+        'https://proyecto-web-tcxo.onrender.com',
+        'https://*.onrender.com',
+    ]
+
 INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.staticfiles',
