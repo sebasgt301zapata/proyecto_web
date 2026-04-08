@@ -4982,3 +4982,341 @@ html.dark select {
   border-color: #334155;
   color: #F1F5F9;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   DARK MODE — REPRODUCTOR DE MÚSICA
+   ══════════════════════════════════════════════════════════════ */
+html.dark .mp-panel {
+  background: #0F172A;
+  box-shadow: 0 12px 48px rgba(0,0,0,.6);
+}
+html.dark .mp-empty {
+  background: transparent;
+}
+html.dark .mp-empty:hover { background: #1E293B; }
+html.dark .mp-empty-txt { color: #F1F5F9; }
+html.dark .mp-empty-sub { color: #64748B; }
+html.dark .mp-now { background: transparent; }
+html.dark .mp-track-name { color: #F1F5F9; }
+html.dark .mp-track-dur  { color: #64748B; }
+html.dark .mp-progress-bg { background: #1E293B; }
+html.dark .mp-ctrl-btn {
+  color: #94A3B8;
+  background: transparent;
+}
+html.dark .mp-ctrl-btn:hover {
+  background: #1E293B;
+  color: #F1F5F9;
+}
+html.dark .mp-play-btn {
+  background: linear-gradient(135deg,#1E3A8A,#2563EB);
+  color: #fff;
+}
+html.dark .mp-play-btn:hover {
+  background: linear-gradient(135deg,#2563EB,#60A5FA);
+}
+html.dark .mp-ctrl-sm { color: #475569; }
+html.dark .mp-ctrl-sm.active { color: #60A5FA; }
+html.dark .mp-playlist { border-top-color: #1E293B; }
+html.dark .mp-pl-header { color: #94A3B8; }
+html.dark .mp-pl-clear { color: #475569; }
+html.dark .mp-pl-clear:hover { color: #F87171; }
+html.dark .mp-pl-item:hover { background: #1E293B; }
+html.dark .mp-pl-item.active {
+  background: linear-gradient(90deg,#0F172A,#1E3A8A22);
+  border-left-color: #3B82F6;
+}
+html.dark .mp-pl-num { color: #334155; }
+html.dark .mp-pl-name { color: #CBD5E1; }
+html.dark .mp-pl-item.active .mp-pl-name { color: #93C5FD; }
+html.dark .mp-pl-item.active .mp-pl-num  { color: #3B82F6; }
+html.dark .mp-pl-dur { color: #475569; }
+html.dark .mp-vol-ico { color: #94A3B8; }
+html.dark .mp-volume { background: #0F172A; }
+
+/* ══════════════════════════════════════════════════════════════
+   REPRODUCTOR — Botones del estado vacío
+   ══════════════════════════════════════════════════════════════ */
+.mp-empty-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 12px;
+  width: 100%;
+}
+.mp-empty-btn {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1.5px solid #E2E8F0;
+  background: #F8FAFC;
+  font-size: .82rem;
+  font-weight: 700;
+  color: #1E3A8A;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: all .15s;
+}
+.mp-empty-btn:hover {
+  background: #EFF6FF;
+  border-color: #3B82F6;
+}
+.mp-empty-btn-yt {
+  color: #DC2626;
+  border-color: #FCA5A5;
+  background: #FFF5F5;
+}
+.mp-empty-btn-yt:hover { background: #FEE2E2; border-color: #EF4444; }
+.mp-empty-btn-fma {
+  color: #059669;
+  border-color: #6EE7B7;
+  background: #F0FDF4;
+}
+.mp-empty-btn-fma:hover { background: #D1FAE5; border-color: #10B981; }
+
+html.dark .mp-empty-btn {
+  background: #1E293B; border-color: #334155; color: #93C5FD;
+}
+html.dark .mp-empty-btn:hover { background: #1E3A8A; border-color: #3B82F6; }
+html.dark .mp-empty-btn-yt { color:#FCA5A5; border-color:#7F1D1D; background:#1C0A0A; }
+html.dark .mp-empty-btn-yt:hover { background:#2D1515; }
+html.dark .mp-empty-btn-fma { color:#6EE7B7; border-color:#064E3B; background:#022C22; }
+html.dark .mp-empty-btn-fma:hover { background:#065F46; }
+
+/* ══════════════════════════════════════════════════════════════
+   REPRODUCTOR — YouTube embed
+   ══════════════════════════════════════════════════════════════ */
+.mp-yt-wrap {
+  padding: 10px 12px 12px;
+  border-top: 1px solid #E2E8F0;
+}
+html.dark .mp-yt-wrap { border-top-color: #1E293B; }
+.mp-yt-label {
+  font-size: .75rem;
+  font-weight: 700;
+  color: #64748B;
+  margin-bottom: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+html.dark .mp-yt-label { color: #475569; }
+.mp-yt-frame-wrap {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+}
+.mp-yt-frame-wrap iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+.mp-yt-close {
+  width: 100%;
+  margin-top: 8px;
+  padding: 7px;
+  border: none;
+  border-radius: 8px;
+  background: #FEE2E2;
+  color: #DC2626;
+  font-size: .78rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+}
+.mp-yt-close:hover { background: #FECACA; }
+html.dark .mp-yt-close { background: #1C0A0A; color: #FCA5A5; }
+html.dark .mp-yt-close:hover { background: #2D1515; }
+
+/* ══════════════════════════════════════════════════════════════
+   REPRODUCTOR — Free Music Archive search panel
+   ══════════════════════════════════════════════════════════════ */
+.mp-fma-wrap {
+  border-top: 1px solid #E2E8F0;
+  background: #fff;
+  max-height: 280px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+html.dark .mp-fma-wrap {
+  background: #0F172A;
+  border-top-color: #1E293B;
+}
+.mp-fma-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px 6px;
+  font-size: .78rem;
+  font-weight: 800;
+  color: #059669;
+  flex-shrink: 0;
+}
+html.dark .mp-fma-header { color: #6EE7B7; }
+.mp-fma-search {
+  display: flex;
+  gap: 6px;
+  padding: 0 10px 8px;
+  flex-shrink: 0;
+}
+.mp-fma-inp {
+  flex: 1;
+  padding: 7px 10px;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 10px;
+  font-size: .8rem;
+  font-family: 'Inter', sans-serif;
+  outline: none;
+  background: #F8FAFC;
+  color: #0F172A;
+}
+.mp-fma-inp:focus { border-color: #10B981; background: #fff; }
+html.dark .mp-fma-inp { background:#1E293B; border-color:#334155; color:#F1F5F9; }
+html.dark .mp-fma-inp:focus { border-color:#10B981; background:#0F172A; }
+.mp-fma-btn {
+  padding: 7px 12px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg,#059669,#10B981);
+  color: #fff;
+  font-size: .85rem;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+}
+.mp-fma-genres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 0 10px 8px;
+  flex-shrink: 0;
+}
+.mp-fma-genre {
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1.5px solid #6EE7B7;
+  background: #F0FDF4;
+  color: #059669;
+  font-size: .72rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: all .12s;
+}
+.mp-fma-genre:hover { background: #D1FAE5; }
+html.dark .mp-fma-genre { background:#022C22; border-color:#064E3B; color:#6EE7B7; }
+html.dark .mp-fma-genre:hover { background:#065F46; }
+.mp-fma-results { flex: 1; overflow-y: auto; padding: 0 8px 8px; }
+.mp-fma-hint {
+  text-align: center;
+  padding: 16px;
+  color: #94A3B8;
+  font-size: .78rem;
+}
+.mp-fma-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 6px;
+  border-radius: 8px;
+  border-bottom: 1px solid #F1F5F9;
+}
+html.dark .mp-fma-item { border-bottom-color: #1E293B; }
+.mp-fma-item:last-child { border-bottom: none; }
+.mp-fma-item-info { flex: 1; min-width: 0; }
+.mp-fma-item-name {
+  font-size: .78rem;
+  font-weight: 700;
+  color: #0F172A;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+html.dark .mp-fma-item-name { color: #F1F5F9; }
+.mp-fma-item-artist {
+  font-size: .68rem;
+  color: #64748B;
+  margin-top: 1px;
+}
+.mp-fma-item-btns { display: flex; gap: 4px; flex-shrink: 0; }
+.mp-fma-add, .mp-fma-play {
+  padding: 4px 8px;
+  border: none;
+  border-radius: 6px;
+  font-size: .72rem;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: all .12s;
+}
+.mp-fma-add {
+  background: #EFF6FF;
+  color: #1E3A8A;
+}
+.mp-fma-add:hover { background: #DBEAFE; }
+html.dark .mp-fma-add { background: #1E293B; color: #93C5FD; }
+.mp-fma-play {
+  background: linear-gradient(135deg,#059669,#10B981);
+  color: #fff;
+}
+.mp-fma-play:hover { background: linear-gradient(135deg,#047857,#059669); }
+
+/* ══════════════════════════════════════════════════════════════
+   FIX — Líneas visuales en modo oscuro
+   (features-strip border-right, historial-totales, table td)
+   ══════════════════════════════════════════════════════════════ */
+html.dark .feat {
+  border-right-color: #1E293B;
+}
+html.dark td {
+  border-bottom-color: #1E293B;
+}
+html.dark .historial-totales {
+  background: #0F172A;
+  border-top-color: #334155;
+}
+html.dark .htot-final {
+  border-top-color: #1E293B;
+  color: #F1F5F9;
+}
+html.dark .about-stat-row {
+  border-bottom-color: #1E293B;
+}
+/* línea decorativa .div ya cubierta arriba */
+html.dark .iline {
+  background: linear-gradient(90deg,#06B6D4,#3B82F6);
+}
+/* Línea inferior de la toolbar */
+html.dark .tienda-toolbar {
+  border-bottom-color: #1E293B;
+}
+/* Footer top border */
+html.dark .footer-sec {
+  border-top: 1px solid #1E293B;
+}
+/* Líneas en panel de usuario / pestañas */
+html.dark .tabs {
+  border-bottom-color: #1E293B;
+}
+html.dark .tab {
+  border-bottom-color: transparent;
+}
+/* Tabla en modo oscuro - eliminar líneas blancas */
+html.dark table {
+  border-color: #1E293B;
+}
+html.dark th {
+  background: #0F172A;
+  color: #94A3B8;
+  border-bottom-color: #334155;
+}
+html.dark tr:hover td {
+  background: #1E293B22;
+}
