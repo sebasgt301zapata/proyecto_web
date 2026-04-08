@@ -2861,16 +2861,22 @@ function mpRefreshAuth(){
         '<div class="mp-header">',
         '  <div class="mp-header-left"><span class="mp-title-icon">🎶</span><span class="mp-title">Mi Música</span></div>',
         '  <div class="mp-header-right">',
-        '    <button class="mp-hbtn" onclick="mpAddFiles()" title="Agregar canciones">➕</button>',
+        '    <button class="mp-hbtn" onclick="mpAddFiles()" title="Subir MP3/WAV">🎵</button>',
+        '    <button class="mp-hbtn" onclick="mpAgregarYouTube()" title="Agregar de YouTube">🎬</button>',
+        '    <button class="mp-hbtn" onclick="mpBuscarFMA()" title="Buscar música gratis">🔍</button>',
         '    <button class="mp-hbtn" onclick="mpToggle()" title="Minimizar">—</button>',
         '    <button class="mp-hbtn mp-hbtn-hide" onclick="mpHide()" title="Ocultar">✕</button>',
         '  </div>',
         '</div>',
         '<input type="file" id="mpFileInput" accept="audio/*" multiple style="display:none" onchange="mpLoadFiles(event)"/>',
-        '<div class="mp-empty" id="mpEmpty" onclick="mpAddFiles()">',
+        '<div class="mp-empty" id="mpEmpty">',
         '  <div class="mp-empty-ico">🎵</div>',
-        '  <div class="mp-empty-txt">Toca para agregar música</div>',
-        '  <div class="mp-empty-sub">MP3, WAV, OGG, FLAC y más</div>',
+        '  <div class="mp-empty-txt">Agrega música</div>',
+        '  <div class="mp-empty-btns">',
+        '    <button class="mp-empty-btn" onclick="mpAddFiles()">🎵 Subir MP3</button>',
+        '    <button class="mp-empty-btn mp-empty-btn-yt" onclick="mpAgregarYouTube()">🎬 YouTube</button>',
+        '    <button class="mp-empty-btn mp-empty-btn-fma" onclick="mpBuscarFMA()">🔍 Buscar gratis</button>',
+        '  </div>',
         '</div>',
         '<div id="mpNow" class="mp-now" style="display:none"></div>',
         '<div id="mpProgressWrap" class="mp-progress-wrap" style="display:none">',
@@ -3080,6 +3086,184 @@ function mpLoadFilesDone(added){
   if(mp.current < 0) mpPlay(0);
 }
 
+// ══════════════════════════════════════════
+//  YOUTUBE EMBED — pegar link para reproducir
+// ══════════════════════════════════════════
+function mpAgregarYouTube(){
+  let url = prompt("🎬 Pega el link de YouTube:\n(ej: https://youtube.com/watch?v=xxx)");
+  if(!url) return;
+  let vid = _ytExtractId(url);
+  if(!vid){ toast("Link de YouTube no válido","e"); return; }
+  let name = "YouTube — " + vid;
+  mp.playlist.push({name:name, dur:"YT", url:null, ytId:vid, type:"youtube"});
+  toast("Video de YouTube agregado 🎬","s");
+  mpShowPlayer();
+  mpRenderPlaylist();
+  if(mp.current < 0) mpPlayYT(mp.playlist.length - 1);
+}
+
+function _ytExtractId(url){
+  let m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{11})/);
+  return m ? m[1] : null;
+}
+
+function mpPlayYT(idx){
+  // Pausar audio normal si está sonando
+  if(mp.audio && !mp.audio.paused) mp.audio.pause();
+
+  mp.current = idx;
+  let item = mp.playlist[idx];
+  if(!item || item.type !== "youtube") return;
+
+  // Mostrar/ocultar el iframe de YouTube
+  let ytWrap = document.getElementById("mpYTWrap");
+  if(!ytWrap){
+    ytWrap = document.createElement("div");
+    ytWrap.id = "mpYTWrap";
+    ytWrap.className = "mp-yt-wrap";
+    let panel = document.getElementById("mpPanel");
+    if(panel) panel.appendChild(ytWrap);
+  }
+  ytWrap.innerHTML =
+    '<div class="mp-yt-label">🎬 ' + _escapeHtml(item.name.replace("YouTube — ","")) + '</div>' +
+    '<div class="mp-yt-frame-wrap">' +
+    '<iframe src="https://www.youtube.com/embed/' + item.ytId +
+    '?autoplay=1&rel=0" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>' +
+    '</div>' +
+    '<button class="mp-yt-close" onclick="mpCerrarYT()">✕ Cerrar video</button>';
+  ytWrap.style.display = "block";
+
+  // Ocultar controles normales mientras hay YT activo
+  ["mpNow","mpProgressWrap","mpControls","mpVolume"].forEach(function(id){
+    let el = document.getElementById(id);
+    if(el) el.style.display = "none";
+  });
+
+  mp.playing = true;
+  mpRenderPlaylist();
+  mpUpdateNowPlaying();
+}
+
+function mpCerrarYT(){
+  let ytWrap = document.getElementById("mpYTWrap");
+  if(ytWrap){ ytWrap.innerHTML = ""; ytWrap.style.display = "none"; }
+  mp.playing = false;
+  mp.current = -1;
+  mpRenderPlaylist();
+}
+
+// ══════════════════════════════════════════
+//  FREE MUSIC ARCHIVE — buscar música gratis
+// ══════════════════════════════════════════
+let _fmaResults = [];
+
+function mpBuscarFMA(){
+  let panel = document.getElementById("mpPanel");
+  let existing = document.getElementById("mpFMAWrap");
+  if(existing){ existing.remove(); return; }
+
+  let wrap = document.createElement("div");
+  wrap.id = "mpFMAWrap";
+  wrap.className = "mp-fma-wrap";
+  wrap.innerHTML =
+    '<div class="mp-fma-header">' +
+      '<span>🎵 Música Libre (Free Music Archive)</span>' +
+      '<button class="mp-yt-close" onclick="document.getElementById('mpFMAWrap').remove()">✕</button>' +
+    '</div>' +
+    '<div class="mp-fma-search">' +
+      '<input class="mp-fma-inp" id="mpFMAInp" placeholder="Buscar canción o artista..." ' +
+             'onkeydown="if(event.key==='Enter')mpFMABuscar()"/>' +
+      '<button class="mp-fma-btn" onclick="mpFMABuscar()">🔍</button>' +
+    '</div>' +
+    '<div class="mp-fma-genres">' +
+      '<button class="mp-fma-genre" onclick="mpFMAGenero('Electronic')">⚡ Electronic</button>' +
+      '<button class="mp-fma-genre" onclick="mpFMAGenero('Hip-Hop')">🎤 Hip-Hop</button>' +
+      '<button class="mp-fma-genre" onclick="mpFMAGenero('Rock')">🎸 Rock</button>' +
+      '<button class="mp-fma-genre" onclick="mpFMAGenero('Jazz')">🎷 Jazz</button>' +
+      '<button class="mp-fma-genre" onclick="mpFMAGenero('Classical')">🎻 Clásica</button>' +
+      '<button class="mp-fma-genre" onclick="mpFMAGenero('Ambient')">🌊 Ambient</button>' +
+    '</div>' +
+    '<div class="mp-fma-results" id="mpFMAResults">' +
+      '<div class="mp-fma-hint">Busca una canción o selecciona un género 🎵</div>' +
+    '</div>';
+
+  if(panel) panel.appendChild(wrap);
+}
+
+function mpFMABuscar(){
+  let inp = document.getElementById("mpFMAInp");
+  let q = inp ? inp.value.trim() : "";
+  if(!q){ toast("Escribe algo para buscar","e"); return; }
+  _mpFMAFetch("https://freemusicarchive.org/api/get/tracks.json?per_page=10&api_key=60BLHNQCAOUFPIBZ&search=" + encodeURIComponent(q));
+}
+
+function mpFMAGenero(genero){
+  _mpFMAFetch("https://freemusicarchive.org/api/get/tracks.json?per_page=10&api_key=60BLHNQCAOUFPIBZ&genre_title=" + encodeURIComponent(genero));
+}
+
+function _mpFMAFetch(url){
+  let res = document.getElementById("mpFMAResults");
+  if(res) res.innerHTML = '<div class="mp-fma-hint">Buscando... ⏳</div>';
+
+  fetch(url)
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      _fmaResults = (data.dataset || []).filter(function(t){ return t.track_file; });
+      if(!_fmaResults.length){
+        if(res) res.innerHTML = '<div class="mp-fma-hint">Sin resultados 😕 Intenta otra búsqueda</div>';
+        return;
+      }
+      if(res) res.innerHTML = _fmaResults.map(function(t, i){
+        return '<div class="mp-fma-item">' +
+          '<div class="mp-fma-item-info">' +
+            '<div class="mp-fma-item-name">' + _escapeHtml(t.track_title || "Sin título") + '</div>' +
+            '<div class="mp-fma-item-artist">' + _escapeHtml(t.artist_name || "") + ' · ' + _escapeHtml((t.track_duration||"").slice(0,5)) + '</div>' +
+          '</div>' +
+          '<div class="mp-fma-item-btns">' +
+            '<button class="mp-fma-add" onclick="mpFMAAgregar(' + i + ')">+ Lista</button>' +
+            '<button class="mp-fma-play" onclick="mpFMATocar(' + i + ')">▶</button>' +
+          '</div>' +
+        '</div>';
+      }).join("");
+    })
+    .catch(function(){
+      if(res) res.innerHTML = '<div class="mp-fma-hint">❌ Error de conexión. La API de FMA puede estar caída.</div>';
+    });
+}
+
+function mpFMATocar(idx){
+  let t = _fmaResults[idx];
+  if(!t) return;
+  // Cerrar YT si estaba abierto
+  mpCerrarYT();
+  let item = {name: (t.track_title||"Sin título") + " — " + (t.artist_name||""), dur:"—", url: t.track_file, type:"mp3"};
+  // Si ya existe en playlist, reproducir; si no, agregar y reproducir
+  let existIdx = mp.playlist.findIndex(function(x){ return x.url === t.track_file; });
+  if(existIdx >= 0){
+    mpPlay(existIdx);
+  } else {
+    mp.playlist.push(item);
+    mpShowPlayer();
+    mpRenderPlaylist();
+    mpPlay(mp.playlist.length - 1);
+  }
+  toast("▶ Reproduciendo: " + (t.track_title||"canción"),"s");
+}
+
+function mpFMAAgregar(idx){
+  let t = _fmaResults[idx];
+  if(!t) return;
+  let exists = mp.playlist.some(function(x){ return x.url === t.track_file; });
+  if(exists){ toast("Ya está en tu lista 👍","i"); return; }
+  mp.playlist.push({name: (t.track_title||"Sin título") + " — " + (t.artist_name||""), dur:"—", url: t.track_file, type:"mp3"});
+  toast("➕ Agregado a la lista: " + (t.track_title||"canción"),"s");
+  mpShowPlayer();
+  mpRenderPlaylist();
+  if(mp.current < 0) mpPlay(mp.playlist.length - 1);
+}
+
+
+
 // ── Cargar playlist desde BD al iniciar sesión ──
 let _mpCargando = false;
 let _mpYaCargo = false;
@@ -3138,6 +3322,9 @@ function mpShowPlayer(){
 // ── Reproducir canción por índice ──
 function mpPlay(idx){
   if(idx < 0 || idx >= mp.playlist.length) return;
+  if(mp.playlist[idx] && mp.playlist[idx].type === "youtube"){ mpPlayYT(idx); return; }
+  let ytw = document.getElementById("mpYTWrap");
+  if(ytw){ ytw.innerHTML=""; ytw.style.display="none"; }
   mp.current = idx;
 
   let item = mp.playlist[idx];
@@ -3358,7 +3545,7 @@ function mpRenderPlaylist(){
     let active = i === mp.current ? " active" : "";
     return "<div class='mp-pl-item" + active + "' onclick='mpPlay(" + i + ")'>" +
       "<span class='mp-pl-num'>" + (i+1) + "</span>" +
-      "<span class='mp-pl-ico'>" + (i === mp.current && mp.playing ? "🔊" : "🎵") + "</span>" +
+      "<span class='mp-pl-ico'>" + (i === mp.current && mp.playing ? "🔊" : (item.type==="youtube"?"🎬":item.type==="mp3"&&!item.objUrl?"🌐":"🎵")) + "</span>" +
       "<div class='mp-pl-info'>" +
         "<div class='mp-pl-name' title='" + item.name.replace(/'/g,"&#39;") + "'>" + item.name + "</div>" +
         "<div class='mp-pl-dur'>" + item.dur + "</div>" +
