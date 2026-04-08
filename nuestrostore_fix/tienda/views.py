@@ -1431,7 +1431,7 @@ def api_cambiar_estado_pedido(request, pid):
     """Admin: update pedido estado and notify the client."""
     data   = json.loads(request.body or '{}')
     estado = (data.get('estado') or '').strip()
-    estados_validos = ['procesando', 'preparando', 'enviado', 'entregado', 'cancelado']
+    estados_validos = ['procesado', 'procesando', 'preparando', 'enviado', 'entregado', 'cancelado']
     if estado not in estados_validos:
         return JsonResponse({"ok": False, "error": f"Estado inválido. Válidos: {estados_validos}"})
 
@@ -1444,8 +1444,8 @@ def api_cambiar_estado_pedido(request, pid):
 
     # Push notification to the client
     emojis = {
-        'procesando': '⏳', 'preparando': '📦',
-        'enviado': '🚚', 'entregado': '✅', 'cancelado': '❌'
+        'procesado': '✅', 'procesando': '⏳', 'preparando': '📦',
+        'enviado': '🚚', 'entregado': '📦', 'cancelado': '❌'
     }
     emoji = emojis.get(estado, '📋')
     _notify_user(
