@@ -142,11 +142,19 @@ def api_verificar_reset(request):
         return JsonResponse({"ok": False, "error": "Datos incompletos"})
 
     # Check token valid and not older than 10 minutes
+    from datetime import datetime, timedelta
+    from tienda.database import _is_postgres
     row = _exec_one("""
-        SELECT id FROM password_resets
+        SELECT id, creado FROM password_resets
         WHERE email=? AND token=? AND usado=0
-          AND (julianday('now','localtime') - julianday(creado)) * 1440 < 10
     """, (email, token))
+    if row:
+        creado = row["creado"]
+        if isinstance(creado, str):
+            try: creado = datetime.strptime(creado[:19], "%Y-%m-%d %H:%M:%S")
+            except: creado = None
+        if creado and (datetime.now() - creado).total_seconds() > 600:
+            row = None
 
     if not row:
         return JsonResponse({"ok": False, "error": "Código inválido o expirado"})
@@ -169,11 +177,18 @@ def api_confirmar_reset(request):
         return JsonResponse({"ok": False, "error": "La contraseña debe tener al menos 8 caracteres"})
 
     # Re-verify token
+    from datetime import datetime
     row = _exec_one("""
-        SELECT id FROM password_resets
+        SELECT id, creado FROM password_resets
         WHERE email=? AND token=? AND usado=0
-          AND (julianday('now','localtime') - julianday(creado)) * 1440 < 10
     """, (email, token))
+    if row:
+        creado = row["creado"]
+        if isinstance(creado, str):
+            try: creado = datetime.strptime(creado[:19], "%Y-%m-%d %H:%M:%S")
+            except: creado = None
+        if creado and (datetime.now() - creado).total_seconds() > 600:
+            row = None
 
     if not row:
         return JsonResponse({"ok": False, "error": "Código inválido o expirado"})
