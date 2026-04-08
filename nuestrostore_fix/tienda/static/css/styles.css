@@ -4708,3 +4708,86 @@ html.dark .push-form{
   background:#0F172A;
   border-color:#334155;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   DARK MODE — CARRITO LATERAL (clases reales: .csh .cit .cnm etc.)
+   ══════════════════════════════════════════════════════════════ */
+
+/* Panel principal */
+html.dark .csh {
+  background: #0F172A;
+  box-shadow: -8px 0 48px rgba(0,0,0,.6);
+}
+
+/* Items del carrito */
+html.dark .cit {
+  border-bottom-color: #1E293B;
+}
+
+/* Imagen/emoji del producto */
+html.dark .cimg {
+  background: linear-gradient(135deg, #1E293B, #1E3A8A);
+}
+
+/* Nombre del producto */
+html.dark .cnm {
+  color: #F1F5F9;
+}
+
+/* Precio */
+html.dark .cpr {
+  color: #93C5FD;
+}
+
+/* Botón eliminar */
+html.dark .cdel {
+  background: #1E293B;
+  color: #F87171;
+}
+html.dark .cdel:hover {
+  background: #7F1D1D;
+}
+
+/* Footer del carrito */
+html.dark .cft {
+  border-top-color: #1E293B;
+  background: #0F172A;
+}
+
+/* Fila de totales */
+html.dark .ctot {
+  color: #F1F5F9;
+}
+html.dark .ctot span:last-child {
+  color: #93C5FD;
+}
+
+/* Fila descuento */
+html.dark #cDescRow span:first-child {
+  color: #94A3B8;
+}
+
+/* Botones cantidad */
+html.dark .qty-btn {
+  background: #1E293B;
+  border-color: #334155;
+  color: #F1F5F9;
+}
+html.dark .qty-btn:hover {
+  background: #2563EB;
+  border-color: #2563EB;
+  color: #fff;
+}
+
+/* Estado vacío dentro del carrito */
+html.dark .cits .empty h3 {
+  color: #F1F5F9;
+}
+html.dark .cits .empty p {
+  color: #64748B;
+}
+
+/* Área de ítems */
+html.dark .cits {
+  background: #0F172A;
+}
