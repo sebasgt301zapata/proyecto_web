@@ -448,6 +448,8 @@ def api_producto_detalle(request, pid):
 
 
 # ── CATEGORIAS ────────────────────────────────────────
+@csrf_exempt
+@require_http_methods(["GET"])
 def api_categorias(request):
     rows = _exec("SELECT id, nombre AS n, emoji AS e FROM categorias ORDER BY id")
     cats = [{"id": r["id"], "n": r["e"] + " " + r["n"]} for r in rows]
@@ -506,6 +508,8 @@ def api_responder_reporte(request, rid):
     return JsonResponse({"ok": True})
 
 
+@csrf_exempt
+@require_http_methods(["GET"])
 def api_mis_reportes(request, uid):
     rows = _exec("""
         SELECT id, uid, u_nom AS uNom, prod_id AS pid, prod_nom AS pNom,
@@ -747,6 +751,8 @@ def api_crear_pedido(request):
     return JsonResponse({"ok": True, "pedidoId": pedido_id})
 
 
+@csrf_exempt
+@require_http_methods(["GET"])
 def api_mis_pedidos(request, uid):
     rows = _exec("""
         SELECT id, uid, u_nom AS uNom, u_email AS uEmail,
@@ -788,7 +794,15 @@ def api_todos_pedidos(request):
     return JsonResponse({"ok": True, "pedidos": pedidos})
 
 # ── USUARIOS ──────────────────────────────────────────
+@csrf_exempt
+@require_http_methods(["GET"])
 def api_get_usuarios(request):
+    # Basic auth check via query param (frontend sends uid of admin)
+    uid = request.GET.get("uid")
+    if uid:
+        caller = _exec_one("SELECT rol FROM usuarios WHERE id=?", (uid,))
+        if not caller or caller["rol"] not in ("administrador", "superadmin"):
+            return JsonResponse({"ok": False, "error": "No autorizado"}, status=403)
     rows = _exec("SELECT id, nombre AS n, apellido AS a, email, rol, activo AS act, tel FROM usuarios ORDER BY id")
     return JsonResponse({"ok": True, "usuarios": rows})
 
@@ -837,7 +851,14 @@ def api_toggle_usuario(request, uid):
 
 
 # ── LOGS ──────────────────────────────────────────────
+@csrf_exempt
+@require_http_methods(["GET"])
 def api_get_logs(request):
+    uid = request.GET.get("uid")
+    if uid:
+        caller = _exec_one("SELECT rol FROM usuarios WHERE id=?", (uid,))
+        if not caller or caller["rol"] not in ("administrador", "superadmin"):
+            return JsonResponse({"ok": False, "error": "No autorizado"}, status=403)
     rows = _exec("SELECT fecha AS f, usuario AS u, accion AS ac, detalle AS d FROM logs ORDER BY id DESC LIMIT 200")
     return JsonResponse({"ok": True, "logs": rows})
 
