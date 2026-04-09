@@ -36,7 +36,12 @@ def _exec(sql, params=()):
         try:
             rows = cur.fetchall()
             cols = [d[0] for d in cur.description] if cur.description else []
-            return [dict(zip(cols, row)) for row in rows]
+            import datetime as _dt
+            def _safe(v):
+                if isinstance(v, (_dt.datetime, _dt.date, _dt.time)):
+                    return str(v)
+                return v
+            return [dict(zip(cols, [_safe(c) for c in row])) for row in rows]
         except Exception:
             return []
 
