@@ -23,14 +23,10 @@ async function api(path,method,body){
     let opts={method:method||"GET",headers:{"Content-Type":"application/json"}};
     if(body) opts.body=JSON.stringify(body);
     let res=await fetch("/api"+path,opts);
-    if(!res.ok) console.error("[API] "+path+" → HTTP "+res.status);
     let data=await res.json();
     if(!res.ok&&!data.error) data.error="Error ("+res.status+")";
     return data;
-  }catch(e){
-    console.error("[API] "+path+" → "+e);
-    return{ok:false,error:"Error de conexión: "+e};
-  }
+  }catch(e){return{ok:false,error:"Error de conexión."};}
 }
 // ── MONEDA E IDIOMA ──────────────────────────
 const LANG = "es";
@@ -282,58 +278,51 @@ function switchM(a,b){cerrarModal(a);abrirModal(b);}
 function bTab(tab,btn){if(tab==="cuenta"){if(usuario)abrirPanel();else abrirModal("mLogin");return;}irPagina(tab);}
 
 // ── CARGAR DATOS ────────────────────────────
-let _cargandoDatos = false;
-let _reintentosCargar = 0;
+let _cargandoDatos=false,_reintentos=0;
 async function cargarDatos(){
-  if(_cargandoDatos) return;
-  _cargandoDatos = true;
-  try {
-    // Cargar productos primero (crítico)
-    let r = await api("/productos");
-    if(r && r.ok && r.productos && r.productos.length > 0){
-      PRODS = r.productos;
+  if(_cargandoDatos)return;
+  _cargandoDatos=true;
+  try{
+    let r=await api("/productos");
+    if(r&&r.ok&&r.productos&&r.productos.length>0){
+      PRODS=r.productos;
       let catMap={};
       PRODS.forEach(function(p){if(p.cid)catMap[p.cid]=p.cat;});
       CATS=[{id:0,n:"🏷️ Todos"}];
       Object.keys(catMap).forEach(function(cid){CATS.push({id:parseInt(cid),n:catMap[cid]});});
       actualizarStatsHero();
-      _reintentosCargar = 0;
+      _reintentos=0;
     } else {
-      console.error("[NuestroStore] /api/productos falló o vino vacío:", r);
-      // Reintentar hasta 3 veces con delay creciente
-      if(_reintentosCargar < 3){
-        _reintentosCargar++;
-        _cargandoDatos = false;
-        console.warn("[NuestroStore] Reintentando en "+(_reintentosCargar*2000)+"ms (intento "+_reintentosCargar+")");
-        setTimeout(cargarDatos, _reintentosCargar * 2000);
+      console.error("[NS] /api/productos falló:",r&&r.error);
+      if(_reintentos<3){
+        _reintentos++;
+        _cargandoDatos=false;
+        console.warn("[NS] Reintentando en",(_reintentos*2000)+"ms");
+        setTimeout(cargarDatos,_reintentos*2000);
         return;
       }
     }
-    // Cargar reseñas (no crítico, no bloquea)
     api("/resenias").then(function(rr){
-      if(rr && rr.ok){
+      if(rr&&rr.ok){
         RESENIAS={};
         (rr.resenias||[]).forEach(function(res){
           if(!RESENIAS[res.pid])RESENIAS[res.pid]=[];
           RESENIAS[res.pid].push(res);
         });
       }
-    }).catch(function(e){ console.warn("[NuestroStore] reseñas:", e); });
-    // Renderizar página actual
+    }).catch(function(){});
+    if(paginaActual==="tienda"||PAGE==="tienda"){cargarCats();renderProds();actualizarEstadsTienda();}
     if(paginaActual==="inicio"||PAGE==="inicio"){
       requestAnimationFrame(function(){
         requestAnimationFrame(function(){
-          setTimeout(renderInicio, 50);
+          setTimeout(renderInicio,50);
         });
       });
     }
-    if(paginaActual==="tienda"||PAGE==="tienda"){
-      cargarCats(); renderProds(); actualizarEstadsTienda();
-    }
-  } catch(e) {
-    console.error("[NuestroStore] Error fatal en cargarDatos:", e);
-  } finally {
-    _cargandoDatos = false;
+  }catch(e){
+    console.error("[NS] Error fatal cargarDatos:",e);
+  }finally{
+    _cargandoDatos=false;
   }
 }
 function actualizarStatsHero(){
@@ -452,9 +441,8 @@ function carouselInit(name,items,delay){
   let c=CR[name];c.items=items;c.idx=0;c.total=items.length;c.perPage=carouselPerPage();
   let track=document.getElementById("track"+cap(name));
   if(!track)return;
-  // Si no hay items, limpiar skeleton y salir
   if(!items||!items.length){
-    track.innerHTML='<div style="padding:24px;text-align:center;color:var(--gr);font-size:.9rem">Sin productos disponibles</div>';
+    track.innerHTML='<div style="padding:32px;text-align:center;color:var(--gr);font-size:.9rem;width:100%">Sin productos disponibles</div>';
     return;
   }
   // Fade out skeleton cards if present
