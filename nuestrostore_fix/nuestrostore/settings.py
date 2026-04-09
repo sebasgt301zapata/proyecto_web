@@ -97,7 +97,14 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 # WhiteNoise storage solo si está disponible
 try:
     import whitenoise  # noqa
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+        },
+    }
 except ImportError:
     pass
 
