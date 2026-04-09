@@ -279,7 +279,8 @@ function bTab(tab,btn){if(tab==="cuenta"){if(usuario)abrirPanel();else abrirModa
 
 // ── CARGAR DATOS ────────────────────────────
 async function cargarDatos(){
-  let r=await api("/productos");
+  // Lanzar ambas peticiones en paralelo — no bloquear productos esperando resenias
+  let [r, rr] = await Promise.all([api("/productos"), api("/resenias")]);
   if(r.ok){
     PRODS=r.productos;
     let catMap={};
@@ -289,11 +290,9 @@ async function cargarDatos(){
     actualizarStatsHero();
     if(paginaActual==="tienda"||PAGE==="tienda"){cargarCats();renderProds();actualizarEstadsTienda();}
   }
-  let rr=await api("/resenias");
   if(rr.ok){RESENIAS={};rr.resenias.forEach(function(res){if(!RESENIAS[res.pid])RESENIAS[res.pid]=[];RESENIAS[res.pid].push(res);});}
-  // Always re-render current page after data loads
+  // Renderizar inicio con productos Y resenias ya disponibles
   if(paginaActual==="inicio"||PAGE==="inicio"){
-    // Doble rAF garantiza que el DOM está completamente pintado antes de medir
     requestAnimationFrame(function(){
       requestAnimationFrame(function(){
         setTimeout(renderInicio, 50);
@@ -447,14 +446,12 @@ function carouselInit(name,items,delay){
           if(cw<80)cw=Math.floor((window.innerWidth-48)/pp);
           outer.style.setProperty("--cw",cw+"px");
           outer.style.setProperty("--cgap",gap+"px");
-          // Aplicar ancho a cada tarjeta ya insertada
           Array.from(track.children).forEach(function(el){el.style.width=cw+"px";});
         }
         carouselRender(name);
       });
     });
   };
-  // Dar tiempo al fade-out del skeleton antes de reemplazar el HTML
   if(skCards.length){
     setTimeout(doRender, 300);
   } else {
