@@ -421,26 +421,42 @@ function carouselInit(name,items,delay){
   // Fade out skeleton cards if present
   let skCards=track.querySelectorAll(".sk-card");
   if(skCards.length){
-    skCards.forEach(function(sk){sk.style.opacity="0";});
+    skCards.forEach(function(sk){sk.style.transition="opacity .25s";sk.style.opacity="0";});
   }
-  // Render real cards (tiny delay lets fade-out play)
+  // doRender: escribe las tarjetas reales y recalcula dimensiones con rAF
   let doRender=function(){
     track.style.transition="none";
     track.innerHTML=items.map(function(html){return '<div class="pc" style="flex-shrink:0;width:var(--cw)">'+html+'</div>';}).join("");
-  // Set CSS let for card width
-  let outer=document.getElementById("outer"+cap(name));
-  if(outer){let gap=14,pp=c.perPage,ow=outer.offsetWidth||outer.getBoundingClientRect().width||window.innerWidth;if(ow<10)ow=window.innerWidth;let peekOffset=(pp===1&&ow<480)?Math.floor(ow*0.22):0;let cw=Math.floor((ow-peekOffset-(gap*(pp-1)))/pp);if(cw<80)cw=Math.floor((window.innerWidth-48)/pp);outer.style.setProperty("--cw",cw+"px");outer.style.setProperty("--cgap",gap+"px");}
-  // Dots
-  let maxDots=Math.max(1,c.total-c.perPage+1);
-  let isDark=name==="valorados";
-  let dots=document.getElementById("dots"+cap(name));
-  if(dots)dots.innerHTML=Array.from({length:maxDots}).map(function(_,i){return '<span class="cdot'+(isDark?" cdot-dark":"")+(i===0?" on":"")+'"></span>';}).join("");
-  carouselRender(name);
-  if(c.timer)clearInterval(c.timer);
-  if(c.total>c.perPage){c.timer=setInterval(function(){carouselNext(name);},delay||5000);}
+    // Dots
+    let maxDots=Math.max(1,c.total-c.perPage+1);
+    let isDark=name==="valorados";
+    let dots=document.getElementById("dots"+cap(name));
+    if(dots)dots.innerHTML=Array.from({length:maxDots}).map(function(_,i){return '<span class="cdot'+(isDark?" cdot-dark":"")+(i===0?" on":"")+'"></span>';}).join("");
+    if(c.timer)clearInterval(c.timer);
+    if(c.total>c.perPage){c.timer=setInterval(function(){carouselNext(name);},delay||5000);}
+    // Esperar a que el navegador calcule el layout antes de medir anchos
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){
+        let outer=document.getElementById("outer"+cap(name));
+        if(outer){
+          let gap=14,pp=c.perPage;
+          let ow=outer.getBoundingClientRect().width||outer.offsetWidth;
+          if(ow<10)ow=window.innerWidth-32;
+          let peekOffset=(pp===1&&ow<480)?Math.floor(ow*0.22):0;
+          let cw=Math.floor((ow-peekOffset-(gap*(pp-1)))/pp);
+          if(cw<80)cw=Math.floor((window.innerWidth-48)/pp);
+          outer.style.setProperty("--cw",cw+"px");
+          outer.style.setProperty("--cgap",gap+"px");
+          // Aplicar ancho a cada tarjeta ya insertada
+          Array.from(track.children).forEach(function(el){el.style.width=cw+"px";});
+        }
+        carouselRender(name);
+      });
+    });
   };
+  // Dar tiempo al fade-out del skeleton antes de reemplazar el HTML
   if(skCards.length){
-    setTimeout(doRender, 200);
+    setTimeout(doRender, 300);
   } else {
     doRender();
   }
