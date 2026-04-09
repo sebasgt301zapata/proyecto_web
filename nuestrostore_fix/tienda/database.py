@@ -289,29 +289,26 @@ def init_db():
         for idx in indexes:
             _exec(idx)
 
-    # Datos iniciales
-    existe = _exec_one("SELECT 1 FROM usuarios LIMIT 1")
-    if not existe:
-        print("  ℹ  Creando datos iniciales...")
-        cats = [
+    # Datos iniciales — check each table independently so reseeding always works
+    existe_users = _exec_one("SELECT 1 FROM usuarios LIMIT 1")
+    existe_cats  = _exec_one("SELECT 1 FROM categorias LIMIT 1")
+    existe_prods = _exec_one("SELECT 1 FROM productos LIMIT 1")
+
+    conflict = "DO NOTHING" if pg else "IGNORE"
+
+    # Always ensure categories exist
+    if not existe_cats:
+        print("  ℹ  Creando categorías...")
+        cats_seed = [
             ("Electrónica", "📱"), ("Ropa", "👕"), ("Hogar", "🏠"),
             ("Deportes", "⚽"), ("Alimentos", "🍎"), ("Belleza", "💄"),
         ]
-        conflict = "DO NOTHING" if pg else "IGNORE"
-        for cat_n, cat_e in cats:
+        for cat_n, cat_e in cats_seed:
             _exec(f"INSERT INTO categorias(nombre,emoji) VALUES(?,?) ON CONFLICT {conflict}", (cat_n, cat_e))
 
-        usuarios_demo = [
-            ("Super", "Admin", "superadmin@tienda.com", "Admin@2024", "superadmin"),
-            ("Carlos", "Lopez", "carlos@admin.com", "Admin@2024", "administrador"),
-            ("Ana", "Garcia", "ana@cliente.com", "cliente123", "cliente"),
-            ("Pedro", "Martinez", "pedro@cliente.com", "cliente123", "cliente"),
-        ]
-        for nom, ape, email, pw, rol in usuarios_demo:
-            h = hash_pass(pw)
-            _exec(f"INSERT INTO usuarios(nombre,apellido,email,password,rol) VALUES(?,?,?,?,?) ON CONFLICT {conflict}",
-                  (nom, ape, email, h, rol))
-
+    # Always ensure products exist
+    if not existe_prods:
+        print("  ℹ  Creando productos demo...")
         productos_demo = [
             ("Smartphone Pro X", "AMOLED 6.7 pulgadas, camara 108MP, bateria 5000mAh", 599.99, 499.99, 50, 1, 1, "📱"),
             ("Auriculares ANC", "Cancelacion activa de ruido, autonomia 30h", 199.99, None, 100, 1, 1, "🎧"),
@@ -339,6 +336,22 @@ def init_db():
                 f"INSERT INTO productos(nombre,descripcion,precio,oferta,stock,cat_id,destacado,emoji) VALUES(?,?,?,?,?,?,?,?) ON CONFLICT {conflict}",
                 (nom, desc, precio, oferta, stock, cat_id, dest, emoji)
             )
+
+    if not existe_users:
+        print("  ℹ  Creando datos iniciales...")
+        conflict = "DO NOTHING" if pg else "IGNORE"
+
+        usuarios_demo = [
+            ("Super", "Admin", "superadmin@tienda.com", "Admin@2024", "superadmin"),
+            ("Carlos", "Lopez", "carlos@admin.com", "Admin@2024", "administrador"),
+            ("Ana", "Garcia", "ana@cliente.com", "cliente123", "cliente"),
+            ("Pedro", "Martinez", "pedro@cliente.com", "cliente123", "cliente"),
+        ]
+        for nom, ape, email, pw, rol in usuarios_demo:
+            h = hash_pass(pw)
+            _exec(f"INSERT INTO usuarios(nombre,apellido,email,password,rol) VALUES(?,?,?,?,?) ON CONFLICT {conflict}",
+                  (nom, ape, email, h, rol))
+
 
         _exec("INSERT INTO logs(usuario,accion,detalle) VALUES(?,?,?)",
               ("Sistema", "INIT", "Base de datos inicializada"))
