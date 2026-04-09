@@ -5740,3 +5740,137 @@ html.dark .footer-icon-btn {
 html.dark .footer-icon-btn:hover {
   background: rgba(255,255,255,.15) !important;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   DARK MODE — Elementos faltantes identificados
+   ══════════════════════════════════════════════════════════════ */
+
+/* Contenedor historial de items */
+html.dark .historial-items {
+  background: #0F172A;
+}
+html.dark .hitem {
+  background: #1E293B;
+}
+html.dark .hitem-emoji {
+  background: linear-gradient(135deg,#1E293B,#1E3A8A);
+}
+html.dark .hitem-name { color: #F1F5F9; }
+html.dark .hitem-sub  { color: #64748B; }
+html.dark .hitem-price { color: #93C5FD; }
+
+/* Prioridad en formulario de contacto */
+html.dark .cf-prio-badge { border-color: #334155; }
+html.dark .prio-normal   { background: #022C22; color: #6EE7B7; }
+html.dark .prio-urgente  { background: #1C0A0A; color: #FCA5A5; }
+html.dark .prio-info     { background: #0C1A3A; color: #93C5FD; }
+html.dark .prio-badge-normal     { background: #022C22; color: #6EE7B7; }
+html.dark .prio-badge-urgente    { background: #1C0A0A; color: #FCA5A5; }
+html.dark .prio-badge-informativo{ background: #0C1A3A; color: #93C5FD; }
+
+/* Wishlist button large (en modal producto) */
+html.dark .wl-btn-lg {
+  background: #1E293B;
+  border-color: #334155;
+  color: #94A3B8;
+}
+html.dark .wl-btn-lg:hover {
+  border-color: #3B82F6;
+  color: #93C5FD;
+  background: #1E3A8A22;
+}
+
+/* Zoom de imagen */
+html.dark .img-zoom-close {
+  background: rgba(15,23,42,.9);
+  color: #F1F5F9;
+  border-color: #334155;
+}
+html.dark .img-zoom-close:hover { background: #1E293B; }
+
+/* Producto relacionado en modal */
+html.dark .rel-card,
+html.dark [data-relid] {
+  background: #1E293B !important;
+  border-color: #334155 !important;
+  color: #F1F5F9 !important;
+}
+
+/* Skeleton en modo oscuro (ya cubierto pero reforzamos) */
+html.dark .sk-card {
+  background: #1E293B;
+  border-color: #334155;
+}
+html.dark .sk-img,
+html.dark .sk-line,
+html.dark .sk-btn {
+  --sk-base:  #1E293B;
+  --sk-shine: #2D3F55;
+}
+
+/* Sección "sobre nosotros" cards */
+html.dark .afeat {
+  background: #1E293B;
+  border-color: #334155;
+}
+html.dark .afeat strong { color: #F1F5F9; }
+html.dark .afeat small  { color: #64748B; }
+
+/* About section background */
+html.dark .about-sec {
+  background: #0F172A !important;
+}
+
+/* Reseñas en modal de producto */
+html.dark .resenia-item {
+  border-color: #1E293B;
+  background: #0F172A;
+}
+html.dark .res-fecha { color: #475569; }
+
+/* Contador de caracteres en textarea contacto */
+html.dark .char-count { color: #475569; }
+
+/* Factura (fix adicional) */
+html.dark .factura-box {
+  background: #1E293B;
+  color: #F1F5F9;
+}
+html.dark .fact-head { border-bottom-color: #334155; }
+html.dark .fact-head h3 { color: #F1F5F9; }
+html.dark .fact-body { color: #CBD5E1; }
+html.dark .fact-btns { border-top-color: #334155; }
+html.dark .fact-btns button:first-child {
+  background: #1E293B !important;
+  color: #94A3B8 !important;
+  border-color: #334155 !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FIX — Carrusel sobre fondo oscuro (sec-valorados)
+   ══════════════════════════════════════════════════════════════ */
+html.dark #sec-valorados .pc {
+  background: #1E293B;
+  border-color: #334155;
+}
+html.dark .carousel-btn-dark {
+  background: rgba(255,255,255,.08);
+  border: 1.5px solid rgba(255,255,255,.15);
+  color: #F1F5F9;
+}
+html.dark .carousel-btn-dark:hover {
+  background: rgba(255,255,255,.18);
+}
+html.dark .cdot { background: rgba(255,255,255,.25); }
+html.dark .cdot.on { background: #fff; }
+html.dark .cdot-dark { background: rgba(255,255,255,.25); }
+html.dark .cdot-dark.on { background: #93C5FD; }
+
+/* ══════════════════════════════════════════════════════════════
+   FIX GLOBAL — Transición de página sin parpadeo
+   ══════════════════════════════════════════════════════════════ */
+html:not(.dm-transition) body {
+  /* Garantiza que el body ya sea oscuro si dark class está activa
+     desde el inline script, sin necesitar transición en el primer render */
+}
+html.dark body { background: #0F172A; color: #F1F5F9; }
