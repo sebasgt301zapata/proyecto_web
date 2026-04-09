@@ -23,10 +23,14 @@ async function api(path,method,body){
     let opts={method:method||"GET",headers:{"Content-Type":"application/json"}};
     if(body) opts.body=JSON.stringify(body);
     let res=await fetch("/api"+path,opts);
+    if(!res.ok) console.error("[API] "+path+" → HTTP "+res.status);
     let data=await res.json();
     if(!res.ok&&!data.error) data.error="Error ("+res.status+")";
     return data;
-  }catch(e){return{ok:false,error:"Error de conexión."};}
+  }catch(e){
+    console.error("[API] "+path+" → "+e);
+    return{ok:false,error:"Error de conexión: "+e};
+  }
 }
 // ── MONEDA E IDIOMA ──────────────────────────
 const LANG = "es";
@@ -279,19 +283,26 @@ function bTab(tab,btn){if(tab==="cuenta"){if(usuario)abrirPanel();else abrirModa
 
 // ── CARGAR DATOS ────────────────────────────
 async function cargarDatos(){
-  // Lanzar ambas peticiones en paralelo — no bloquear productos esperando resenias
-  let [r, rr] = await Promise.all([api("/productos"), api("/resenias")]);
-  if(r.ok){
-    PRODS=r.productos;
+  let r, rr;
+  try {
+    [r, rr] = await Promise.all([api("/productos"), api("/resenias")]);
+  } catch(e) {
+    console.error("[NuestroStore] Error cargando datos:", e);
+    r = {ok:false, error:String(e)};
+    rr = {ok:false};
+  }
+  if(r && r.ok){
+    PRODS=r.productos||[];
     let catMap={};
     PRODS.forEach(function(p){if(p.cid)catMap[p.cid]=p.cat;});
     CATS=[{id:0,n:"🏷️ Todos"}];
     Object.keys(catMap).forEach(function(cid){CATS.push({id:parseInt(cid),n:catMap[cid]});});
     actualizarStatsHero();
     if(paginaActual==="tienda"||PAGE==="tienda"){cargarCats();renderProds();actualizarEstadsTienda();}
+  } else {
+    console.error("[NuestroStore] API /productos falló:", r&&r.error);
   }
-  if(rr.ok){RESENIAS={};rr.resenias.forEach(function(res){if(!RESENIAS[res.pid])RESENIAS[res.pid]=[];RESENIAS[res.pid].push(res);});}
-  // Renderizar inicio con productos Y resenias ya disponibles
+  if(rr && rr.ok){RESENIAS={};(rr.resenias||[]).forEach(function(res){if(!RESENIAS[res.pid])RESENIAS[res.pid]=[];RESENIAS[res.pid].push(res);});}
   if(paginaActual==="inicio"||PAGE==="inicio"){
     requestAnimationFrame(function(){
       requestAnimationFrame(function(){
@@ -417,6 +428,11 @@ function carouselInit(name,items,delay){
   let c=CR[name];c.items=items;c.idx=0;c.total=items.length;c.perPage=carouselPerPage();
   let track=document.getElementById("track"+cap(name));
   if(!track)return;
+  // Si no hay items, limpiar skeleton y salir
+  if(!items||!items.length){
+    track.innerHTML='<div style="padding:24px;text-align:center;color:var(--gr);font-size:.9rem">Sin productos disponibles</div>';
+    return;
+  }
   // Fade out skeleton cards if present
   let skCards=track.querySelectorAll(".sk-card");
   if(skCards.length){
