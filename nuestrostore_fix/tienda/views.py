@@ -1063,18 +1063,21 @@ def api_musica_track(request, uid, mid):
 def api_contactos(request):
     if request.method == "GET":
         rows = _exec("""
-            SELECT id, nombre, email, tel, asunto, mensaje, leido, fecha
+            SELECT id, nombre, email, tel, asunto, mensaje, prioridad, leido, fecha
             FROM contactos ORDER BY id DESC
         """)
         return JsonResponse({"ok": True, "contactos": rows})
 
     elif request.method == "POST":
-        data    = json.loads(request.body or '{}')
-        nombre  = (data.get("nombre") or "").strip()
-        email   = (data.get("email") or "").strip().lower()
-        tel     = (data.get("tel") or "").strip()
-        asunto  = (data.get("asunto") or "").strip()
-        mensaje = (data.get("mensaje") or "").strip()
+        data      = json.loads(request.body or '{}')
+        nombre    = (data.get("nombre") or "").strip()
+        email     = (data.get("email") or "").strip().lower()
+        tel       = (data.get("tel") or "").strip()
+        asunto    = (data.get("asunto") or "").strip()
+        mensaje   = (data.get("mensaje") or "").strip()
+        prioridad = (data.get("prioridad") or "normal").strip()
+        if prioridad not in ("normal", "urgente", "informativo"):
+            prioridad = "normal"
 
         if not nombre or not email or not asunto or not mensaje:
             return JsonResponse({"ok": False, "error": "Todos los campos obligatorios son requeridos"})
@@ -1085,10 +1088,10 @@ def api_contactos(request):
 
         with transaction.atomic():
             _exec_insert(
-                "INSERT INTO contactos(nombre,email,tel,asunto,mensaje) VALUES(?,?,?,?,?)",
-                (nombre, email, tel, asunto, mensaje)
+                "INSERT INTO contactos(nombre,email,tel,asunto,mensaje,prioridad) VALUES(?,?,?,?,?,?)",
+                (nombre, email, tel, asunto, mensaje, prioridad)
             )
-        log_action(nombre, "CONTACTO", f"Asunto: {asunto}")
+        log_action(nombre, "CONTACTO", f"Asunto: {asunto} [{prioridad}]")
         return JsonResponse({"ok": True, "mensaje": "Mensaje recibido correctamente"})
 
     return JsonResponse({"ok": False, "error": "Método no permitido"}, status=405)
