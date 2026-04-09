@@ -1255,15 +1255,25 @@ function confirmarReset(){
 
 // ── MODO OSCURO ───────────────────────────────────────────────
 function aplicarDarkMode(dark){
+  // Add smooth transition class
+  document.documentElement.classList.add("dm-transition");
   document.documentElement.classList.toggle("dark", dark);
   localStorage.setItem("ns_dark", dark ? "1" : "0");
   DARK_MODE = dark;
-  // Update all toggle buttons
+  // Remove transition class after animation completes
+  setTimeout(function(){
+    document.documentElement.classList.remove("dm-transition");
+  }, 400);
+  // Update all toggle buttons with animation
   document.querySelectorAll(".dm-toggle").forEach(function(btn){
-    btn.innerHTML = dark ? "☀️" : "🌙";
-    btn.setAttribute("aria-label", dark ? "Modo claro" : "Modo oscuro");
+    btn.classList.add("dm-spin");
+    setTimeout(function(){ btn.classList.remove("dm-spin"); }, 400);
+    btn.textContent = dark ? "☀️" : "🌙";
     btn.setAttribute("title", dark ? "Cambiar a modo claro" : "Cambiar a modo oscuro");
   });
+  // Update meta theme-color
+  let meta = document.querySelector("meta[name=theme-color]");
+  if(meta) meta.setAttribute("content", dark ? "#0F172A" : "#1E3A8A");
 }
 function toggleDarkMode(){
   aplicarDarkMode(!DARK_MODE);
@@ -3594,6 +3604,7 @@ function mpRemove(idx){
 }
 
 // ── Borrar todo ──
+function mpClear(){ mpClearAll(); }
 function mpClearAll(){
   if(!mp.playlist.length) return;
   if(!confirm("¿Borrar toda la lista de reproducción?")) return;
