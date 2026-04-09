@@ -5,6 +5,7 @@ echo "==> Instalando dependencias..."
 pip install -r requirements.txt
 
 echo "==> Copiando archivos estáticos..."
+export DJANGO_SETTINGS_MODULE=nuestrostore.settings
 python manage.py collectstatic --no-input --clear
 
 echo "==> Inicializando base de datos..."
