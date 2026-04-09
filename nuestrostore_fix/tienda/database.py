@@ -199,14 +199,15 @@ def init_db():
         """,
         f"""
         CREATE TABLE IF NOT EXISTS contactos (
-            id       {t('INTEGER PRIMARY KEY AUTOINCREMENT', 'SERIAL PRIMARY KEY')},
-            nombre   TEXT NOT NULL,
-            email    TEXT NOT NULL,
-            tel      TEXT DEFAULT '',
-            asunto   TEXT NOT NULL,
-            mensaje  TEXT NOT NULL,
-            leido    {t('INTEGER', 'SMALLINT')} NOT NULL DEFAULT 0,
-            fecha    {t("TEXT DEFAULT (datetime('now','localtime'))", 'TIMESTAMP DEFAULT NOW()')}
+            id        {t('INTEGER PRIMARY KEY AUTOINCREMENT', 'SERIAL PRIMARY KEY')},
+            nombre    TEXT NOT NULL,
+            email     TEXT NOT NULL,
+            tel       TEXT DEFAULT '',
+            asunto    TEXT NOT NULL,
+            mensaje   TEXT NOT NULL,
+            prioridad TEXT DEFAULT 'normal',
+            leido     {t('INTEGER', 'SMALLINT')} NOT NULL DEFAULT 0,
+            fecha     {t("TEXT DEFAULT (datetime('now','localtime'))", 'TIMESTAMP DEFAULT NOW()')}
         )
         """,
         f"""
@@ -309,27 +310,36 @@ def init_db():
     # Always ensure products exist
     if not existe_prods:
         print("  ℹ  Creando productos demo...")
+        # Look up actual category IDs dynamically (safe for any DB)
+        cat_rows = _exec("SELECT id, nombre FROM categorias ORDER BY id")
+        cat_map = {r["nombre"]: r["id"] for r in cat_rows}
+        c1 = cat_map.get("Electrónica", 1)
+        c2 = cat_map.get("Ropa", 2)
+        c3 = cat_map.get("Hogar", 3)
+        c4 = cat_map.get("Deportes", 4)
+        c5 = cat_map.get("Alimentos", 5)
+        c6 = cat_map.get("Belleza", 6)
         productos_demo = [
-            ("Smartphone Pro X", "AMOLED 6.7 pulgadas, camara 108MP, bateria 5000mAh", 599.99, 499.99, 50, 1, 1, "📱"),
-            ("Auriculares ANC", "Cancelacion activa de ruido, autonomia 30h", 199.99, None, 100, 1, 1, "🎧"),
-            ("Laptop UltraBook", "Intel i7 12va gen, 16GB RAM, SSD NVMe 512GB", 1299.99, 999.99, 25, 1, 1, "💻"),
-            ("Tablet 10 pulgadas", "AMOLED 2K, 8000mAh, soporte S-Pen incluido", 349.99, None, 40, 1, 0, "📟"),
-            ("Smart Watch", "GPS, monitor cardiaco, resistente al agua 50m", 249.99, 199.99, 60, 1, 1, "⌚"),
-            ("Camara Mirrorless", "Sensor 24MP, video 4K, lente intercambiable", 899.99, 749.99, 20, 1, 1, "📷"),
-            ("Parlante Bluetooth", "360 surround, IPX7, bateria 24h", 79.99, 59.99, 90, 1, 0, "🔊"),
-            ("Camiseta Deportiva", "Tela transpirable premium para entrenamientos", 29.99, 19.99, 200, 2, 0, "👕"),
-            ("Chaqueta Impermeable", "Membrana Gore-Tex, costuras selladas, unisex", 149.99, 119.99, 80, 2, 1, "🧥"),
-            ("Jeans Slim Fit", "Denim premium elastico, corte moderno", 69.99, None, 120, 2, 0, "👖"),
-            ("Silla Ergonomica", "Soporte lumbar ajustable, apoyabrazos 4D", 299.99, None, 30, 3, 1, "🪑"),
-            ("Mochila Urbana", "Compartimento laptop 15 pulgadas, impermeable, USB", 59.99, 44.99, 150, 3, 0, "🎒"),
-            ("Licuadora Pro", "Motor 1200W, 6 velocidades, vaso de vidrio 2L", 79.99, 59.99, 80, 3, 0, "🥤"),
-            ("Aspiradora Robot", "Mapeo laser, 3000Pa, compatible con Alexa", 399.99, 329.99, 35, 3, 1, "🤖"),
-            ("Zapatillas Running", "Amortiguacion foam reactiva para maraton", 89.99, 69.99, 75, 4, 1, "👟"),
-            ("Bicicleta MTB 29", "Marco aluminio, 21 velocidades, frenos disco", 699.99, 599.99, 15, 4, 1, "🚴"),
-            ("Pesas Ajustables", "Set 2-32kg por mancuerna, cerrojo rapido", 249.99, None, 40, 4, 0, "🏋️"),
-            ("Cafe Premium 500g", "Grano arabica colombiano, tostado medio", 18.99, 14.99, 300, 5, 1, "☕"),
-            ("Proteina Whey 1kg", "25g proteina por porcion, sabor vainilla", 49.99, 39.99, 120, 5, 0, "💪"),
-            ("Set Skincare Pro", "Serum vitamina C, hidratante y contorno de ojos", 89.99, 69.99, 60, 6, 1, "✨"),
+            ("Smartphone Pro X", "AMOLED 6.7 pulgadas, camara 108MP, bateria 5000mAh", 599.99, 499.99, 50, c1, 1, "📱"),
+            ("Auriculares ANC", "Cancelacion activa de ruido, autonomia 30h", 199.99, None, 100, c1, 1, "🎧"),
+            ("Laptop UltraBook", "Intel i7 12va gen, 16GB RAM, SSD NVMe 512GB", 1299.99, 999.99, 25, c1, 1, "💻"),
+            ("Tablet 10 pulgadas", "AMOLED 2K, 8000mAh, soporte S-Pen incluido", 349.99, None, 40, c1, 0, "📟"),
+            ("Smart Watch", "GPS, monitor cardiaco, resistente al agua 50m", 249.99, 199.99, 60, c1, 1, "⌚"),
+            ("Camara Mirrorless", "Sensor 24MP, video 4K, lente intercambiable", 899.99, 749.99, 20, c1, 1, "📷"),
+            ("Parlante Bluetooth", "360 surround, IPX7, bateria 24h", 79.99, 59.99, 90, c1, 0, "🔊"),
+            ("Camiseta Deportiva", "Tela transpirable premium para entrenamientos", 29.99, 19.99, 200, c2, 0, "👕"),
+            ("Chaqueta Impermeable", "Membrana Gore-Tex, costuras selladas, unisex", 149.99, 119.99, 80, c2, 1, "🧥"),
+            ("Jeans Slim Fit", "Denim premium elastico, corte moderno", 69.99, None, 120, c2, 0, "👖"),
+            ("Silla Ergonomica", "Soporte lumbar ajustable, apoyabrazos 4D", 299.99, None, 30, c3, 1, "🪑"),
+            ("Mochila Urbana", "Compartimento laptop 15 pulgadas, impermeable, USB", 59.99, 44.99, 150, c3, 0, "🎒"),
+            ("Licuadora Pro", "Motor 1200W, 6 velocidades, vaso de vidrio 2L", 79.99, 59.99, 80, c3, 0, "🥤"),
+            ("Aspiradora Robot", "Mapeo laser, 3000Pa, compatible con Alexa", 399.99, 329.99, 35, c3, 1, "🤖"),
+            ("Zapatillas Running", "Amortiguacion foam reactiva para maraton", 89.99, 69.99, 75, c4, 1, "👟"),
+            ("Bicicleta MTB 29", "Marco aluminio, 21 velocidades, frenos disco", 699.99, 599.99, 15, c4, 1, "🚴"),
+            ("Pesas Ajustables", "Set 2-32kg por mancuerna, cerrojo rapido", 249.99, None, 40, c4, 0, "🏋️"),
+            ("Cafe Premium 500g", "Grano arabica colombiano, tostado medio", 18.99, 14.99, 300, c5, 1, "☕"),
+            ("Proteina Whey 1kg", "25g proteina por porcion, sabor vainilla", 49.99, 39.99, 120, c5, 0, "💪"),
+            ("Set Skincare Pro", "Serum vitamina C, hidratante y contorno de ojos", 89.99, 69.99, 60, c6, 1, "✨"),
         ]
         for nom, desc, precio, oferta, stock, cat_id, dest, emoji in productos_demo:
             _exec(
