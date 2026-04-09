@@ -282,35 +282,59 @@ function switchM(a,b){cerrarModal(a);abrirModal(b);}
 function bTab(tab,btn){if(tab==="cuenta"){if(usuario)abrirPanel();else abrirModal("mLogin");return;}irPagina(tab);}
 
 // ── CARGAR DATOS ────────────────────────────
+let _cargandoDatos = false;
+let _reintentosCargar = 0;
 async function cargarDatos(){
-  let r, rr;
+  if(_cargandoDatos) return;
+  _cargandoDatos = true;
   try {
-    [r, rr] = await Promise.all([api("/productos"), api("/resenias")]);
-  } catch(e) {
-    console.error("[NuestroStore] Error cargando datos:", e);
-    r = {ok:false, error:String(e)};
-    rr = {ok:false};
-  }
-  if(r && r.ok){
-    PRODS=r.productos||[];
-    let catMap={};
-    PRODS.forEach(function(p){if(p.cid)catMap[p.cid]=p.cat;});
-    CATS=[{id:0,n:"🏷️ Todos"}];
-    Object.keys(catMap).forEach(function(cid){CATS.push({id:parseInt(cid),n:catMap[cid]});});
-    actualizarStatsHero();
-    if(paginaActual==="tienda"||PAGE==="tienda"){cargarCats();renderProds();actualizarEstadsTienda();}
-  } else {
-    console.error("[NuestroStore] API /productos falló:", r&&r.error);
-  }
-  if(rr && rr.ok){RESENIAS={};(rr.resenias||[]).forEach(function(res){if(!RESENIAS[res.pid])RESENIAS[res.pid]=[];RESENIAS[res.pid].push(res);});}
-  if(paginaActual==="inicio"||PAGE==="inicio"){
-    requestAnimationFrame(function(){
+    // Cargar productos primero (crítico)
+    let r = await api("/productos");
+    if(r && r.ok && r.productos && r.productos.length > 0){
+      PRODS = r.productos;
+      let catMap={};
+      PRODS.forEach(function(p){if(p.cid)catMap[p.cid]=p.cat;});
+      CATS=[{id:0,n:"🏷️ Todos"}];
+      Object.keys(catMap).forEach(function(cid){CATS.push({id:parseInt(cid),n:catMap[cid]});});
+      actualizarStatsHero();
+      _reintentosCargar = 0;
+    } else {
+      console.error("[NuestroStore] /api/productos falló o vino vacío:", r);
+      // Reintentar hasta 3 veces con delay creciente
+      if(_reintentosCargar < 3){
+        _reintentosCargar++;
+        _cargandoDatos = false;
+        console.warn("[NuestroStore] Reintentando en "+(_reintentosCargar*2000)+"ms (intento "+_reintentosCargar+")");
+        setTimeout(cargarDatos, _reintentosCargar * 2000);
+        return;
+      }
+    }
+    // Cargar reseñas (no crítico, no bloquea)
+    api("/resenias").then(function(rr){
+      if(rr && rr.ok){
+        RESENIAS={};
+        (rr.resenias||[]).forEach(function(res){
+          if(!RESENIAS[res.pid])RESENIAS[res.pid]=[];
+          RESENIAS[res.pid].push(res);
+        });
+      }
+    }).catch(function(e){ console.warn("[NuestroStore] reseñas:", e); });
+    // Renderizar página actual
+    if(paginaActual==="inicio"||PAGE==="inicio"){
       requestAnimationFrame(function(){
-        setTimeout(renderInicio, 50);
+        requestAnimationFrame(function(){
+          setTimeout(renderInicio, 50);
+        });
       });
-    });
+    }
+    if(paginaActual==="tienda"||PAGE==="tienda"){
+      cargarCats(); renderProds(); actualizarEstadsTienda();
+    }
+  } catch(e) {
+    console.error("[NuestroStore] Error fatal en cargarDatos:", e);
+  } finally {
+    _cargandoDatos = false;
   }
-  if(paginaActual==="tienda"||PAGE==="tienda"){cargarCats();renderProds();actualizarEstadsTienda();}
 }
 function actualizarStatsHero(){
   let cs=PRODS.filter(function(p){return p.st>0;});
