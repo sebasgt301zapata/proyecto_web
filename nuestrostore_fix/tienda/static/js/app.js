@@ -3142,6 +3142,7 @@ function mpLoadFilesDone(added){
   mpShowPlayer();
   mpRenderPlaylist();
   if(mp.current < 0) mpPlay(0);
+  mpRefreshCard();
 }
 
 // ── YouTube embed ──
@@ -3422,10 +3423,12 @@ function mpPlay(idx){
     mpUpdateNowPlaying();
     mpSetPlayIcon(true);
     mpUpdateFab(true);
+    mpRefreshCard();
   }).catch(function(err){
     console.warn("Autoplay bloqueado:", err);
     mp.playing = false;
     mpSetPlayIcon(false);
+    mpRefreshCard();
   });
 }
 
@@ -3445,6 +3448,7 @@ function mpTogglePlay(){
     mpSetPlayIcon(true);
     mpUpdateFab(true);
   }
+  mpRefreshCard();
 }
 
 // ── Siguiente ──
@@ -3489,6 +3493,7 @@ function mpOnEnded(){
     mp.playing = false;
     mpSetPlayIcon(false);
     mpUpdateFab(false);
+    mpRefreshCard();
   }
 }
 
@@ -3497,6 +3502,7 @@ function mpToggleShuffle(){
   mp.shuffle = !mp.shuffle;
   let btn = document.getElementById("mpShuffleBtn");
   if(btn) btn.classList.toggle("active", mp.shuffle);
+  mpRefreshCard();
   if(mp.shuffle){
     // Generar orden aleatorio
     mp.shuffleOrder = mp.playlist.map(function(_,i){return i;});
@@ -3528,6 +3534,7 @@ function mpToggleRepeat(){
     if(btn){ btn.classList.remove("active"); btn.textContent = "↻"; btn.title = "Repetir"; }
     toast("Repetición desactivada","i");
   }
+  mpRefreshCard();
 }
 
 // ── Seek ──
