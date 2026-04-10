@@ -2000,7 +2000,38 @@ function actualizarLangUI(){
 }
 
 function abrirPanel(){if(!usuario){abrirModal("mLogin");return;}if(usuario.rol==="administrador"){document.getElementById("panT").textContent="⚙️ Panel Administrador";buildAdmin();abrirModal("mPanel");}else if(usuario.rol==="superadmin"){document.getElementById("panT").textContent="👑 Super Administrador";buildSuper();abrirModal("mPanel");}else{abrirCuentaCliente();}}
-function buildAdmin(){let pb=document.getElementById("panB");let userAvaAdmin=usuario.avatar?(usuario.avatar.startsWith("data:")||/^\p{Emoji}/u.test(usuario.avatar)||usuario.avatar.length<=8)?usuario.avatar:'<img src="'+usuario.avatar+'" style="width:32px;height:32px;object-fit:cover;border-radius:50%"/>':(usuario.n[0]);pb.innerHTML='<div class="panel-user-bar">'+'<div class="pub-ava">'+userAvaAdmin+'</div>'+'<div class="pub-info"><div class="pub-name">'+usuario.n+' '+usuario.a+'</div><div class="pub-role">⚙️ Administrador</div></div>'+'<div class="pub-actions">'+'<button class="pub-btn pub-btn-edit" onclick="panelEditarPerfil()">✏️ Perfil</button>'+'<button class="pub-btn pub-btn-exit" onclick="panelSalir()">🚪 Salir</button>'+'</div></div>'+'<div class="tabs"><button class="tab'+(aTab==="productos"?" on":"")+'" onclick="setATab(\'productos\',this)">📦 Productos</button><button class="tab'+(aTab==="agregar"?" on":"")+'" onclick="setATab(\'agregar\',this)">'+(editId?"💾 Editar":"➕ Añadir")+'</button><button class="tab'+(aTab==="categorias"?" on":"")+'" onclick="setATab(\'categorias\',this)">🏷️ Categorías</button><button class="tab'+(aTab==="reportes"?" on":"")+'" onclick="setATab(\'reportes\',this)">🚨 Reportes</button><button class="tab'+(aTab==="mensajes"?" on":"")+'" onclick="setATab(\'mensajes\',this)" id="tabMensajesAdmin">📬 Mensajes</button></div><div id="aTB"></div>';renderAdminTab();}
+function buildAdmin(){
+  let pb=document.getElementById("panB");
+  let ava=usuario.avatar
+    ?(usuario.avatar.startsWith("data:")||/^\p{Emoji}/u.test(usuario.avatar)||usuario.avatar.length<=8)
+      ?usuario.avatar:'<img src="'+usuario.avatar+'" style="width:48px;height:48px;object-fit:cover;border-radius:50%"/>'
+    :usuario.n[0];
+  let tabs=[
+    {k:"productos",l:"📦 Productos"},
+    {k:"agregar",l:editId?"💾 Editar":"➕ Añadir"},
+    {k:"categorias",l:"🏷️ Cats"},
+    {k:"reportes",l:"🚨 Reportes"},
+    {k:"mensajes",l:"📬 Mensajes",id:"tabMensajesAdmin"}
+  ];
+  pb.innerHTML=
+    '<div class="panel-user-bar">'
+    +'<div class="pub-ava">'+ava+'</div>'
+    +'<div class="pub-info">'
+    +  '<div class="pub-name">'+usuario.n+' '+usuario.a+'</div>'
+    +  '<span class="pub-role-badge">⚙️ Administrador</span>'
+    +'</div>'
+    +'<div class="pub-actions">'
+    +  '<button class="pub-btn pub-btn-edit" onclick="panelEditarPerfil()">✏️ Perfil</button>'
+    +  '<button class="pub-btn pub-btn-exit" onclick="panelSalir()">🚪 Salir</button>'
+    +'</div></div>'
+    +'<div class="tabs">'
+    +tabs.map(function(t){
+      let id=t.id?' id="'+t.id+'"':'';
+      return '<button class="tab'+(aTab===t.k?' on':'')+'"'+id+' onclick="setATab(\''+t.k+'\',this)">'+t.l+'</button>';
+    }).join("")
+    +'</div><div id="aTB"></div>';
+  renderAdminTab();
+}
 function setATab(t,btn){aTab=t;document.querySelectorAll("#panB .tab").forEach(function(b){b.classList.remove("on");});btn.classList.add("on");renderAdminTab();}
 function renderAdminTab(){api("/reportes").then(function(r){if(r.ok){REPORTES=r.reportes;_renderAdminTab();}else _renderAdminTab();});}
 function _renderAdminTab(){
@@ -2307,7 +2338,40 @@ function _adminEliminarChat(uid){
     });
 }
 
-function buildSuper(){let pb=document.getElementById("panB");let userAvaSuper=usuario.avatar?(usuario.avatar.startsWith("data:")||/^\p{Emoji}/u.test(usuario.avatar)||usuario.avatar.length<=8)?usuario.avatar:'<img src="'+usuario.avatar+'" style="width:32px;height:32px;object-fit:cover;border-radius:50%"/>':(usuario.n[0]);let userBar='<div class="panel-user-bar">'+'<div class="pub-ava">'+userAvaSuper+'</div>'+'<div class="pub-info"><div class="pub-name">'+usuario.n+' '+usuario.a+'</div><div class="pub-role">👑 Super Admin</div></div>'+'<div class="pub-actions">'+'<button class="pub-btn pub-btn-edit" onclick="panelEditarPerfil()">✏️ Perfil</button>'+'<button class="pub-btn pub-btn-exit" onclick="panelSalir()">🚪 Salir</button>'+'</div></div>';let tbs=[{k:"stats",l:"📊 Stats"},{k:"users",l:"👥 Usuarios"},{k:"prods",l:"📦 Productos"},{k:"categorias",l:"🏷️ Categorías"},{k:"reportes",l:"🚨 Reportes"},{k:"mensajes",l:"📬 Mensajes",id:"tabMensajesSuper"},{k:"cadmin",l:"➕ Admin"},{k:"cupones",l:"🎫 Cupones"},{k:"chat",l:"💬 Chat"},{k:"push",l:"🔔 Push"},{k:"logs",l:"📋 Logs"}];let html=tbs.map(function(t){let id=t.id?' id="'+t.id+'"':'';let on=' onclick="setSTab(\''+t.k+'\',this)"';return '<button class="tab'+(sTab===t.k?' on':'')+'"'+id+on+'>'+t.l+'</button>';}).join("");pb.innerHTML=userBar+'<div class="tabs">'+html+'</div><div id="sTB"></div>';
+function buildSuper(){
+  let pb=document.getElementById("panB");
+  let ava=usuario.avatar
+    ?(usuario.avatar.startsWith("data:")||/^\p{Emoji}/u.test(usuario.avatar)||usuario.avatar.length<=8)
+      ?usuario.avatar:'<img src="'+usuario.avatar+'" style="width:48px;height:48px;object-fit:cover;border-radius:50%"/>'
+    :usuario.n[0];
+  let userBar='<div class="panel-user-bar">'
+    +'<div class="pub-ava">'+ava+'</div>'
+    +'<div class="pub-info">'
+    +  '<div class="pub-name">'+usuario.n+' '+usuario.a+'</div>'
+    +  '<span class="pub-role-badge">👑 Super Admin</span>'
+    +'</div>'
+    +'<div class="pub-actions">'
+    +  '<button class="pub-btn pub-btn-edit" onclick="panelEditarPerfil()">✏️ Perfil</button>'
+    +  '<button class="pub-btn pub-btn-exit" onclick="panelSalir()">🚪 Salir</button>'
+    +'</div></div>';
+  let tbs=[
+    {k:"stats",l:"📊 Stats"},
+    {k:"users",l:"👥 Usuarios"},
+    {k:"prods",l:"📦 Productos"},
+    {k:"categorias",l:"🏷️ Cats"},
+    {k:"reportes",l:"🚨 Reportes"},
+    {k:"mensajes",l:"📬 Mensajes",id:"tabMensajesSuper"},
+    {k:"cadmin",l:"➕ Admin"},
+    {k:"cupones",l:"🎫 Cupones"},
+    {k:"chat",l:"💬 Chat"},
+    {k:"push",l:"🔔 Push"},
+    {k:"logs",l:"📋 Logs"}
+  ];
+  let html=tbs.map(function(t){
+    let id=t.id?' id="'+t.id+'"':'';
+    return '<button class="tab'+(sTab===t.k?' on':'')+'"'+id+' onclick="setSTab(\''+t.k+'\',this)">'+t.l+'</button>';
+  }).join("");
+  pb.innerHTML=userBar+'<div class="tabs">'+html+'</div><div id="sTB"></div>';
 // Al abrir el panel siempre refrescar la pestaña stats
 if(sTab==="stats")invalidateSCache(["prods","users","reportes","contactos"]);
 renderSuperTab();}
