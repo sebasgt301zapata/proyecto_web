@@ -278,52 +278,29 @@ function switchM(a,b){cerrarModal(a);abrirModal(b);}
 function bTab(tab,btn){if(tab==="cuenta"){if(usuario)abrirPanel();else abrirModal("mLogin");return;}irPagina(tab);}
 
 // ── CARGAR DATOS ────────────────────────────
-let _cargandoDatos=false,_reintentos=0;
 async function cargarDatos(){
-  if(_cargandoDatos)return;
-  _cargandoDatos=true;
-  try{
-    let r=await api("/productos");
-    if(r&&r.ok&&r.productos&&r.productos.length>0){
-      PRODS=r.productos;
-      let catMap={};
-      PRODS.forEach(function(p){if(p.cid)catMap[p.cid]=p.cat;});
-      CATS=[{id:0,n:"🏷️ Todos"}];
-      Object.keys(catMap).forEach(function(cid){CATS.push({id:parseInt(cid),n:catMap[cid]});});
-      actualizarStatsHero();
-      _reintentos=0;
-    } else {
-      console.error("[NS] /api/productos falló:",r&&r.error);
-      if(_reintentos<3){
-        _reintentos++;
-        _cargandoDatos=false;
-        console.warn("[NS] Reintentando en",(_reintentos*2000)+"ms");
-        setTimeout(cargarDatos,_reintentos*2000);
-        return;
-      }
-    }
-    api("/resenias").then(function(rr){
-      if(rr&&rr.ok){
-        RESENIAS={};
-        (rr.resenias||[]).forEach(function(res){
-          if(!RESENIAS[res.pid])RESENIAS[res.pid]=[];
-          RESENIAS[res.pid].push(res);
-        });
-      }
-    }).catch(function(){});
+  let r=await api("/productos");
+  if(r.ok){
+    PRODS=r.productos;
+    let catMap={};
+    PRODS.forEach(function(p){if(p.cid)catMap[p.cid]=p.cat;});
+    CATS=[{id:0,n:"🏷️ Todos"}];
+    Object.keys(catMap).forEach(function(cid){CATS.push({id:parseInt(cid),n:catMap[cid]});});
+    actualizarStatsHero();
     if(paginaActual==="tienda"||PAGE==="tienda"){cargarCats();renderProds();actualizarEstadsTienda();}
-    if(paginaActual==="inicio"||PAGE==="inicio"){
-      requestAnimationFrame(function(){
-        requestAnimationFrame(function(){
-          setTimeout(renderInicio,50);
-        });
-      });
-    }
-  }catch(e){
-    console.error("[NS] Error fatal cargarDatos:",e);
-  }finally{
-    _cargandoDatos=false;
   }
+  let rr=await api("/resenias");
+  if(rr.ok){RESENIAS={};rr.resenias.forEach(function(res){if(!RESENIAS[res.pid])RESENIAS[res.pid]=[];RESENIAS[res.pid].push(res);});}
+  // Always re-render current page after data loads
+  if(paginaActual==="inicio"||PAGE==="inicio"){
+    // Doble rAF garantiza que el DOM está completamente pintado antes de medir
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){
+        setTimeout(renderInicio, 50);
+      });
+    });
+  }
+  if(paginaActual==="tienda"||PAGE==="tienda"){cargarCats();renderProds();actualizarEstadsTienda();}
 }
 function actualizarStatsHero(){
   let cs=PRODS.filter(function(p){return p.st>0;});
@@ -441,47 +418,29 @@ function carouselInit(name,items,delay){
   let c=CR[name];c.items=items;c.idx=0;c.total=items.length;c.perPage=carouselPerPage();
   let track=document.getElementById("track"+cap(name));
   if(!track)return;
-  if(!items||!items.length){
-    track.innerHTML='<div style="padding:32px;text-align:center;color:var(--gr);font-size:.9rem;width:100%">Sin productos disponibles</div>';
-    return;
-  }
   // Fade out skeleton cards if present
   let skCards=track.querySelectorAll(".sk-card");
   if(skCards.length){
-    skCards.forEach(function(sk){sk.style.transition="opacity .25s";sk.style.opacity="0";});
+    skCards.forEach(function(sk){sk.style.opacity="0";});
   }
-  // doRender: escribe las tarjetas reales y recalcula dimensiones con rAF
+  // Render real cards (tiny delay lets fade-out play)
   let doRender=function(){
     track.style.transition="none";
     track.innerHTML=items.map(function(html){return '<div class="pc" style="flex-shrink:0;width:var(--cw)">'+html+'</div>';}).join("");
-    // Dots
-    let maxDots=Math.max(1,c.total-c.perPage+1);
-    let isDark=name==="valorados";
-    let dots=document.getElementById("dots"+cap(name));
-    if(dots)dots.innerHTML=Array.from({length:maxDots}).map(function(_,i){return '<span class="cdot'+(isDark?" cdot-dark":"")+(i===0?" on":"")+'"></span>';}).join("");
-    if(c.timer)clearInterval(c.timer);
-    if(c.total>c.perPage){c.timer=setInterval(function(){carouselNext(name);},delay||5000);}
-    // Esperar a que el navegador calcule el layout antes de medir anchos
-    requestAnimationFrame(function(){
-      requestAnimationFrame(function(){
-        let outer=document.getElementById("outer"+cap(name));
-        if(outer){
-          let gap=14,pp=c.perPage;
-          let ow=outer.getBoundingClientRect().width||outer.offsetWidth;
-          if(ow<10)ow=window.innerWidth-32;
-          let peekOffset=(pp===1&&ow<480)?Math.floor(ow*0.22):0;
-          let cw=Math.floor((ow-peekOffset-(gap*(pp-1)))/pp);
-          if(cw<80)cw=Math.floor((window.innerWidth-48)/pp);
-          outer.style.setProperty("--cw",cw+"px");
-          outer.style.setProperty("--cgap",gap+"px");
-          Array.from(track.children).forEach(function(el){el.style.width=cw+"px";});
-        }
-        carouselRender(name);
-      });
-    });
+  // Set CSS let for card width
+  let outer=document.getElementById("outer"+cap(name));
+  if(outer){let gap=14,pp=c.perPage,ow=outer.offsetWidth||outer.getBoundingClientRect().width||window.innerWidth;if(ow<10)ow=window.innerWidth;let peekOffset=(pp===1&&ow<480)?Math.floor(ow*0.22):0;let cw=Math.floor((ow-peekOffset-(gap*(pp-1)))/pp);if(cw<80)cw=Math.floor((window.innerWidth-48)/pp);outer.style.setProperty("--cw",cw+"px");outer.style.setProperty("--cgap",gap+"px");}
+  // Dots
+  let maxDots=Math.max(1,c.total-c.perPage+1);
+  let isDark=name==="valorados";
+  let dots=document.getElementById("dots"+cap(name));
+  if(dots)dots.innerHTML=Array.from({length:maxDots}).map(function(_,i){return '<span class="cdot'+(isDark?" cdot-dark":"")+(i===0?" on":"")+'"></span>';}).join("");
+  carouselRender(name);
+  if(c.timer)clearInterval(c.timer);
+  if(c.total>c.perPage){c.timer=setInterval(function(){carouselNext(name);},delay||5000);}
   };
   if(skCards.length){
-    setTimeout(doRender, 300);
+    setTimeout(doRender, 200);
   } else {
     doRender();
   }
@@ -3219,20 +3178,20 @@ function mpBuscarFMA(){
   wrap.innerHTML =
     '<div class="mp-fma-header">' +
       '<span>🎵 Música Libre (Free Music Archive)</span>' +
-      '<button class="mp-yt-close" onclick="document.getElementById('mpFMAWrap').remove()">✕</button>' +
+      '<button class="mp-yt-close" onclick="document.getElementById(\'mpFMAWrap\').remove()">✕</button>' +
     '</div>' +
     '<div class="mp-fma-search">' +
       '<input class="mp-fma-inp" id="mpFMAInp" placeholder="Buscar canción o artista..." ' +
-             'onkeydown="if(event.key==='Enter')mpFMABuscar()"/>' +
+             'onkeydown="if(event.key===\'Enter\')mpFMABuscar()"/>' +
       '<button class="mp-fma-btn" onclick="mpFMABuscar()">🔍</button>' +
     '</div>' +
     '<div class="mp-fma-genres">' +
-      '<button class="mp-fma-genre" onclick="mpFMAGenero('Electronic')">⚡ Electronic</button>' +
-      '<button class="mp-fma-genre" onclick="mpFMAGenero('Hip-Hop')">🎤 Hip-Hop</button>' +
-      '<button class="mp-fma-genre" onclick="mpFMAGenero('Rock')">🎸 Rock</button>' +
-      '<button class="mp-fma-genre" onclick="mpFMAGenero('Jazz')">🎷 Jazz</button>' +
-      '<button class="mp-fma-genre" onclick="mpFMAGenero('Classical')">🎻 Clásica</button>' +
-      '<button class="mp-fma-genre" onclick="mpFMAGenero('Ambient')">🌊 Ambient</button>' +
+      '<button class="mp-fma-genre" onclick="mpFMAGenero(\'Electronic\')">⚡ Electronic</button>' +
+      '<button class="mp-fma-genre" onclick="mpFMAGenero(\'Hip-Hop\')">🎤 Hip-Hop</button>' +
+      '<button class="mp-fma-genre" onclick="mpFMAGenero(\'Rock\')">🎸 Rock</button>' +
+      '<button class="mp-fma-genre" onclick="mpFMAGenero(\'Jazz\')">🎷 Jazz</button>' +
+      '<button class="mp-fma-genre" onclick="mpFMAGenero(\'Classical\')">🎻 Clásica</button>' +
+      '<button class="mp-fma-genre" onclick="mpFMAGenero(\'Ambient\')">🌊 Ambient</button>' +
     '</div>' +
     '<div class="mp-fma-results" id="mpFMAResults">' +
       '<div class="mp-fma-hint">Busca una canción o selecciona un género 🎵</div>' +
