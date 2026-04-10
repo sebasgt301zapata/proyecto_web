@@ -3255,47 +3255,83 @@ function mpFMAAgregar(idx){
 
 // ── Music card in panel ──
 function _mpCardHTML(){
-  let wrap = document.getElementById("musicPlayer");
-  let hidden = !wrap || wrap.classList.contains("mp-collapsed");
   let isPlaying = mp.playing;
   let currentTrack = mp.playlist[mp.current];
   let trackName = currentTrack ? currentTrack.name : null;
   let hasPlaylist = mp.playlist.length > 0;
-  let statusDot = isPlaying ? '<span class="mp-card-dot mp-card-dot-play"></span>' : '<span class="mp-card-dot mp-card-dot-idle"></span>';
-  let visBtn = hidden
-    ? '<button class="mp-card-vis-btn mp-card-show" onclick="mpPanelToggle()">▶ Mostrar</button>'
-    : '<button class="mp-card-vis-btn mp-card-hide" onclick="mpPanelToggle()">✕ Ocultar</button>';
-  let nowPlaying = "";
-  if(trackName && !hidden){
-    let icon = currentTrack.type==="youtube" ? "🎬" : "🎵";
-    let shortName = trackName.length>32 ? trackName.slice(0,30)+"…" : trackName;
-    nowPlaying = '<div class="mp-card-track">'
-      +'<span style="flex-shrink:0">'+icon+'</span>'
-      +'<span>'+_escapeHtml(shortName)+'</span>'
-      +(isPlaying?'<span class="mp-card-eq"><i></i><i></i><i></i></span>':'')
-      +'</div>';
+
+  // Header
+  let header = '<div class="mp-card-header">'
+    + '<div class="mp-card-header-left">'
+    +   (isPlaying ? '<span class="mp-card-dot mp-card-dot-play"></span>' : '<span class="mp-card-dot mp-card-dot-idle"></span>')
+    +   '<span class="mp-card-title">🎵 Mi Música</span>'
+    +   (hasPlaylist ? '<span class="mp-card-count">'+mp.playlist.length+'</span>' : '')
+    + '</div>'
+    + '</div>';
+
+  // Now playing row
+  let nowPlaying = '';
+  if(trackName){
+    let icon = currentTrack.type === 'youtube' ? '🎬' : '🎵';
+    let shortName = trackName.length > 34 ? trackName.slice(0,32) + '\u2026' : trackName;
+    let nowCls = isPlaying ? 'mp-card-now mp-card-now-playing' : 'mp-card-now mp-card-now-paused';
+    let stateLeft = isPlaying
+      ? '<span class="mp-card-eq"><i></i><i></i><i></i><i></i></span>'
+      : '<span class="mp-card-pause-ico">\u23F8</span>';
+    nowPlaying = '<div class="' + nowCls + '">'
+      + '<div class="mp-card-now-left">' + stateLeft + '</div>'
+      + '<div class="mp-card-now-info">'
+      + '<div class="mp-card-now-label">' + (isPlaying ? 'Reproduciendo' : 'En pausa') + '</div>'
+      + '<div class="mp-card-now-name">' + icon + ' ' + _escapeHtml(shortName) + '</div>'
+      + '</div></div>';
   }
-  let miniCtrl = "";
-  if(!hidden && hasPlaylist){
-    let playIcon = isPlaying ? "⏸" : "▶";
-    miniCtrl = '<div class="mp-card-mini-ctrl">'
-      +'<button class="mp-card-mini-btn" onclick="mpPrev()" title="Anterior">⏮</button>'
-      +'<button class="mp-card-mini-btn mp-card-mini-btn-play" onclick="mpTogglePlay()" title="Play/Pausa">'+playIcon+'</button>'
-      +'<button class="mp-card-mini-btn" onclick="mpNext()" title="Siguiente">⏭</button>'
-      +'</div>';
+
+  // Transport controls (always shown if has playlist)
+  let controls = '';
+  if(hasPlaylist){
+    let playIcon = isPlaying ? '⏸' : '▶';
+    let playClass = isPlaying ? 'mp-card-play-btn mp-card-play-btn-pause' : 'mp-card-play-btn mp-card-play-btn-play';
+    controls = '<div class="mp-card-controls">'
+      + '<button class="mp-card-ctrl-btn" onclick="mpPrev()" title="Anterior">⏮</button>'
+      + '<button class="'+playClass+'" onclick="mpTogglePlay()" title="Play/Pausa">'+playIcon+'</button>'
+      + '<button class="mp-card-ctrl-btn" onclick="mpNext()" title="Siguiente">⏭</button>'
+      + '<button class="mp-card-ctrl-btn mp-card-ctrl-shuf'+(mp.shuffle?' mp-card-ctrl-on':'')+'" onclick="mpToggleShuffle()" title="Aleatorio">⇄</button>'
+      + '<button class="mp-card-ctrl-btn mp-card-ctrl-rep'+(mp.repeat?' mp-card-ctrl-on':'')+'" onclick="mpToggleRepeat()" title="Repetir">↻</button>'
+      + '</div>';
   }
+
+  // Playlist (up to 5 items)
+  let playlist = '';
+  if(hasPlaylist){
+    let items = mp.playlist.slice(0, 5).map(function(item, i){
+      let isActive = i === mp.current;
+      let icon = item.type === 'youtube' ? '🎬' : '🎵';
+      let name = item.name.length > 28 ? item.name.slice(0,26)+'…' : item.name;
+      let stateIco = isActive && isPlaying ? '<span class="mp-pl-card-eq"><i></i><i></i><i></i></span>'
+                   : isActive ? '<span class="mp-pl-card-pause">⏸</span>'
+                   : '<span class="mp-pl-card-num">'+(i+1)+'</span>';
+      return '<div class="mp-pl-card-item'+(isActive?' mp-pl-card-active':'')+'" onclick="mpPlay('+i+')">'
+        + stateIco
+        + '<span class="mp-pl-card-ico">'+icon+'</span>'
+        + '<span class="mp-pl-card-name">'+_escapeHtml(name)+'</span>'
+        + (item.dur && item.dur!=='—'&&item.dur!=='YT' ? '<span class="mp-pl-card-dur">'+item.dur+'</span>' : '')
+        + '<button class="mp-pl-card-del" onclick="event.stopPropagation();mp.playlist.splice('+i+',1);if(mp.current>=mp.playlist.length)mp.current=mp.playlist.length-1;mpRenderPlaylist();mpRefreshCard()" title="Quitar">✕</button>'
+        + '</div>';
+    }).join('');
+    let more = mp.playlist.length > 5 ? '<div class="mp-pl-card-more">+' + (mp.playlist.length-5) + ' más · <span onclick="_mpCardAbrir()" style="cursor:pointer;text-decoration:underline">ver todas</span></div>' : '';
+    playlist = '<div class="mp-pl-card">' + items + more + '</div>';
+  }
+
+  // Add music buttons
+  let addRow = '<div class="mp-card-add-row">'
+    + '<button class="mp-card-add-btn" onclick="mpAddFiles()">🎵 MP3</button>'
+    + '<button class="mp-card-add-btn mp-card-add-yt" onclick="mpAgregarYouTube()">🎬 YouTube</button>'
+    + '<button class="mp-card-add-btn mp-card-add-fma" onclick="mpBuscarFMA()">🔍 Buscar gratis</button>'
+    + '</div>';
+
   return '<div class="mp-card" id="mpCard">'
-    +'<div class="mp-card-top">'
-    +'<div class="mp-card-left">'+statusDot+'<span class="mp-card-title">🎵 Mi Música</span>'
-    +(hasPlaylist?'<span class="mp-card-count">'+mp.playlist.length+'</span>':'')+'</div>'
-    +visBtn+'</div>'
-    +nowPlaying+miniCtrl
-    +'<div class="mp-card-actions">'
-    +'<button class="mp-card-act" onclick="mpAddFiles()" title="Subir MP3">🎵 MP3</button>'
-    +'<button class="mp-card-act mp-card-act-yt" onclick="mpAgregarYouTube()" title="YouTube">🎬 YT</button>'
-    +'<button class="mp-card-act mp-card-act-fma" onclick="mpBuscarFMA()" title="Buscar gratis">🔍 Buscar</button>'
-    +(!hidden&&hasPlaylist?'<button class="mp-card-act mp-card-act-play" onclick="_mpCardAbrir()" title="Reproductor completo">⤢ Full</button>':'')
-    +'</div></div>';
+    + header + nowPlaying + controls + playlist + addRow
+    + '</div>';
 }
 function mpRefreshCard(){
   let card = document.getElementById("mpCard");
