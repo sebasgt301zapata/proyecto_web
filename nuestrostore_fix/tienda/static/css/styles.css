@@ -6078,3 +6078,237 @@ html:not(.dark) .mp-card {
    FIX — mp-hidden class para el reproductor flotante
    ══════════════════════════════════════════════════════════════ */
 .mp-hidden { display: none !important; }
+
+/* ══════════════════════════════════════════════════════════════
+   REPRODUCTOR — Ocultar el FAB (botón flotante de música)
+   El reproductor solo se controla desde el panel de cuenta
+   ══════════════════════════════════════════════════════════════ */
+.mp-fab,
+#mpFab {
+  display: none !important;
+}
+
+/* Reposicionar el panel — sin FAB, va pegado abajo a la derecha */
+.mp-wrap {
+  bottom: calc(var(--bot-h) + 14px) !important;
+  right: 16px !important;
+  align-items: flex-end;
+}
+@media(min-width: 768px){
+  .mp-wrap { bottom: 20px !important; right: 20px !important; }
+}
+
+/* El panel se muestra/oculta directamente sin animación del FAB */
+.mp-collapsed .mp-panel {
+  transform: translateY(20px) scale(.96);
+  opacity: 0;
+  pointer-events: none;
+}
+.mp-wrap:not(.mp-collapsed) .mp-panel {
+  transform: none;
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* Panel rediseñado — más elegante */
+.mp-panel {
+  width: 310px;
+  border-radius: 20px;
+  box-shadow:
+    0 20px 60px rgba(0,0,0,.25),
+    0 4px 16px rgba(0,0,0,.12),
+    0 0 0 1px rgba(255,255,255,.06);
+  transition: transform .3s cubic-bezier(.4,0,.2,1), opacity .3s;
+  overflow: visible; /* allow FMA panel to overflow */
+}
+@media(min-width: 420px){ .mp-panel { width: 330px; } }
+
+/* Header del panel — mini-barra de control */
+.mp-header {
+  background: linear-gradient(120deg,#0F172A,#1E3A8A,#2563EB);
+  padding: 10px 12px;
+  border-radius: 20px 20px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.mp-title { font-size: 1rem; letter-spacing: 1px; }
+
+/* Botón cerrar el mini-player (X arriba a la derecha del panel) */
+.mp-hbtn-hide {
+  background: rgba(255,100,100,.2) !important;
+  color: #FCA5A5 !important;
+}
+.mp-hbtn-hide:hover {
+  background: rgba(255,100,100,.4) !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   MUSIC CARD — Versión mejorada con mini controles
+   ══════════════════════════════════════════════════════════════ */
+.mp-card {
+  background: linear-gradient(135deg, #0F172A 0%, #1E3A8A 60%, #1E40AF 100%);
+  border-radius: 18px;
+  padding: 0;
+  margin-bottom: 16px;
+  border: 1px solid rgba(255,255,255,.12);
+  box-shadow:
+    0 8px 32px rgba(15,23,42,.4),
+    0 0 0 1px rgba(255,255,255,.05) inset;
+  overflow: hidden;
+  transition: box-shadow .25s, transform .2s;
+}
+.mp-card:hover {
+  box-shadow: 0 12px 40px rgba(37,99,235,.35);
+  transform: translateY(-1px);
+}
+
+/* Header row de la card */
+.mp-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px 10px;
+  gap: 10px;
+}
+
+/* Left side */
+.mp-card-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+.mp-card-title {
+  font-family: 'Bebas Neue', cursive;
+  letter-spacing: 1.5px;
+  font-size: 1.05rem;
+  color: #fff;
+}
+.mp-card-count {
+  background: rgba(255,255,255,.12);
+  color: rgba(255,255,255,.75);
+  font-size: .65rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 50px;
+  flex-shrink: 0;
+}
+
+/* Now playing track bar */
+.mp-card-track {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 14px 10px;
+  padding: 8px 12px;
+  background: rgba(255,255,255,.08);
+  border-radius: 10px;
+  font-size: .78rem;
+  color: rgba(255,255,255,.9);
+  font-weight: 600;
+  backdrop-filter: blur(4px);
+}
+.mp-card-track span:nth-child(2) {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Mini controls inside card when player is open */
+.mp-card-mini-ctrl {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 0 14px 10px;
+}
+.mp-card-mini-btn {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,.1);
+  color: rgba(255,255,255,.85);
+  font-size: .9rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s, transform .1s;
+}
+.mp-card-mini-btn:hover { background: rgba(255,255,255,.22); transform: scale(1.1); }
+.mp-card-mini-btn-play {
+  width: 40px; height: 40px;
+  background: linear-gradient(135deg,#2563EB,#06B6D4);
+  color: #fff;
+  font-size: 1rem;
+  box-shadow: 0 4px 14px rgba(37,99,235,.5);
+}
+.mp-card-mini-btn-play:hover {
+  background: linear-gradient(135deg,#1D4ED8,#0891B2);
+  box-shadow: 0 6px 18px rgba(37,99,235,.65);
+}
+
+/* Actions row */
+.mp-card-actions {
+  display: flex;
+  gap: 0;
+  border-top: 1px solid rgba(255,255,255,.08);
+}
+.mp-card-act {
+  flex: 1;
+  padding: 9px 4px;
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,.7);
+  font-size: .7rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: background .15s, color .15s;
+  border-right: 1px solid rgba(255,255,255,.06);
+}
+.mp-card-act:last-child { border-right: none; }
+.mp-card-act:hover { background: rgba(255,255,255,.1); color: #fff; }
+.mp-card-act-yt:hover  { background: rgba(239,68,68,.2);  color: #FCA5A5; }
+.mp-card-act-fma:hover { background: rgba(74,222,128,.15); color: #6EE7B7; }
+.mp-card-act-play:hover{ background: rgba(96,165,250,.2);  color: #93C5FD; }
+
+/* Visibility toggle */
+.mp-card-vis-btn {
+  flex-shrink: 0;
+  padding: 5px 11px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,.18);
+  font-size: .72rem;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: all .15s;
+}
+.mp-card-show {
+  background: rgba(74,222,128,.18);
+  color: #4ADE80;
+  border-color: rgba(74,222,128,.35);
+}
+.mp-card-show:hover { background: rgba(74,222,128,.3); }
+.mp-card-hide {
+  background: rgba(255,255,255,.07);
+  color: rgba(255,255,255,.6);
+}
+.mp-card-hide:hover { background: rgba(239,68,68,.2); color: #FCA5A5; border-color: rgba(252,165,165,.3); }
+
+/* Dots & EQ */
+.mp-card-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.mp-card-dot-play { background: #4ADE80; box-shadow: 0 0 6px #4ADE80; animation: mpDotPulse 1.5s infinite; }
+.mp-card-dot-idle { background: rgba(255,255,255,.25); }
+@keyframes mpDotPulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:.5;transform:scale(.75);} }
+
+.mp-card-eq { display:flex; align-items:flex-end; gap:2px; height:14px; flex-shrink:0; }
+.mp-card-eq i { display:block; width:3px; border-radius:2px; background:#4ADE80; animation:mpEq .8s ease-in-out infinite alternate; }
+.mp-card-eq i:nth-child(1){height:6px; animation-delay:0s;}
+.mp-card-eq i:nth-child(2){height:14px;animation-delay:.15s;}
+.mp-card-eq i:nth-child(3){height:9px; animation-delay:.3s;}
+@keyframes mpEq { from{transform:scaleY(.3);} to{transform:scaleY(1);} }
+
+/* Dark mode: card already dark, no extra override needed */
