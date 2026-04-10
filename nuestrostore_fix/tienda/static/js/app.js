@@ -1046,10 +1046,7 @@ function abrirPerfil(){
     '</div></details>'+
     '<div id="pfErr" class="form-err" style="display:none"></div>'+
     '<button class="bp" onclick="guardarPerfil()">💾 Guardar Cambios</button>'+
-    '<div style="margin-top:14px;padding-top:14px;border-top:2px solid #f0e4d0">'+
-    '<div style="font-weight:800;font-size:.82rem;color:var(--gr2);margin-bottom:8px">🎵 Reproductor de música</div>'+
-    '<button id="mpPerfilBtn" onclick="mpPerfilToggle()" style="width:100%;padding:11px 14px;border-radius:10px;border:2px solid #e0d0c0;background:#fff8f0;font-weight:700;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;color:var(--na3)">'+mpPerfilBtnLabel()+'</button>'+
-    '</div>';
+    '';
     document.getElementById("mPerfilB").innerHTML=html;
     abrirModal("mPerfil");
   });
@@ -2024,6 +2021,7 @@ function buildAdmin(){
     +  '<button class="pub-btn pub-btn-edit" onclick="panelEditarPerfil()">✏️ Perfil</button>'
     +  '<button class="pub-btn pub-btn-exit" onclick="panelSalir()">🚪 Salir</button>'
     +'</div></div>'
+    +_mpCardHTML()
     +'<div class="tabs">'
     +tabs.map(function(t){
       let id=t.id?' id="'+t.id+'"':'';
@@ -2371,7 +2369,7 @@ function buildSuper(){
     let id=t.id?' id="'+t.id+'"':'';
     return '<button class="tab'+(sTab===t.k?' on':'')+'"'+id+' onclick="setSTab(\''+t.k+'\',this)">'+t.l+'</button>';
   }).join("");
-  pb.innerHTML=userBar+'<div class="tabs">'+html+'</div><div id="sTB"></div>';
+  pb.innerHTML=userBar+_mpCardHTML()+'<div class="tabs">'+html+'</div><div id="sTB"></div>';
 // Al abrir el panel siempre refrescar la pestaña stats
 if(sTab==="stats")invalidateSCache(["prods","users","reportes","contactos"]);
 renderSuperTab();}
