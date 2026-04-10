@@ -1610,7 +1610,7 @@ function abrirCuentaCliente(){
       '<button class="bp" style="flex:1;font-size:.85rem;padding:10px" onclick="panelEditarPerfil()">✏️ Editar Perfil</button>'+
       '<button class="bs" style="flex:1;font-size:.85rem;padding:10px;margin-top:0" onclick="panelSalir()">🚪 Salir</button>'+
     '</div>'+
-    '<button onclick="mpPanelToggle()" id="mpPanelBtn" style="width:100%;margin-bottom:18px;padding:10px 14px;border-radius:10px;border:2px solid #e0d0c0;background:#fff8f0;font-weight:800;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;color:var(--na3)">'+mpPanelBtnLabel()+'</button>'+
+    _mpCardHTML()+
     '<div class="tabs"><button class="tab on" onclick="cTabN(this,2)">🛍️ Mis Compras</button><button class="tab" onclick="cTabN(this,5)">💙 Favoritos</button><button class="tab" onclick="cTabN(this,6)">💬 Chat</button><button class="tab" onclick="cTabN(this,1)">🚨 Reportes</button><button class="tab" onclick="cTabN(this,3)">📋 Historial</button><button class="tab" onclick="cTabN(this,4)">⭐ Reseñas</button></div>'+
     '<div id="cTabBody"></div>';
   cTabN(pb.querySelector(".tab"),2);
@@ -2996,27 +2996,74 @@ function mpPerfilToggle(){
   if(btn) btn.innerHTML = mpPerfilBtnLabel();
 }
 
-function mpPanelBtnLabel(){
+// ── Music card in user panel ──
+function _mpCardHTML(){
   let wrap = document.getElementById("musicPlayer");
   let hidden = wrap && wrap.classList.contains("mp-hidden");
-  if(hidden){
-    return '<span>🎵 Reproductor de música</span><span style="font-size:.75rem;background:#e8f5e9;color:#2e7d32;padding:2px 8px;border-radius:50px">Mostrar</span>';
+  let isPlaying = mp.playing;
+  let currentTrack = mp.playlist[mp.current];
+  let trackName = currentTrack ? currentTrack.name : null;
+  let hasPlaylist = mp.playlist.length > 0;
+
+  let visBtn = hidden
+    ? '<button class="mp-card-vis-btn mp-card-show" onclick="mpPanelToggle()">▶ Mostrar</button>'
+    : '<button class="mp-card-vis-btn mp-card-hide" onclick="mpPanelToggle()">✕ Ocultar</button>';
+
+  let statusDot = isPlaying
+    ? '<span class="mp-card-dot mp-card-dot-play"></span>'
+    : '<span class="mp-card-dot mp-card-dot-idle"></span>';
+
+  let nowPlaying = '';
+  if(trackName && !hidden){
+    let icon = currentTrack.type === 'youtube' ? '🎬' : '🎵';
+    let shortName = trackName.length > 30 ? trackName.slice(0,28)+'…' : trackName;
+    nowPlaying = '<div class="mp-card-track">'
+      + icon + ' <span>' + _escapeHtml(shortName) + '</span>'
+      + (isPlaying ? '<span class="mp-card-eq"><i></i><i></i><i></i></span>' : '')
+      + '</div>';
   }
-  return '<span>🎵 Reproductor de música</span><span style="font-size:.75rem;background:#fff0e0;color:var(--na3);padding:2px 8px;border-radius:50px">Ocultar</span>';
+
+  return '<div class="mp-card" id="mpCard">'
+    + '<div class="mp-card-top">'
+    +   '<div class="mp-card-left">'
+    +     statusDot
+    +     '<span class="mp-card-title">🎵 Mi Música</span>'
+    +     (hasPlaylist ? '<span class="mp-card-count">'+mp.playlist.length+' canción'+(mp.playlist.length!==1?'es':'')+'</span>' : '')
+    +   '</div>'
+    +   visBtn
+    + '</div>'
+    + nowPlaying
+    + (hidden ? ''
+      : '<div class="mp-card-actions">'
+        + '<button class="mp-card-act" onclick="mpAddFiles()" title="Subir MP3">🎵 MP3</button>'
+        + '<button class="mp-card-act mp-card-act-yt" onclick="mpAgregarYouTube()" title="YouTube">🎬 YouTube</button>'
+        + '<button class="mp-card-act mp-card-act-fma" onclick="mpBuscarFMA()" title="Buscar gratis">🔍 Buscar</button>'
+        + (hasPlaylist ? '<button class="mp-card-act mp-card-act-play" onclick="mpToggle();_mpCardAbrir()" title="Abrir reproductor">⏩ Abrir</button>' : '')
+      + '</div>'
+    )
+    + '</div>';
 }
 
-// ── Alternar visibilidad del reproductor desde el perfil ──
+function mpRefreshCard(){
+  let card = document.getElementById("mpCard");
+  if(card) card.outerHTML = _mpCardHTML();
+}
+
+function _mpCardAbrir(){ mpToggle(); cerrarModal("mPanel"); }
+function _mpCardAbrir(){ mpToggle(); cerrarModal("mPanel"); }
+function mpPanelBtnLabel(){ return ""; } // kept for compat
+
 function mpPanelToggle(){
   let wrap = document.getElementById("musicPlayer");
   if(!wrap) return;
   if(wrap.classList.contains("mp-hidden")){
     mpShow();
+    toast("Reproductor de música visible 🎵","s");
   } else {
     mpHide();
+    toast("Reproductor oculto","i");
   }
-  // Actualizar el botón en tiempo real
-  let btn = document.getElementById("mpPanelBtn");
-  if(btn) btn.innerHTML = mpPanelBtnLabel();
+  mpRefreshCard();
 }
 
 function mpHide(){
