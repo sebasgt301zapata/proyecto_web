@@ -5876,274 +5876,6 @@ html:not(.dm-transition) body {
 html.dark body { background: #0F172A; color: #F1F5F9; }
 
 /* ══════════════════════════════════════════════════════════════
-   MUSIC CARD — Tarjeta del reproductor en panel de usuario
-   ══════════════════════════════════════════════════════════════ */
-.mp-card {
-  background: linear-gradient(135deg, #0F172A, #1E3A8A);
-  border-radius: 16px;
-  padding: 14px 16px;
-  margin-bottom: 16px;
-  border: 1.5px solid rgba(255,255,255,.1);
-  box-shadow: 0 4px 20px rgba(15,23,42,.3);
-  transition: box-shadow .2s;
-}
-.mp-card:hover {
-  box-shadow: 0 6px 28px rgba(37,99,235,.3);
-}
-
-/* Top row */
-.mp-card-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-.mp-card-left {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-  min-width: 0;
-}
-
-/* Status dot */
-.mp-card-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-.mp-card-dot-play {
-  background: #4ADE80;
-  box-shadow: 0 0 6px #4ADE80;
-  animation: mpDotPulse 1.5s infinite;
-}
-.mp-card-dot-idle {
-  background: rgba(255,255,255,.3);
-}
-@keyframes mpDotPulse {
-  0%,100% { opacity:1; transform:scale(1); }
-  50%      { opacity:.6; transform:scale(.8); }
-}
-
-.mp-card-title {
-  font-weight: 800;
-  font-size: .9rem;
-  color: #fff;
-  font-family: 'Bebas Neue', cursive;
-  letter-spacing: 1px;
-  font-size: 1rem;
-}
-.mp-card-count {
-  font-size: .68rem;
-  background: rgba(255,255,255,.15);
-  color: rgba(255,255,255,.8);
-  padding: 2px 7px;
-  border-radius: 50px;
-  font-weight: 700;
-  flex-shrink: 0;
-}
-
-/* Visibility toggle button */
-.mp-card-vis-btn {
-  flex-shrink: 0;
-  padding: 5px 12px;
-  border-radius: 20px;
-  border: 1.5px solid rgba(255,255,255,.2);
-  font-size: .75rem;
-  font-weight: 800;
-  cursor: pointer;
-  font-family: 'Inter', sans-serif;
-  transition: all .15s;
-}
-.mp-card-show {
-  background: rgba(74,222,128,.15);
-  color: #4ADE80;
-  border-color: rgba(74,222,128,.3);
-}
-.mp-card-show:hover {
-  background: rgba(74,222,128,.25);
-}
-.mp-card-hide {
-  background: rgba(255,255,255,.08);
-  color: rgba(255,255,255,.7);
-}
-.mp-card-hide:hover {
-  background: rgba(255,100,100,.2);
-  color: #FCA5A5;
-  border-color: rgba(252,165,165,.3);
-}
-
-/* Now playing row */
-.mp-card-track {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 10px;
-  padding: 8px 10px;
-  background: rgba(255,255,255,.07);
-  border-radius: 10px;
-  font-size: .78rem;
-  color: rgba(255,255,255,.85);
-  font-weight: 600;
-  overflow: hidden;
-}
-.mp-card-track span:nth-child(2) {
-  flex: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Equalizer animation */
-.mp-card-eq {
-  display: flex;
-  align-items: flex-end;
-  gap: 2px;
-  height: 14px;
-  flex-shrink: 0;
-}
-.mp-card-eq i {
-  display: block;
-  width: 3px;
-  border-radius: 2px;
-  background: #4ADE80;
-  animation: mpEq 0.8s ease-in-out infinite alternate;
-}
-.mp-card-eq i:nth-child(1) { height: 6px;  animation-delay: 0s;    }
-.mp-card-eq i:nth-child(2) { height: 14px; animation-delay: .15s;  }
-.mp-card-eq i:nth-child(3) { height: 9px;  animation-delay: .3s;   }
-@keyframes mpEq {
-  from { transform: scaleY(.3); }
-  to   { transform: scaleY(1);  }
-}
-
-/* Action buttons row */
-.mp-card-actions {
-  display: flex;
-  gap: 6px;
-  margin-top: 10px;
-  flex-wrap: wrap;
-}
-.mp-card-act {
-  flex: 1;
-  min-width: 0;
-  padding: 7px 6px;
-  border-radius: 10px;
-  border: 1.5px solid rgba(255,255,255,.15);
-  background: rgba(255,255,255,.08);
-  color: rgba(255,255,255,.85);
-  font-size: .72rem;
-  font-weight: 700;
-  cursor: pointer;
-  font-family: 'Inter', sans-serif;
-  transition: all .15s;
-  white-space: nowrap;
-  text-align: center;
-}
-.mp-card-act:hover {
-  background: rgba(255,255,255,.18);
-  border-color: rgba(255,255,255,.3);
-}
-.mp-card-act-yt {
-  border-color: rgba(239,68,68,.35);
-  color: #FCA5A5;
-  background: rgba(239,68,68,.1);
-}
-.mp-card-act-yt:hover {
-  background: rgba(239,68,68,.2);
-}
-.mp-card-act-fma {
-  border-color: rgba(74,222,128,.3);
-  color: #6EE7B7;
-  background: rgba(74,222,128,.08);
-}
-.mp-card-act-fma:hover {
-  background: rgba(74,222,128,.18);
-}
-.mp-card-act-play {
-  border-color: rgba(96,165,250,.35);
-  color: #93C5FD;
-  background: rgba(96,165,250,.1);
-}
-.mp-card-act-play:hover {
-  background: rgba(96,165,250,.22);
-}
-
-/* Dark mode — card already has dark gradient, just handle light mode overrides */
-html:not(.dark) .mp-card {
-  /* keep dark gradient even in light mode — it looks great */
-}
-
-/* ══════════════════════════════════════════════════════════════
-   FIX — mp-hidden class para el reproductor flotante
-   ══════════════════════════════════════════════════════════════ */
-.mp-hidden { display: none !important; }
-
-/* ══════════════════════════════════════════════════════════════
-   REPRODUCTOR — Ocultar el FAB (botón flotante de música)
-   El reproductor solo se controla desde el panel de cuenta
-   ══════════════════════════════════════════════════════════════ */
-.mp-fab,
-#mpFab {
-  display: none !important;
-}
-
-/* Reposicionar el panel — sin FAB, va pegado abajo a la derecha */
-.mp-wrap {
-  bottom: calc(var(--bot-h) + 14px) !important;
-  right: 16px !important;
-  align-items: flex-end;
-}
-@media(min-width: 768px){
-  .mp-wrap { bottom: 20px !important; right: 20px !important; }
-}
-
-/* El panel se muestra/oculta directamente sin animación del FAB */
-.mp-collapsed .mp-panel {
-  transform: translateY(20px) scale(.96);
-  opacity: 0;
-  pointer-events: none;
-}
-.mp-wrap:not(.mp-collapsed) .mp-panel {
-  transform: none;
-  opacity: 1;
-  pointer-events: all;
-}
-
-/* Panel rediseñado — más elegante */
-.mp-panel {
-  width: 310px;
-  border-radius: 20px;
-  box-shadow:
-    0 20px 60px rgba(0,0,0,.25),
-    0 4px 16px rgba(0,0,0,.12),
-    0 0 0 1px rgba(255,255,255,.06);
-  transition: transform .3s cubic-bezier(.4,0,.2,1), opacity .3s;
-  overflow: visible; /* allow FMA panel to overflow */
-}
-@media(min-width: 420px){ .mp-panel { width: 330px; } }
-
-/* Header del panel — mini-barra de control */
-.mp-header {
-  background: linear-gradient(120deg,#0F172A,#1E3A8A,#2563EB);
-  padding: 10px 12px;
-  border-radius: 20px 20px 0 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.mp-title { font-size: 1rem; letter-spacing: 1px; }
-
-/* Botón cerrar el mini-player (X arriba a la derecha del panel) */
-.mp-hbtn-hide {
-  background: rgba(255,100,100,.2) !important;
-  color: #FCA5A5 !important;
-}
-.mp-hbtn-hide:hover {
-  background: rgba(255,100,100,.4) !important;
-}
-
-/* ══════════════════════════════════════════════════════════════
    MUSIC CARD — Versión mejorada con mini controles
    ══════════════════════════════════════════════════════════════ */
 .mp-card {
@@ -6312,3 +6044,258 @@ html:not(.dark) .mp-card {
 @keyframes mpEq { from{transform:scaleY(.3);} to{transform:scaleY(1);} }
 
 /* Dark mode: card already dark, no extra override needed */
+
+/* ══════════════════════════════════════════════════════════════
+   PANEL ADMIN / SUPERADMIN — Mejoras de layout y responsive
+   ══════════════════════════════════════════════════════════════ */
+
+/* Modal más ancho en desktop para admin */
+@media(min-width: 700px){
+  .mdl.wide { max-width: 1100px; }
+}
+
+/* Tabs del panel — scroll horizontal elegante */
+.tabs {
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.tabs::after {
+  content: '';
+  position: sticky;
+  right: 0;
+  width: 32px;
+  background: linear-gradient(to right, transparent, var(--bg));
+  flex-shrink: 0;
+  pointer-events: none;
+}
+html.dark .tabs::after {
+  background: linear-gradient(to right, transparent, #1E293B);
+}
+
+/* Tab activo — gradiente admin */
+#panB .tab.on {
+  background: linear-gradient(135deg, #1E3A8A, #2563EB);
+  color: #fff;
+  box-shadow: 0 3px 10px rgba(37,99,235,.3);
+}
+html.dark #panB .tab {
+  color: #64748B;
+}
+html.dark #panB .tab.on {
+  color: #fff;
+}
+
+/* Panel user bar mejorado — avatar más grande */
+.panel-user-bar {
+  padding: 16px 18px;
+  gap: 12px;
+}
+.pub-ava {
+  width: 48px; height: 48px;
+  font-size: 1.25rem;
+}
+
+/* Role badge en panel admin */
+.pub-role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255,255,255,.15);
+  color: rgba(255,255,255,.9);
+  padding: 2px 10px;
+  border-radius: 50px;
+  font-size: .68rem;
+  font-weight: 800;
+  margin-top: 4px;
+  border: 1px solid rgba(255,255,255,.2);
+}
+
+/* Admin stats cards grid */
+.admin-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+@media(min-width: 560px){
+  .admin-stats-grid { grid-template-columns: repeat(4, 1fr); }
+}
+.admin-stat-card {
+  background: #fff;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 14px 12px;
+  text-align: center;
+  transition: transform .18s, box-shadow .18s;
+  cursor: default;
+}
+.admin-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(37,99,235,.1);
+}
+.admin-stat-ico { font-size: 1.6rem; margin-bottom: 4px; }
+.admin-stat-val {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 1.6rem;
+  color: #1E3A8A;
+  letter-spacing: .5px;
+}
+.admin-stat-lbl {
+  font-size: .7rem;
+  font-weight: 700;
+  color: #64748B;
+  margin-top: 2px;
+}
+html.dark .admin-stat-card {
+  background: #1E293B;
+  border-color: #334155;
+}
+html.dark .admin-stat-val { color: #93C5FD; }
+html.dark .admin-stat-lbl { color: #475569; }
+
+/* Table wrapper con scroll */
+.tw {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 12px;
+  border: 1.5px solid #E2E8F0;
+}
+html.dark .tw { border-color: #1E293B; }
+.tw table {
+  width: 100%;
+  min-width: 480px;
+  border-collapse: collapse;
+  font-size: .83rem;
+}
+.tw th {
+  background: linear-gradient(135deg, #0F172A, #1E3A8A);
+  color: #fff;
+  padding: 10px 12px;
+  font-weight: 700;
+  font-size: .75rem;
+  letter-spacing: .3px;
+  white-space: nowrap;
+  text-align: left;
+}
+.tw th:first-child { border-radius: 10px 0 0 0; }
+.tw th:last-child  { border-radius: 0 10px 0 0; }
+.tw td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #F1F5F9;
+  vertical-align: middle;
+}
+html.dark .tw td { border-bottom-color: #1E293B; }
+.tw tr:last-child td { border-bottom: none; }
+.tw tr:hover td { background: #F8FAFC; }
+html.dark .tw tr:hover td { background: #1E293B; }
+
+/* Action buttons in table */
+.bte, .btd {
+  padding: 5px 10px;
+  border-radius: 7px;
+  border: none;
+  font-size: .75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .15s;
+  font-family: 'Inter', sans-serif;
+}
+.bte { background: #EFF6FF; color: #1E3A8A; }
+.bte:hover { background: #DBEAFE; }
+.btd { background: #FEF2F2; color: #DC2626; }
+.btd:hover { background: #FEE2E2; }
+html.dark .bte { background: #1E293B; color: #93C5FD; }
+html.dark .bte:hover { background: #1E3A8A; color: #fff; }
+html.dark .btd { background: #1C0A0A; color: #FCA5A5; }
+html.dark .btd:hover { background: #2D1515; }
+
+/* Super admin chart area */
+.vchart-wrap {
+  background: #fff;
+  border-radius: 14px;
+  padding: 16px;
+  border: 1.5px solid #E2E8F0;
+  margin-bottom: 14px;
+}
+html.dark .vchart-wrap {
+  background: #1E293B;
+  border-color: #334155;
+}
+
+/* Export button */
+.btn-export {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1.5px solid #E2E8F0;
+  background: #fff;
+  color: #1E3A8A;
+  font-size: .78rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: all .15s;
+}
+.btn-export:hover {
+  background: #EFF6FF;
+  border-color: #3B82F6;
+}
+html.dark .btn-export {
+  background: #1E293B;
+  border-color: #334155;
+  color: #93C5FD;
+}
+html.dark .btn-export:hover {
+  background: #1E3A8A;
+  border-color: #3B82F6;
+  color: #fff;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   MUSIC CARD — Mini controles fix (fondo correcto)
+   ══════════════════════════════════════════════════════════════ */
+.mp-card-mini-ctrl {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px 12px;
+  /* Ensure no purple/glitch background */
+  background: transparent;
+}
+
+.mp-card-mini-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,.15);
+  background: rgba(255,255,255,.08);
+  color: rgba(255,255,255,.8);
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s, transform .1s;
+  flex-shrink: 0;
+}
+.mp-card-mini-btn:hover {
+  background: rgba(255,255,255,.2);
+  transform: scale(1.1);
+}
+.mp-card-mini-btn-play {
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, #2563EB, #06B6D4);
+  border: none;
+  color: #fff;
+  font-size: 1.1rem;
+  box-shadow: 0 4px 16px rgba(37,99,235,.5);
+}
+.mp-card-mini-btn-play:hover {
+  background: linear-gradient(135deg, #1D4ED8, #0891B2);
+  box-shadow: 0 6px 20px rgba(37,99,235,.65);
+  transform: scale(1.12);
+}
