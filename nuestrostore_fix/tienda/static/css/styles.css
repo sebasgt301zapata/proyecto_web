@@ -6299,3 +6299,305 @@ html.dark .btn-export:hover {
   box-shadow: 0 6px 20px rgba(37,99,235,.65);
   transform: scale(1.12);
 }
+
+/* ══════════════════════════════════════════════════════════════
+   MUSIC CARD v3 — Rediseño completo sin botón Mostrar/Ocultar
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Card wrapper ── */
+.mp-card {
+  background: linear-gradient(160deg, #0B1120 0%, #0F2040 40%, #1E3A8A 100%);
+  border-radius: 18px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(255,255,255,.1);
+  box-shadow: 0 8px 32px rgba(0,0,0,.35), 0 0 0 1px rgba(255,255,255,.04) inset;
+  overflow: hidden;
+  transition: box-shadow .25s;
+}
+.mp-card:hover { box-shadow: 0 12px 40px rgba(37,99,235,.3); }
+
+/* ── Header ── */
+.mp-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px 8px;
+}
+.mp-card-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mp-card-title {
+  font-family: 'Bebas Neue', cursive;
+  letter-spacing: 1.5px;
+  font-size: 1.05rem;
+  color: #fff;
+}
+.mp-card-count {
+  background: rgba(255,255,255,.12);
+  color: rgba(255,255,255,.75);
+  font-size: .65rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 50px;
+}
+.mp-card-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.mp-card-dot-play {
+  background: #4ADE80;
+  box-shadow: 0 0 8px #4ADE80;
+  animation: mpDotPulse 1.5s infinite;
+}
+.mp-card-dot-idle { background: rgba(255,255,255,.2); }
+
+/* ── Now Playing / Paused state ── */
+.mp-card-now {
+  margin: 0 10px 10px;
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: background .3s, border-color .3s;
+}
+.mp-card-now-playing {
+  background: rgba(74,222,128,.1);
+  border: 1.5px solid rgba(74,222,128,.25);
+}
+.mp-card-now-paused {
+  background: rgba(255,255,255,.05);
+  border: 1.5px solid rgba(255,255,255,.1);
+}
+.mp-card-now-left {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+.mp-card-pause-ico {
+  font-size: 1.1rem;
+  color: rgba(255,255,255,.4);
+}
+.mp-card-now-info { flex: 1; min-width: 0; }
+.mp-card-now-label {
+  font-size: .65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  margin-bottom: 2px;
+}
+.mp-card-now-playing .mp-card-now-label { color: #4ADE80; }
+.mp-card-now-paused  .mp-card-now-label { color: rgba(255,255,255,.35); }
+.mp-card-now-name {
+  font-size: .8rem;
+  font-weight: 700;
+  color: #F1F5F9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* EQ animation (4 bars) */
+.mp-card-eq {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 18px;
+}
+.mp-card-eq i {
+  display: block;
+  width: 3px;
+  border-radius: 2px;
+  background: #4ADE80;
+  animation: mpEq .7s ease-in-out infinite alternate;
+}
+.mp-card-eq i:nth-child(1) { height: 7px;  animation-delay: 0s; }
+.mp-card-eq i:nth-child(2) { height: 16px; animation-delay: .1s; }
+.mp-card-eq i:nth-child(3) { height: 10px; animation-delay: .2s; }
+.mp-card-eq i:nth-child(4) { height: 14px; animation-delay: .3s; }
+
+/* ── Transport controls ── */
+.mp-card-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 4px 14px 12px;
+}
+.mp-card-ctrl-btn {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.07);
+  color: rgba(255,255,255,.75);
+  font-size: .95rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s, transform .1s, color .15s;
+  flex-shrink: 0;
+}
+.mp-card-ctrl-btn:hover {
+  background: rgba(255,255,255,.18);
+  color: #fff;
+  transform: scale(1.1);
+}
+.mp-card-ctrl-on {
+  color: #4ADE80 !important;
+  border-color: rgba(74,222,128,.4) !important;
+  background: rgba(74,222,128,.1) !important;
+}
+
+/* Play/Pause main button */
+.mp-card-play-btn {
+  width: 46px; height: 46px;
+  border-radius: 50%;
+  border: none;
+  color: #fff;
+  font-size: 1.15rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform .15s, box-shadow .15s;
+  flex-shrink: 0;
+}
+.mp-card-play-btn-play {
+  background: linear-gradient(135deg, #2563EB, #06B6D4);
+  box-shadow: 0 4px 18px rgba(37,99,235,.55);
+}
+.mp-card-play-btn-play:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 24px rgba(37,99,235,.75);
+}
+.mp-card-play-btn-pause {
+  background: linear-gradient(135deg, #6366F1, #8B5CF6);
+  box-shadow: 0 4px 18px rgba(99,102,241,.5);
+}
+.mp-card-play-btn-pause:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 24px rgba(99,102,241,.7);
+}
+
+/* ── Playlist inside card ── */
+.mp-pl-card {
+  margin: 0 10px 10px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(0,0,0,.2);
+}
+.mp-pl-card-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(255,255,255,.05);
+  transition: background .12s;
+}
+.mp-pl-card-item:last-child { border-bottom: none; }
+.mp-pl-card-item:hover { background: rgba(255,255,255,.07); }
+
+/* Active track highlight */
+.mp-pl-card-active {
+  background: rgba(37,99,235,.2) !important;
+  border-left: 3px solid #2563EB;
+}
+.mp-pl-card-active .mp-pl-card-name { color: #93C5FD !important; }
+
+/* Track state indicator */
+.mp-pl-card-num {
+  width: 18px; text-align: center;
+  font-size: .65rem; font-weight: 700;
+  color: rgba(255,255,255,.3);
+  flex-shrink: 0;
+}
+.mp-pl-card-pause {
+  width: 18px; text-align: center;
+  font-size: .7rem;
+  color: #A78BFA;
+  flex-shrink: 0;
+}
+.mp-pl-card-eq {
+  display: flex;
+  align-items: flex-end;
+  gap: 1.5px;
+  height: 14px;
+  width: 18px;
+  flex-shrink: 0;
+}
+.mp-pl-card-eq i {
+  display: block;
+  width: 3px;
+  border-radius: 1.5px;
+  background: #4ADE80;
+  animation: mpEq .7s ease-in-out infinite alternate;
+}
+.mp-pl-card-eq i:nth-child(1){ height: 6px; animation-delay:0s; }
+.mp-pl-card-eq i:nth-child(2){ height:14px; animation-delay:.15s; }
+.mp-pl-card-eq i:nth-child(3){ height: 9px; animation-delay:.3s; }
+
+.mp-pl-card-ico { font-size: .85rem; flex-shrink: 0; }
+.mp-pl-card-name {
+  flex: 1; min-width: 0;
+  font-size: .78rem; font-weight: 600;
+  color: rgba(255,255,255,.8);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.mp-pl-card-dur {
+  font-size: .65rem;
+  color: rgba(255,255,255,.3);
+  flex-shrink: 0;
+}
+.mp-pl-card-del {
+  background: none; border: none;
+  color: rgba(255,255,255,.2);
+  font-size: .7rem; cursor: pointer;
+  padding: 2px 4px; border-radius: 4px;
+  flex-shrink: 0; opacity: 0;
+  transition: opacity .12s, color .12s;
+}
+.mp-pl-card-item:hover .mp-pl-card-del { opacity: 1; }
+.mp-pl-card-del:hover { color: #FCA5A5; background: rgba(239,68,68,.15); }
+
+.mp-pl-card-more {
+  padding: 7px 10px;
+  font-size: .7rem;
+  color: rgba(255,255,255,.35);
+  text-align: center;
+  border-top: 1px solid rgba(255,255,255,.06);
+  background: rgba(0,0,0,.15);
+}
+
+/* ── Add music buttons ── */
+.mp-card-add-row {
+  display: flex;
+  gap: 0;
+  border-top: 1px solid rgba(255,255,255,.07);
+}
+.mp-card-add-btn {
+  flex: 1;
+  padding: 10px 4px;
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,.6);
+  font-size: .72rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: background .15s, color .15s;
+  border-right: 1px solid rgba(255,255,255,.06);
+}
+.mp-card-add-btn:last-child { border-right: none; }
+.mp-card-add-btn:hover { background: rgba(255,255,255,.08); color: #fff; }
+.mp-card-add-yt:hover  { background: rgba(239,68,68,.18); color: #FCA5A5; }
+.mp-card-add-fma:hover { background: rgba(74,222,128,.12); color: #6EE7B7; }
+
+/* ── Empty state in card ── */
+.mp-card-empty {
+  padding: 20px 14px 14px;
+  text-align: center;
+  color: rgba(255,255,255,.35);
+  font-size: .8rem;
+}
+.mp-card-empty-ico { font-size: 2rem; margin-bottom: 6px; opacity: .5; }
