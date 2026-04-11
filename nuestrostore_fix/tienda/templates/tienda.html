@@ -11,6 +11,8 @@
 
 {% block content %}
 <main id="pTienda">
+
+  <!-- ══ HERO ══ -->
   <div class="tienda-hero">
     <div class="tienda-hero-in">
       <h2>🛍️ Catálogo Completo</h2>
@@ -22,55 +24,132 @@
       </div>
     </div>
   </div>
-  <div class="tienda-toolbar">
+
+  <!-- ══ TOOLBAR: categorías + filtros + orden ══ -->
+  <div class="tienda-toolbar" id="tiendaToolbar">
+
+    <!-- Categorías (scroll horizontal) -->
     <div class="cats" id="cats"></div>
-    <div class="tienda-sort" style="display:flex;align-items:center;gap:8px">
-      <button class="filtros-toggle-btn" id="filtrosToggleBtn" onclick="toggleFiltrosPanel()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="10" y1="18" x2="14" y2="18"/></svg>
-        Filtros <span class="filtros-badge" id="filtrosBadge" style="display:none">0</span>
+
+    <!-- Controles derechos -->
+    <div class="tienda-toolbar-right">
+
+      <!-- Botón filtros -->
+      <button class="filtros-toggle-btn" id="filtrosToggleBtn" onclick="toggleFiltrosPanel()" aria-expanded="false" aria-controls="filtrosPanel">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+          <line x1="4" y1="6"  x2="20" y2="6"/>
+          <line x1="8" y1="12" x2="16" y2="12"/>
+          <line x1="10" y1="18" x2="14" y2="18"/>
+        </svg>
+        Filtros
+        <span class="filtros-badge" id="filtrosBadge" style="display:none" aria-label="filtros activos">0</span>
       </button>
-      <select class="sort-sel" id="sortSel" onchange="sortProds(this.value)">
-        <option value="def">Por defecto</option>
-        <option value="precioAsc">Precio ↑</option>
-        <option value="precioDesc">Precio ↓</option>
-        <option value="nombre">A-Z</option>
-        <option value="valorados">Mejor valorados</option>
+
+      <!-- Ordenar -->
+      <select class="sort-sel" id="sortSel" onchange="sortProds(this.value)" aria-label="Ordenar productos">
+        <option value="def">📋 Relevancia</option>
+        <option value="precioAsc">💰 Precio: menor</option>
+        <option value="precioDesc">💰 Precio: mayor</option>
+        <option value="nombre">🔤 A — Z</option>
+        <option value="valorados">⭐ Mejor valorados</option>
       </select>
+
     </div>
   </div>
-  <div class="filtros-panel" id="filtrosPanel" style="display:none">
+
+  <!-- ══ PANEL DE FILTROS ══ -->
+  <div class="filtros-panel" id="filtrosPanel" style="display:none" role="region" aria-label="Filtros de búsqueda">
     <div class="filtros-inner">
+
+      <!-- PRECIO -->
       <div class="filtro-grupo">
-        <div class="filtro-titulo">💰 Rango de precio</div>
+        <div class="filtro-titulo">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          Precio
+        </div>
         <div class="filtro-precio-wrap">
-          <div class="filtro-precio-labels"><span id="fPrecioMin">COP$ 0</span><span id="fPrecioMax">COP$ 0</span></div>
+          <div class="filtro-precio-labels">
+            <span id="fPrecioMin">COP$ 0</span>
+            <span id="fPrecioMax">COP$ 0</span>
+          </div>
           <div class="filtro-range-track">
             <div class="filtro-range-fill" id="fRangeFill"></div>
-            <input type="range" class="filtro-range" id="fSliderMin" min="0" max="1000000" value="0" step="1000" oninput="onSliderMin(this)"/>
-            <input type="range" class="filtro-range" id="fSliderMax" min="0" max="1000000" value="1000000" step="1000" oninput="onSliderMax(this)"/>
+            <input type="range" class="filtro-range" id="fSliderMin"
+                   min="0" max="1000000" value="0" step="1000"
+                   oninput="onSliderMin(this)" aria-label="Precio mínimo"/>
+            <input type="range" class="filtro-range" id="fSliderMax"
+                   min="0" max="1000000" value="1000000" step="1000"
+                   oninput="onSliderMax(this)" aria-label="Precio máximo"/>
+          </div>
+          <!-- Accesos rápidos de precio -->
+          <div class="filtro-precio-shortcuts">
+            <button class="filtro-shortcut" onclick="aplicarRangoPrecio(0,50000)">Hasta $50K</button>
+            <button class="filtro-shortcut" onclick="aplicarRangoPrecio(0,150000)">Hasta $150K</button>
+            <button class="filtro-shortcut" onclick="aplicarRangoPrecio(150000,500000)">$150K–$500K</button>
+            <button class="filtro-shortcut" onclick="aplicarRangoPrecio(500000,9999999)">+$500K</button>
           </div>
         </div>
       </div>
+
       <div class="filtro-sep"></div>
+
+      <!-- CALIFICACIÓN -->
       <div class="filtro-grupo">
-        <div class="filtro-titulo">⭐ Rating mínimo</div>
+        <div class="filtro-titulo">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg>
+          Calificación
+        </div>
         <div class="filtro-stars-row" id="fStarsRow">
           <button class="filtro-star-btn on" data-val="0" onclick="setRatingFiltro(0,this)">Todos</button>
-          <button class="filtro-star-btn" data-val="1" onclick="setRatingFiltro(1,this)">★ 1+</button>
-          <button class="filtro-star-btn" data-val="2" onclick="setRatingFiltro(2,this)">★★ 2+</button>
-          <button class="filtro-star-btn" data-val="3" onclick="setRatingFiltro(3,this)">★★★ 3+</button>
-          <button class="filtro-star-btn" data-val="4" onclick="setRatingFiltro(4,this)">★★★★ 4+</button>
-          <button class="filtro-star-btn" data-val="5" onclick="setRatingFiltro(5,this)">★★★★★ 5</button>
+          <button class="filtro-star-btn" data-val="4" onclick="setRatingFiltro(4,this)">★★★★<span class="filtro-star-plus">+</span> 4</button>
+          <button class="filtro-star-btn" data-val="3" onclick="setRatingFiltro(3,this)">★★★<span class="filtro-star-plus">+</span> 3</button>
+          <button class="filtro-star-btn" data-val="2" onclick="setRatingFiltro(2,this)">★★<span class="filtro-star-plus">+</span> 2</button>
         </div>
       </div>
+
       <div class="filtro-sep"></div>
-      <div class="filtro-grupo filtro-grupo-row">
-        <button class="filtro-check-btn" id="fSoloOfertas" onclick="toggleFiltroOfertas()"><span class="filtro-check-ico">○</span> Solo ofertas</button>
-        <button class="filtros-reset" onclick="resetFiltros()">✕ Limpiar filtros</button>
+
+      <!-- OPCIONES RÁPIDAS -->
+      <div class="filtro-grupo">
+        <div class="filtro-titulo">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Opciones
+        </div>
+        <div class="filtro-opciones-col">
+          <button class="filtro-check-btn" id="fSoloOfertas" onclick="toggleFiltroOfertas()">
+            <span class="filtro-check-ico">○</span>
+            🔥 Solo ofertas
+          </button>
+          <button class="filtro-check-btn" id="fSoloStock" onclick="toggleFiltroStock()">
+            <span class="filtro-check-ico">○</span>
+            ✅ En stock
+          </button>
+          <button class="filtro-check-btn" id="fDestacados" onclick="toggleFiltroDestacados()">
+            <span class="filtro-check-ico">○</span>
+            ⭐ Destacados
+          </button>
+        </div>
       </div>
+
+      <!-- Limpiar (siempre al final) -->
+      <div class="filtro-reset-wrap">
+        <button class="filtros-reset" onclick="resetFiltros()">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          Limpiar todo
+        </button>
+      </div>
+
     </div>
+
+    <!-- Barra de filtros activos (chips) -->
+    <div class="filtros-activos" id="filtrosActivos" style="display:none"></div>
   </div>
-  <div class="tienda-body"><div class="pg" id="pg"></div></div>
+
+  <!-- ══ GRID DE PRODUCTOS ══ -->
+  <div class="tienda-body">
+    <div class="pg" id="pg"></div>
+  </div>
+
   {% include "partials/footer.html" %}
 </main>
 {% endblock %}
