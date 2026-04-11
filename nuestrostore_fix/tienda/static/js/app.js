@@ -1,7 +1,7 @@
 // NuestroStore v9 — app.js
 let PRODS=[],CATS=[{id:0,n:"🏷️ Todos"}],RESENIAS={},REPORTES=[],LOGS=[],PEDIDOS=[],USUARIOS=[];
 let usuario=null,carrito=[],wishlist=[],catActiva=0,busqueda="",sortActivo="def";
-let filtroPrecioMin=0,filtroPrecioMax=Infinity,filtroRating=0,filtroSoloOfertas=false;
+let filtroPrecioMin=0,filtroPrecioMax=Infinity,filtroRating=0,filtroSoloOfertas=false,filtroSoloStock=false;
 let aTab="productos",sTab="stats",editId=null,newPF={n:"",d:"",p:"",o:"",st:"",cat:1,dest:false,img:null};
 let CONTACTOS=[];
 let contFact=1000,paginaActual=(typeof PAGE!=="undefined"?PAGE:"inicio"),starSelVal=5;
@@ -134,12 +134,16 @@ function _checkPushEstado(){
   });
 }
 
+function _toggleNotifBtn(){
+  if(pushEstaActivo()) desactivarNotificaciones();
+  else activarNotificaciones();
+}
 function _actualizarBtnPush(){
   document.querySelectorAll('.push-toggle-btn').forEach(function(btn){
-    btn.innerHTML  = _pushSuscrito ? '🔔 Notif. ON' : '🔕 Notif. OFF';
-    btn.title      = _pushSuscrito ? 'Desactivar notificaciones' : 'Activar notificaciones push';
-    btn.className  = 'push-toggle-btn bte' + (_pushSuscrito ? ' push-on' : '');
-    btn.onclick    = _pushSuscrito ? desactivarNotificaciones : activarNotificaciones;
+    btn.innerHTML  = _pushSuscrito ? '🔔 ON' : '🔕 OFF';
+    btn.title      = _pushSuscrito ? 'Desactivar notificaciones push' : 'Activar notificaciones — recibe alertas de pedidos y ofertas';
+    btn.className  = 'push-toggle-btn' + (_pushSuscrito ? ' push-on' : '');
+    btn.onclick    = _toggleNotifBtn;
   });
 }
 
@@ -770,6 +774,16 @@ function toggleFiltroOfertas(){
   actualizarFiltrosBadge();
   renderProds();
 }
+function toggleFiltroStock(){
+  filtroSoloStock = !filtroSoloStock;
+  let btn = document.getElementById("fSoloStock");
+  if(btn){
+    btn.classList.toggle("on", filtroSoloStock);
+    btn.querySelector(".filtro-check-ico").textContent = filtroSoloStock ? "●" : "○";
+  }
+  actualizarFiltrosBadge();
+  renderProds();
+}
 function toggleFiltrosPanel(){
   let panel=document.getElementById("filtrosPanel");
   let btn=document.getElementById("filtrosToggleBtn");
@@ -781,7 +795,7 @@ function toggleFiltrosPanel(){
 }
 function resetFiltros(){
   filtroPrecioMin=0;filtroPrecioMax=Infinity;
-  filtroRating=0;filtroSoloOfertas=false;
+  filtroRating=0;filtroSoloOfertas=false;filtroSoloStock=false;
   catActiva=0;busqueda="";
   let inp=document.getElementById("sBusq");if(inp)inp.value="";
   let cl=document.getElementById("swClear");if(cl)cl.style.display="none";
@@ -791,6 +805,8 @@ function resetFiltros(){
   if(allBtn)allBtn.classList.add("on");
   let ofBtn=document.getElementById("fSoloOfertas");
   if(ofBtn){ofBtn.classList.remove("on");ofBtn.querySelector(".filtro-check-ico").textContent="○";}
+  let stBtn=document.getElementById("fSoloStock");
+  if(stBtn){stBtn.classList.remove("on");stBtn.querySelector(".filtro-check-ico").textContent="○";}
   initFiltrosPanel();
   actualizarFiltrosBadge();
   cargarCats();
@@ -800,6 +816,7 @@ function actualizarFiltrosBadge(){
   let cnt=0;
   if(filtroRating>0)cnt++;
   if(filtroSoloOfertas)cnt++;
+  if(filtroSoloStock)cnt++;
   if(filtroPrecioMin>0)cnt++;
   if(filtroPrecioMax<Infinity)cnt++;
   let badge=document.getElementById("filtrosBadge");
@@ -1286,7 +1303,7 @@ function actualizarUI(){
     let nombre=usuario.n.split(" ")[0];
     navIcons.innerHTML=''; // En móvil carrito y cuenta están en el bottom nav
     deskActs.innerHTML=
-      '<button class="push-toggle-btn bte" onclick="activarNotificaciones()" title="Activar notificaciones" style="font-size:.75rem;padding:5px 10px;display:'+(pushPuedeActivarse()&&usuario?'flex':'none')+'">'+(pushEstaActivo()?'🔔 Notif. ON':'🔕 Notif. OFF')+'</button>'+
+      '<button class="push-toggle-btn" onclick="_toggleNotifBtn()" title="'+(pushEstaActivo()?'Desactivar notificaciones push':'Activar notificaciones — recibe alertas de pedidos y ofertas')+'" style="display:'+(pushPuedeActivarse()&&usuario?'flex':'none')+'">'+(pushEstaActivo()?'🔔 ON':'🔕 OFF')+'</button>'+
       '<button class="dm-toggle bdn bdn-lang" onclick="toggleDarkMode()" title="Modo oscuro">'+(DARK_MODE?'☀️':'🌙')+'</button>'+
       '<button class="bdn bdn-lang" onclick="abrirIdiomaMoneda()" title="Moneda">💰</button>'+
       '<div class="hdr-cart-btn" onclick="abrirCarrito()">🛒<span class="hdr-cart-badge" id="cartBadgeDesk" style="display:none">0</span></div>'+
@@ -1304,7 +1321,7 @@ function actualizarUI(){
   }else{
     navIcons.innerHTML=''; // En móvil carrito y cuenta están en el bottom nav
     deskActs.innerHTML=
-      '<button class="push-toggle-btn bte" onclick="activarNotificaciones()" title="Activar notificaciones" style="font-size:.75rem;padding:5px 10px;display:'+(pushPuedeActivarse()&&usuario?'flex':'none')+'">'+(pushEstaActivo()?'🔔 Notif. ON':'🔕 Notif. OFF')+'</button>'+
+      '<button class="push-toggle-btn" onclick="_toggleNotifBtn()" title="'+(pushEstaActivo()?'Desactivar notificaciones push':'Activar notificaciones — recibe alertas de pedidos y ofertas')+'" style="display:'+(pushPuedeActivarse()&&usuario?'flex':'none')+'">'+(pushEstaActivo()?'🔔 ON':'🔕 OFF')+'</button>'+
       '<button class="dm-toggle bdn bdn-lang" onclick="toggleDarkMode()" title="Modo oscuro">'+(DARK_MODE?'☀️':'🌙')+'</button>'+
       '<button class="bdn bdn-lang" onclick="abrirIdiomaMoneda()" title="Moneda">💰</button>'+
       '<button class="bdn bdn-o" onclick="abrirLogin()">'+t('iniciarSesion')+'</button>'+
