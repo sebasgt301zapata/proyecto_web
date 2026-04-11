@@ -6905,3 +6905,188 @@ html.dark .filtros-toggle-btn.has-active {
   .filtro-star-btn { padding: 4px 8px; font-size: .7rem; }
   .filtro-check-btn, .filtros-reset { padding: 6px 10px; font-size: .74rem; }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   TIENDA — Toolbar mejorada
+   ══════════════════════════════════════════════════════════════ */
+.tienda-toolbar {
+  position: sticky;
+  top: var(--nav-h);
+  z-index: 800;
+  background: #fff;
+  border-bottom: 1.5px solid #E2E8F0;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 3px 12px rgba(0,0,0,.06);
+}
+html.dark .tienda-toolbar {
+  background: #0F172A;
+  border-bottom-color: #1E293B;
+  box-shadow: 0 3px 12px rgba(0,0,0,.3);
+}
+.tienda-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FILTROS — Atajos de precio
+   ══════════════════════════════════════════════════════════════ */
+.filtro-precio-shortcuts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 8px;
+}
+.filtro-shortcut {
+  padding: 3px 10px;
+  border-radius: 50px;
+  border: 1.5px solid #DBEAFE;
+  background: #EFF6FF;
+  color: #1E3A8A;
+  font-size: .68rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.filtro-shortcut:hover {
+  background: #2563EB;
+  border-color: #2563EB;
+  color: #fff;
+}
+html.dark .filtro-shortcut {
+  background: #1E293B;
+  border-color: #1E3A8A;
+  color: #93C5FD;
+}
+html.dark .filtro-shortcut:hover {
+  background: #2563EB;
+  border-color: #2563EB;
+  color: #fff;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FILTROS — Opciones en columna (Solo ofertas, En stock, Destacados)
+   ══════════════════════════════════════════════════════════════ */
+.filtro-opciones-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.filtro-star-plus {
+  font-size: .6rem;
+  vertical-align: super;
+  margin-left: 1px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FILTROS — Barra de chips activos
+   ══════════════════════════════════════════════════════════════ */
+.filtros-activos {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 8px 20px;
+  background: #F8FAFC;
+  border-top: 1px solid #E2E8F0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.filtros-activos::-webkit-scrollbar { display: none; }
+html.dark .filtros-activos {
+  background: #0B111F;
+  border-top-color: #1E293B;
+}
+.filtro-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 50px;
+  background: #EFF6FF;
+  border: 1.5px solid #BFDBFE;
+  color: #1E3A8A;
+  font-size: .72rem;
+  font-weight: 700;
+  white-space: nowrap;
+  font-family: 'Inter', sans-serif;
+}
+html.dark .filtro-chip {
+  background: #1E293B;
+  border-color: #1E3A8A;
+  color: #93C5FD;
+}
+.filtro-chip-del {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #60A5FA;
+  font-size: .65rem;
+  padding: 0 1px;
+  line-height: 1;
+  transition: color .12s;
+}
+.filtro-chip-del:hover { color: #EF4444; }
+.filtro-chip-clear {
+  background: #FEF2F2;
+  border-color: #FCA5A5;
+  color: #DC2626;
+  cursor: pointer;
+}
+.filtro-chip-clear:hover {
+  background: #FEE2E2;
+}
+html.dark .filtro-chip-clear {
+  background: #1C0A0A;
+  border-color: #7F1D1D;
+  color: #FCA5A5;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FILTROS — Reset wrapper siempre al final
+   ══════════════════════════════════════════════════════════════ */
+.filtro-reset-wrap {
+  display: flex;
+  align-items: flex-end;
+  margin-left: auto;
+  align-self: stretch;
+  padding-left: 8px;
+}
+@media(max-width: 767px){
+  .filtro-reset-wrap {
+    margin-left: 0;
+    width: 100%;
+    padding-left: 0;
+  }
+  .filtros-reset { width: 100%; justify-content: center; }
+}
+
+/* Sort select mejorado */
+.sort-sel {
+  padding: 8px 12px;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 20px;
+  font-size: .8rem;
+  font-weight: 700;
+  background: #fff;
+  cursor: pointer;
+  outline: none;
+  transition: border-color .15s;
+  font-family: 'Inter', sans-serif;
+  color: #1E3A8A;
+}
+.sort-sel:focus { border-color: #2563EB; box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
+html.dark .sort-sel {
+  background: #1E293B;
+  border-color: #334155;
+  color: #CBD5E1;
+}
+html.dark .sort-sel:focus { border-color: #3B82F6; }
