@@ -690,6 +690,7 @@ function prodsFiltrados(){
     }
     // Solo ofertas
     if(filtroSoloOfertas&&!(p.o&&p.o<p.p))return false;
+    if(filtroDestacados&&!p.dest)return false;
     return true;
   });
 }
@@ -774,6 +775,53 @@ function toggleFiltroOfertas(){
   actualizarFiltrosBadge();
   renderProds();
 }
+function aplicarRangoPrecio(min, max){
+  filtroPrecioMin = min;
+  filtroPrecioMax = max < 9999999 ? max : Infinity;
+  let slMin = document.getElementById("fSliderMin");
+  let slMax = document.getElementById("fSliderMax");
+  if(slMin){ slMin.value = min; }
+  if(slMax){ slMax.value = max < 9999999 ? max : slMax.max; }
+  actualizarPrecioLabels();
+  actualizarRangeFill();
+  actualizarFiltrosBadge();
+  actualizarChipsFiltros();
+  renderProds();
+}
+
+let filtroDestacados = false;
+function toggleFiltroDestacados(){
+  filtroDestacados = !filtroDestacados;
+  let btn = document.getElementById("fDestacados");
+  if(btn){
+    btn.classList.toggle("on", filtroDestacados);
+    btn.querySelector(".filtro-check-ico").textContent = filtroDestacados ? "●" : "○";
+  }
+  actualizarFiltrosBadge();
+  actualizarChipsFiltros();
+  renderProds();
+}
+
+function actualizarChipsFiltros(){
+  let container = document.getElementById("filtrosActivos");
+  if(!container) return;
+  let chips = [];
+  if(filtroPrecioMin > 0 || filtroPrecioMax < Infinity){
+    let txt = "COP$ " + Math.round(filtroPrecioMin/1000) + "K – " + (filtroPrecioMax < Infinity ? "COP$ " + Math.round(filtroPrecioMax/1000) + "K" : "∞");
+    chips.push({label: "💰 " + txt, clear: function(){ aplicarRangoPrecio(0, 9999999); }});
+  }
+  if(filtroRating > 0) chips.push({label: "★ " + filtroRating + "+", clear: function(){ setRatingFiltro(0, document.querySelector(".filtro-star-btn[data-val=\'0\']")||{classList:{add:function(){}}}); filtroRating=0; actualizarFiltrosBadge(); actualizarChipsFiltros(); renderProds(); }});
+  if(filtroSoloOfertas) chips.push({label: "🔥 Solo ofertas", clear: function(){ toggleFiltroOfertas(); }});
+  if(filtroSoloStock) chips.push({label: "✅ En stock", clear: function(){ toggleFiltroStock(); }});
+  if(filtroDestacados) chips.push({label: "⭐ Destacados", clear: function(){ toggleFiltroDestacados(); }});
+  if(!chips.length){ container.style.display = "none"; return; }
+  container.style.display = "flex";
+  container.innerHTML = chips.map(function(c, i){
+    return '<span class="filtro-chip">' + c.label + '<button class="filtro-chip-del" onclick="(_chips[' + i + '].clear())">✕</button></span>';
+  }).join("") + '<button class="filtro-chip filtro-chip-clear" onclick="resetFiltros()">✕ Limpiar todo</button>';
+  window._chips = chips;
+}
+
 function toggleFiltroStock(){
   filtroSoloStock = !filtroSoloStock;
   let btn = document.getElementById("fSoloStock");
@@ -782,6 +830,7 @@ function toggleFiltroStock(){
     btn.querySelector(".filtro-check-ico").textContent = filtroSoloStock ? "●" : "○";
   }
   actualizarFiltrosBadge();
+  actualizarChipsFiltros();
   renderProds();
 }
 function toggleFiltrosPanel(){
@@ -795,7 +844,7 @@ function toggleFiltrosPanel(){
 }
 function resetFiltros(){
   filtroPrecioMin=0;filtroPrecioMax=Infinity;
-  filtroRating=0;filtroSoloOfertas=false;filtroSoloStock=false;
+  filtroRating=0;filtroSoloOfertas=false;filtroSoloStock=false;filtroDestacados=false;
   catActiva=0;busqueda="";
   let inp=document.getElementById("sBusq");if(inp)inp.value="";
   let cl=document.getElementById("swClear");if(cl)cl.style.display="none";
@@ -807,6 +856,9 @@ function resetFiltros(){
   if(ofBtn){ofBtn.classList.remove("on");ofBtn.querySelector(".filtro-check-ico").textContent="○";}
   let stBtn=document.getElementById("fSoloStock");
   if(stBtn){stBtn.classList.remove("on");stBtn.querySelector(".filtro-check-ico").textContent="○";}
+  let destBtn=document.getElementById("fDestacados");
+  if(destBtn){destBtn.classList.remove("on");destBtn.querySelector(".filtro-check-ico").textContent="○";}
+  actualizarChipsFiltros();
   initFiltrosPanel();
   actualizarFiltrosBadge();
   cargarCats();
@@ -817,6 +869,7 @@ function actualizarFiltrosBadge(){
   if(filtroRating>0)cnt++;
   if(filtroSoloOfertas)cnt++;
   if(filtroSoloStock)cnt++;
+  if(filtroDestacados)cnt++;
   if(filtroPrecioMin>0)cnt++;
   if(filtroPrecioMax<Infinity)cnt++;
   let badge=document.getElementById("filtrosBadge");
