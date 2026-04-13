@@ -1,5 +1,4 @@
 Django>=4.2,<6.0
 gunicorn
 whitenoise
-psycopg2-binary
-dj-database-url
+pymongo[srv]
