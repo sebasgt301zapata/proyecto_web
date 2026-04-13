@@ -9,21 +9,6 @@ DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 _allowed = os.environ.get('ALLOWED_HOSTS', '')
 ALLOWED_HOSTS = [h.strip() for h in _allowed.split(',') if h.strip()] if _allowed else ['*']
 
-# ── RENDER / HTTPS ────────────────────────────────────────────
-# Necesario para que Django reconozca HTTPS detras del proxy de Render
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-
-# Django 4.0+ requiere listar dominios de confianza para CSRF con HTTPS.
-# Puedes sobreescribir con la variable de entorno CSRF_TRUSTED_ORIGINS en Render.
-_csrf_origins = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
-if _csrf_origins:
-    CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf_origins.split(',') if o.strip()]
-else:
-    CSRF_TRUSTED_ORIGINS = [
-        'https://proyecto-web-tcxo.onrender.com',
-        'https://*.onrender.com',
-    ]
-
 INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.staticfiles',
@@ -61,29 +46,16 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'nuestrostore.wsgi.application'
 
-# Base de datos — PostgreSQL si DATABASE_URL existe, sino SQLite
-DATABASE_URL = os.environ.get('DATABASE_URL')
-if DATABASE_URL:
-    try:
-        import dj_database_url
-        DATABASES = {
-            'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, conn_health_checks=True)
-        }
-    except ImportError:
-        # dj_database_url no instalado, usar SQLite igualmente
-        DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.sqlite3',
-                'NAME': BASE_DIR / 'tienda.db',
-            }
-        }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'tienda.db',
-        }
+# Base de datos — MongoDB (pymongo directo, sin ORM Django)
+# Django necesita al menos una DB definida para arrancar correctamente.
+# Los datos reales van a MongoDB, configurado en tienda/database.py
+# usando la variable de entorno MONGODB_URI
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': ':memory:',
     }
+}
 
 LANGUAGE_CODE = 'es-ve'
 TIME_ZONE = 'America/Caracas'
@@ -97,14 +69,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 # WhiteNoise storage solo si está disponible
 try:
     import whitenoise  # noqa
-    STORAGES = {
-        "default": {
-            "BACKEND": "django.core.files.storage.FileSystemStorage",
-        },
-        "staticfiles": {
-            "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
-        },
-    }
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 except ImportError:
     pass
 
